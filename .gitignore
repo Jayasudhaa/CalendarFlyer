@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment variables - NEVER commit these
+.env
+server/.env
+*.env
+
+.env
+temple-calendar/.env
+*.env
+
+# Build output
+dist/
+build/
+temple-calendar/dist/
+
+# AWS
+.aws/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vite cache
+.vite/
+temple-calendar/.vite/
+
+# Secret files - API keys and configs
+server/apprunner-config.json
+apprunner-config.json
+instance-config.json
+*-config.json

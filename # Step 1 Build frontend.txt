@@ -1,0 +1,28 @@
+# Step 1: Build frontend
+cd C:\My_Projects\temple-calendar-complete\temple-calendar
+npm run build
+
+# Step 2: Copy dist to server
+Remove-Item -Path "..\server\dist-frontend" -Recurse -Force
+New-Item -ItemType Directory -Path "..\server\dist-frontend"
+Copy-Item -Path "dist\*" -Destination "..\server\dist-frontend\" -Recurse -Force
+
+# Step 3: Build and push Docker
+cd C:\My_Projects\temple-calendar-complete\server
+docker build --platform linux/amd64 -t temple-calendar-server .
+docker tag temple-calendar-server:latest 011820201589.dkr.ecr.us-east-1.amazonaws.com/temple-calendar-server:latest
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 011820201589.dkr.ecr.us-east-1.amazonaws.com
+docker push 011820201589.dkr.ecr.us-east-1.amazonaws.com/temple-calendar-server:latest
+
+# Step 4: Redeploy App Runner
+$serviceId = aws apprunner list-services --region us-east-2 --query "ServiceSummaryList[0].ServiceId" --output text
+aws apprunner start-deployment --service-arn "arn:aws:apprunner:us-east-2:011820201589:service/temple-calendar-backend/$serviceId" --region us-east-2
+
+while ($true) {
+    $result = aws apprunner list-services --region us-east-2 --query "ServiceSummaryList[0].Status" 2>$null
+    $time = Get-Date -Format "HH:mm:ss"
+    Write-Host "[$time] Status: $result"
+    if ($result -match "RUNNING") { Write-Host "Deployed!" -ForegroundColor Green; break }
+    if ($result -match "FAILED") { Write-Host "Failed!" -ForegroundColor Red; break }
+    Start-Sleep -Seconds 30
+}

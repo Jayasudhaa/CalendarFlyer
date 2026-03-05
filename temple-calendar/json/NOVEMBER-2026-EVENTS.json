@@ -1,0 +1,265 @@
+[
+  {
+    "id": "nov-01-siva",
+    "date": "2026-11-01",
+    "title": "Sri Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Ashtami 12:40 AM Mon",
+    "nakshatra": "Pushyami 3:59 PM"
+  },
+  {
+    "id": "nov-01-aswayuja-krishna",
+    "date": "2026-11-01",
+    "title": "Aswayuja Maasa Krishna Paksham",
+    "time": "All Day",
+    "type": "panchang",
+    "tithi": "Ashtami 12:40 AM Mon",
+    "nakshatra": "Pushyami 3:59 PM"
+  },
+  {
+    "id": "nov-01-dst",
+    "date": "2026-11-01",
+    "title": "Daylight Savings ends",
+    "time": "All Day",
+    "type": "holiday",
+    "tithi": "Ashtami 12:40 AM Mon",
+    "nakshatra": "Pushyami 3:59 PM"
+  },
+  {
+    "id": "nov-07-naraka",
+    "date": "2026-11-07",
+    "title": "Naraka Chaturdasi",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Chaturdasi 11:00 PM",
+    "nakshatra": "Chitta 5:23 PM"
+  },
+  {
+    "id": "nov-07-venkateswara-abhishekam",
+    "date": "2026-11-07",
+    "title": "Sri Venkateswara Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturdasi 11:00 PM",
+    "nakshatra": "Chitta 5:23 PM"
+  },
+  {
+    "id": "nov-08-amavasya",
+    "date": "2026-11-08",
+    "title": "Deepavali (Diwali)",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Amavasya 12:03 AM Mon",
+    "nakshatra": "Swathi 6:45 PM",
+    "moonPhase": "new"
+  },
+  {
+    "id": "nov-08-ganapathi",
+    "date": "2026-11-08",
+    "title": "Sri Vijaya Ganapathi / Murugan Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Amavasya 12:03 AM Mon",
+    "nakshatra": "Swathi 6:45 PM"
+  },
+  {
+    "id": "nov-09-kartika-somavara",
+    "date": "2026-11-09",
+    "title": "Kartika Somavara Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Prathama 1:31 AM Tue",
+    "nakshatra": "Visakha 8:49 PM"
+  },
+  {
+    "id": "nov-09-kartika-sukla",
+    "date": "2026-11-09",
+    "title": "Kartika Maasa Sukla Paksham starts",
+    "time": "All Day",
+    "type": "panchang",
+    "tithi": "Prathama 1:31 AM Tue",
+    "nakshatra": "Visakha 8:49 PM"
+  },
+  {
+    "id": "nov-12-naga-chaturthi",
+    "date": "2026-11-12",
+    "title": "Naga Chaturthi / Nagula Chaviti",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Chaturthi 8:11 AM Fri",
+    "nakshatra": "Mula 4:45 AM"
+  },
+  {
+    "id": "nov-12-manavala",
+    "date": "2026-11-12",
+    "title": "Sri Manavala Mahamuni Tirunakshatram",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Chaturthi 8:11 AM Fri",
+    "nakshatra": "Mula 4:45 AM"
+  },
+  {
+    "id": "nov-14-kalyanam",
+    "date": "2026-11-14",
+    "title": "Sri Venkateswara Kalyanam",
+    "time": "11:00 AM",
+    "type": "kalyanam",
+    "tithi": "Panchami 10:52 AM",
+    "nakshatra": "Purvashadha 7:52 AM"
+  },
+  {
+    "id": "nov-14-vishvaksena",
+    "date": "2026-11-14",
+    "title": "Sri Vishvaksena Jayanti",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Panchami 10:52 AM",
+    "nakshatra": "Purvashadha 7:52 AM"
+  },
+  {
+    "id": "nov-14-skanda",
+    "date": "2026-11-14",
+    "title": "Sri Skanda Shashti",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Panchami 10:52 AM",
+    "nakshatra": "Purvashadha 7:52 AM"
+  },
+  {
+    "id": "nov-15-saibaba",
+    "date": "2026-11-15",
+    "title": "Sri Shirdi Sai Baba / Raghavendra Swamy Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Shashti 1:30 PM",
+    "nakshatra": "Uttarashadha 10:47 AM"
+  },
+  {
+    "id": "nov-16-kartika-somavara",
+    "date": "2026-11-16",
+    "title": "Kartika Somavara Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Saptami 3:51 PM",
+    "nakshatra": "Sravana 1:47 PM"
+  },
+  {
+    "id": "nov-20-andal",
+    "date": "2026-11-20",
+    "title": "Sri Andal Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Ekadasi 6:03 PM",
+    "nakshatra": "Uttarabhadra 6:21 PM"
+  },
+  {
+    "id": "nov-21-mahalakshmi",
+    "date": "2026-11-21",
+    "title": "Sri Mahalakshmi Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwadasi 4:28 PM",
+    "nakshatra": "Revathi 5:16 PM"
+  },
+  {
+    "id": "nov-21-tulasi",
+    "date": "2026-11-21",
+    "title": "Sri Tulasi Kalyanam",
+    "time": "All Day",
+    "type": "kalyanam",
+    "tithi": "Dwadasi 4:28 PM",
+    "nakshatra": "Revathi 5:16 PM"
+  },
+  {
+    "id": "nov-22-kartika-somavara",
+    "date": "2026-11-22",
+    "title": "Kartika Somavara Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturdasi 11:15 AM",
+    "nakshatra": "Bharani 1:34 PM"
+  },
+  {
+    "id": "nov-22-venkateswara-abhishekam",
+    "date": "2026-11-22",
+    "title": "Sri Venkateswara Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturdasi 11:15 AM",
+    "nakshatra": "Bharani 1:34 PM"
+  },
+  {
+    "id": "nov-23-purnima",
+    "date": "2026-11-23",
+    "title": "Kartika Purnima / Kartika Deepam",
+    "time": "7:58 AM",
+    "type": "panchang",
+    "tithi": "Purnima 7:58 AM, Prathama afterwards",
+    "nakshatra": "Krittika 10:51 AM",
+    "moonPhase": "full"
+  },
+  {
+    "id": "nov-23-satyanarayana",
+    "date": "2026-11-23",
+    "title": "Sri Satyanarayana Swamy Pooja & Vratham",
+    "time": "10:00 AM",
+    "type": "pooja",
+    "tithi": "Purnima 7:58 AM, Prathama afterwards",
+    "nakshatra": "Krittika 10:51 AM"
+  },
+  {
+    "id": "nov-23-sudarsana",
+    "date": "2026-11-23",
+    "title": "Sri Sudarsana/Narasimha Homam & Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Purnima 7:58 AM, Prathama afterwards",
+    "nakshatra": "Krittika 10:51 AM"
+  },
+  {
+    "id": "nov-24-kartika-krishna",
+    "date": "2026-11-24",
+    "title": "Kartika Maasa Krishna Paksham starts",
+    "time": "All Day",
+    "type": "panchang",
+    "tithi": "Dwitiya 12:53 AM Thu",
+    "nakshatra": "Rohini 8:12 AM, Mrigasira afterwards"
+  },
+  {
+    "id": "nov-26-thanksgiving",
+    "date": "2026-11-26",
+    "title": "Thanksgiving Day",
+    "time": "All Day",
+    "type": "holiday",
+    "tithi": "Tritiya 9:26 PM",
+    "nakshatra": "Arudra 2:36 AM Fri"
+  },
+  {
+    "id": "nov-28-hanuman",
+    "date": "2026-11-28",
+    "title": "Sri Hanuman Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Panchami 3:30 PM",
+    "nakshatra": "Pushyami 10:30 PM"
+  },
+  {
+    "id": "nov-29-kartika-somavara",
+    "date": "2026-11-29",
+    "title": "Kartika Somavara Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Shashti 1:16 PM",
+    "nakshatra": "Aslesha 9:01 PM"
+  },
+  {
+    "id": "nov-30-kartika-somavara",
+    "date": "2026-11-30",
+    "title": "Kartika Somavara Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Saptami 11:39 AM",
+    "nakshatra": "Magha 8:26 PM"
+  }
+]

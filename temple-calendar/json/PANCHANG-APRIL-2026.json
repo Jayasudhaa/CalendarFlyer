@@ -1,0 +1,214 @@
+[
+  {
+    "id": "panchang-apr-01",
+    "date": "2026-04-01",
+    "type": "panchang",
+    "tithi": "Purnima 7:13 PM",
+    "nakshatra": "Hasta 5:09 AM Thu",
+    "moonPhase": "full"
+  },
+  {
+    "id": "panchang-apr-02",
+    "date": "2026-04-02",
+    "type": "panchang",
+    "tithi": "Prathama 8:10 PM",
+    "nakshatra": "Chitta 7:19 AM Fri"
+  },
+  {
+    "id": "panchang-apr-03",
+    "date": "2026-04-03",
+    "type": "panchang",
+    "tithi": "Dwitiya 9:15 PM",
+    "nakshatra": "Swathi 10:03 AM Sat"
+  },
+  {
+    "id": "panchang-apr-04",
+    "date": "2026-04-04",
+    "type": "panchang",
+    "tithi": "Tritiya 10:21 PM",
+    "nakshatra": "Visakha 1:14 PM Sun"
+  },
+  {
+    "id": "panchang-apr-05",
+    "date": "2026-04-05",
+    "type": "panchang",
+    "tithi": "Chaturthi 1:41 AM Mon",
+    "nakshatra": "Visakha 11:37 AM"
+  },
+  {
+    "id": "panchang-apr-06",
+    "date": "2026-04-06",
+    "type": "panchang",
+    "tithi": "Panchami 12:18 AM Tue",
+    "nakshatra": "Anuradha 4:45 PM"
+  },
+  {
+    "id": "panchang-apr-07",
+    "date": "2026-04-07",
+    "type": "panchang",
+    "tithi": "Shashti 1:40 AM Wed",
+    "nakshatra": "Jyeshta 7:57 PM"
+  },
+  {
+    "id": "panchang-apr-08",
+    "date": "2026-04-08",
+    "type": "panchang",
+    "tithi": "Saptami 3:35 AM Thu",
+    "nakshatra": "Mula 10:50 PM"
+  },
+  {
+    "id": "panchang-apr-09",
+    "date": "2026-04-09",
+    "type": "panchang",
+    "tithi": "Ashtami 5:56 AM Fri",
+    "nakshatra": "Purvashadha 1:14 AM Sat"
+  },
+  {
+    "id": "panchang-apr-10",
+    "date": "2026-04-10",
+    "type": "panchang",
+    "tithi": "Navami 8:30 AM Sat",
+    "nakshatra": "Uttarashadha 3:15 AM Sun"
+  },
+  {
+    "id": "panchang-apr-11",
+    "date": "2026-04-11",
+    "type": "panchang",
+    "tithi": "Navami 12:08 PM",
+    "nakshatra": "Sravana 2:44 AM Sun"
+  },
+  {
+    "id": "panchang-apr-12",
+    "date": "2026-04-12",
+    "type": "panchang",
+    "tithi": "Dasami 12:50 PM",
+    "nakshatra": "Dhanishta 3:35 AM Mon"
+  },
+  {
+    "id": "panchang-apr-13",
+    "date": "2026-04-13",
+    "type": "panchang",
+    "tithi": "Ekadasi 2:34 PM",
+    "nakshatra": "Satabhisha 3:43 AM Tue"
+  },
+  {
+    "id": "panchang-apr-14",
+    "date": "2026-04-14",
+    "type": "panchang",
+    "tithi": "Trayodasi 10:03 AM",
+    "nakshatra": "Uttarabhadra 1:28 AM Thu"
+  },
+  {
+    "id": "panchang-apr-15",
+    "date": "2026-04-15",
+    "type": "panchang",
+    "tithi": "Chaturdasi 4:18 AM Thu",
+    "nakshatra": "Purvabhadra 3:12 AM Wed"
+  },
+  {
+    "id": "panchang-apr-16",
+    "date": "2026-04-16",
+    "type": "panchang",
+    "tithi": "Chaturdasi 4:42 AM, Amavasya afterwards",
+    "nakshatra": "Revathi 11:22 PM"
+  },
+  {
+    "id": "panchang-apr-17",
+    "date": "2026-04-17",
+    "type": "panchang",
+    "tithi": "Prathama 1:41 AM Sat",
+    "nakshatra": "Aswini 9:11 PM",
+    "moonPhase": "new"
+  },
+  {
+    "id": "panchang-apr-18",
+    "date": "2026-04-18",
+    "type": "panchang",
+    "tithi": "Dwitiya 10:21 PM",
+    "nakshatra": "Bharani 6:39 PM"
+  },
+  {
+    "id": "panchang-apr-19",
+    "date": "2026-04-19",
+    "type": "panchang",
+    "tithi": "Tritiya 7:00 PM, also 11:32 PM",
+    "nakshatra": "Krittika 3:58 PM"
+  },
+  {
+    "id": "panchang-apr-20",
+    "date": "2026-04-20",
+    "type": "panchang",
+    "tithi": "Chaturthi 6:41 PM",
+    "nakshatra": "Rohini 1:13 PM"
+  },
+  {
+    "id": "panchang-apr-21",
+    "date": "2026-04-21",
+    "type": "panchang",
+    "tithi": "Panchami 12:54 PM",
+    "nakshatra": "Mrigasira 11:31 AM"
+  },
+  {
+    "id": "panchang-apr-22",
+    "date": "2026-04-22",
+    "type": "panchang",
+    "tithi": "Shashti 10:23 AM",
+    "nakshatra": "Arudra 9:37 AM"
+  },
+  {
+    "id": "panchang-apr-23",
+    "date": "2026-04-23",
+    "type": "panchang",
+    "tithi": "Saptami 7:58 AM",
+    "nakshatra": "Punarvasu 8:25 AM"
+  },
+  {
+    "id": "panchang-apr-24",
+    "date": "2026-04-24",
+    "type": "panchang",
+    "tithi": "Ashtami 5:58 AM",
+    "nakshatra": "Pushyami 7:57 AM"
+  },
+  {
+    "id": "panchang-apr-25",
+    "date": "2026-04-25",
+    "type": "panchang",
+    "tithi": "Navami 6:00 AM, Dasami afterwards",
+    "nakshatra": "Aslesha 7:26 AM"
+  },
+  {
+    "id": "panchang-apr-26",
+    "date": "2026-04-26",
+    "type": "panchang",
+    "tithi": "Ekadasi 5:48 AM Mon",
+    "nakshatra": "Magha 7:57 AM"
+  },
+  {
+    "id": "panchang-apr-27",
+    "date": "2026-04-27",
+    "type": "panchang",
+    "tithi": "Dwadasi 5:48 AM Tue",
+    "nakshatra": "Purvaphalguni 9:23 AM"
+  },
+  {
+    "id": "panchang-apr-28",
+    "date": "2026-04-28",
+    "type": "panchang",
+    "tithi": "Trayodasi 6:34 AM Wed",
+    "nakshatra": "Uttaraphalguni 11:30 AM"
+  },
+  {
+    "id": "panchang-apr-29",
+    "date": "2026-04-29",
+    "type": "panchang",
+    "tithi": "Chaturdasi 7:48 AM Thu",
+    "nakshatra": "Hasta 2:12 PM"
+  },
+  {
+    "id": "panchang-apr-30",
+    "date": "2026-04-30",
+    "type": "panchang",
+    "tithi": "Chaturdasi 8:46 AM",
+    "nakshatra": "Chitta 1:48 PM"
+  }
+]
