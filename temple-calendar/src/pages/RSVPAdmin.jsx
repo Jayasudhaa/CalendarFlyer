@@ -5,7 +5,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || '';
 
 const decodeEventInfo = (eventId) => {
   try { return JSON.parse(atob(eventId)); } catch { return { title: 'Event', date: '' }; }
@@ -33,6 +33,7 @@ export default function RSVPAdmin() {
     setLoading(true); setError('');
     try {
       const res = await fetch(`${API}/api/rsvp/${eventId}`, {
+        credentials: 'include',
         headers: { 'x-admin-secret': secret },
       });
       if (res.status === 401) throw new Error('Invalid admin secret');
@@ -51,7 +52,9 @@ export default function RSVPAdmin() {
     if (!window.confirm(`Remove RSVP for ${name}?`)) return;
     setDeleting(rsvpId);
     await fetch(`${API}/api/rsvp/${eventId}/${rsvpId}`, {
-      method: 'DELETE', headers: { 'x-admin-secret': secret },
+      method: 'DELETE',
+      credentials: 'include',
+      headers: { 'x-admin-secret': secret },
     });
     setDeleting(null);
     fetchData();

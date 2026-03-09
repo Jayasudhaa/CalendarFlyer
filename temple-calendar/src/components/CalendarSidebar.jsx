@@ -91,24 +91,9 @@ export default function CalendarSidebar({ events = [], currentDate }) {
   return (
     <div style={{ width:'100%', fontFamily:"'Georgia', serif" }}>
 
-      {/* ── Header ── */}
-      <div style={{
-        background:'linear-gradient(135deg, #1e3a5f, #1e40af)',
-        borderRadius:'12px 12px 0 0', padding:'16px 18px',
-      }}>
-        <div style={{ fontSize:'1.2rem', color:'#93c5fd', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:4 }}>
-          Calendar Tools
-        </div>
-        <div style={{ fontSize:'1.2rem', fontWeight:'700', color:'white' }}>
-          Add to Your Calendar
-        </div>
-        <div style={{ fontSize:'1.4rem', color:'#bfdbfe', marginTop:2 }}>
-          Never miss a temple event
-        </div>
-      </div>
 
       {/* ── Tabs ── */}
-      <div style={{ display:'flex', borderBottom:'1px solid #dbeafe', background:'#eff6ff' }}>
+      <div style={{ display:'flex', borderBottom:'1px solid #dbeafe', background:'#eff6ff', borderRadius:'12px 12px 0 0' }}>
         {tabs.map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             style={{

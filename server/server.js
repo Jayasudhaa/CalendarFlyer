@@ -5,6 +5,7 @@
  */
 require('dotenv').config();
 const express = require('express');
+const session = require('express-session');
 const cors    = require('cors');
 const path    = require('path');
 
@@ -36,6 +37,42 @@ app.use(cors({
 app.options('*', cors());
 app.use(express.json({ limit: '25mb' }));
 
+app.use(session({
+  secret: process.env.ADMIN_SECRET || 'temple-calendar-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    sameSite: 'lax'
+  }
+}));
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body;
+  const validUsername = 'admin';
+  const validPassword = 'temple2026';
+  if (username === validUsername && password === validPassword) {
+    req.session.isAuthenticated = true;
+    req.session.user = { username, displayName: 'Temple Admin' };
+    console.log('[AUTH] Login successful:', username);
+    return res.json({ success: true, user: req.session.user });
+  }
+  console.log('[AUTH] Login failed:', username);
+  return res.status(401).json({ success: false, error: 'Invalid credentials' });
+});
+app.post('/api/auth/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) console.error('[AUTH] Logout error:', err);
+    res.json({ success: true });
+  });
+});
+app.get('/api/auth/status', (req, res) => {
+  if (req.session && req.session.isAuthenticated) {
+    return res.json({ authenticated: true, user: req.session.user });
+  }
+  return res.json({ authenticated: false });
+});
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api', require('./routes/generate-image'));
 app.use('/api', require('./routes/rsvp')); 

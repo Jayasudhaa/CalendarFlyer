@@ -1,6 +1,5 @@
 /**
- * App.jsx - Main Application Component
- * Clean, modular architecture
+ * App.jsx - COMPLETE with all fixes
  */
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -10,20 +9,20 @@ import { useEvents } from './hooks/useEvents';
 // Components
 import Header from './components/Header';
 import NewsFeed from './components/NewsFeed';
-import CalendarSidebar from './components/CalendarSidebar';
 import LoginModal from './components/LoginModal';
 import CalendarNavigation from './components/CalendarNavigation';
 import CalendarGrid from './components/CalendarGrid';
-import ImportantEvents from './components/ImportantEvents';
 import AdminDashboard from './AdminDashboard';
 import EditEventModal from './components/EditEventModal';
 import AddEventModal from './components/AddEventModal';
 import FlyerEditor from './components/FlyerEditor';
+import BroadcastModal from './components/FlyerEditor/modals/BroadcastModal';
 // RSVP Pages
 import RSVPPage  from './pages/RSVPPage';
 import RSVPAdmin from './pages/RSVPAdmin';
+import BroadcastPage from './pages/BroadcastPage';
 
-// ── Main Calendar App ─────────────────────────────────────────────────────────
+
 function AppContent() {
   const { isAuthenticated } = useAuth();
   const {
@@ -40,10 +39,12 @@ function AppContent() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [showAddEvent, setShowAddEvent] = useState(false);
+  const [showBroadcast, setShowBroadcast] = useState(false);
+  const [showBroadcastPage, setShowBroadcastPage] = useState(false);
+  const [showFlyerStudio, setShowFlyerStudio] = useState(false); // NEW
   const [editingEvent, setEditingEvent] = useState(null);
   const [flyerEvent, setFlyerEvent] = useState(null);
 
-  // Get events for current month
   const monthEvents = getEventsByMonth(
     currentDate.getFullYear(),
     currentDate.getMonth()
@@ -121,10 +122,11 @@ function AppContent() {
       <Header
         onShowLogin={() => setShowLoginModal(true)}
         onShowDashboard={() => setShowDashboard(!showDashboard)}
-        onShowAddEvent={() => setShowAddEvent(true)}
+        onShowBroadcast={() => setShowBroadcastPage(true)}
+        onShowFlyerStudio={() => setShowFlyerStudio(true)}
         events={events}
                   />
-      {/* FULL VIEWPORT — zero wasted space */}
+      
       <div style={{
         width:'100%', maxWidth:'100vw', boxSizing:'border-box',
         padding:'10px 8px 20px',
@@ -137,24 +139,23 @@ function AppContent() {
             events={events}
             onBulkImport={handleBulkImport}
             onClearAll={handleClearAll}
+              onShowAddEvent={() => setShowAddEvent(true)}
           />
           </div>
         )}
 
-        {/* ── 3-column FULL-WIDTH grid ── */}
         <div style={{
           display:'grid',
-          gridTemplateColumns: 'minmax(240px, 17%) 1fr minmax(200px, 16%)',
+          gridTemplateColumns: 'minmax(240px, 20%) 1fr',
           gap:'10px',
           alignItems:'start',
           width:'100%',
         }}>
 
-          {/* LEFT — News Feed */}
           <div style={{ position:'sticky', top:10, minWidth:0 }}>
             <NewsFeed events={monthEvents} currentDate={currentDate} />
           </div>
-          {/* CENTER — Calendar stretches to fill */}
+          
           <div style={{
             background:'white', borderRadius:14,
             boxShadow:'0 4px 20px rgba(0,0,0,0.07)',
@@ -173,14 +174,9 @@ function AppContent() {
             onCreateFlyer={setFlyerEvent}
             isAdmin={isAuthenticated()}
           />
-        </div>
 
-          {/* RIGHT — Calendar Tools */}
-          <div style={{ position:'sticky', top:10, minWidth:0 }}>
-            <CalendarSidebar events={monthEvents} currentDate={currentDate} />
           </div>
         </div>
-        <ImportantEvents events={monthEvents} />
       </div>
 
 
@@ -204,11 +200,19 @@ function AppContent() {
       {showLoginModal && (
         <LoginModal onClose={() => setShowLoginModal(false)} />
       )}
+      {showBroadcast && (
+        <BroadcastModal onClose={() => setShowBroadcast(false)} />
+      )}
+      {showBroadcastPage && (
+        <BroadcastPage onClose={() => setShowBroadcastPage(false)} />
+      )}
+      {showFlyerStudio && (
+        <FlyerEditor event={null} onClose={() => setShowFlyerStudio(false)} />
+      )}
     </div>
   );
 }
 
-// ── Admin RSVP Guard — only accessible when logged in ────────────────────────
 function AdminRSVPRoute() {
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated()) {
@@ -230,17 +234,14 @@ function AdminRSVPRoute() {
   }
   return <RSVPAdmin />;
 }
-// ── Root App with Router + AuthProvider ──────────────────────────────────────
+
 function App() {
   return (
     <BrowserRouter>
     <AuthProvider>
         <Routes>
-          {/* Public RSVP form — no login needed */}
           <Route path="/rsvp/:eventId" element={<RSVPPage />} />
-          {/* Admin RSVP dashboard — requires app login */}
           <Route path="/admin/rsvp/:eventId" element={<AdminRSVPRoute />} />
-          {/* Main calendar app — all existing routes */}
           <Route path="*" element={<AppContent />} />
         </Routes>
     </AuthProvider>

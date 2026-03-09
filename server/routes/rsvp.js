@@ -4,14 +4,6 @@
  *
  * Table: temple_rsvp
  * PK: eventId (string)  SK: rsvpId (string, uuid)
- *
- * Setup (one-time):
- *   aws dynamodb create-table \
- *     --table-name temple_rsvp \
- *     --attribute-definitions AttributeName=eventId,AttributeType=S AttributeName=rsvpId,AttributeType=S \
- *     --key-schema AttributeName=eventId,KeyType=HASH AttributeName=rsvpId,KeyType=RANGE \
- *     --billing-mode PAY_PER_REQUEST \
- *     --region us-east-1
  */
 
 const express   = require('express');
@@ -26,7 +18,7 @@ let dynamo = null;
 function getDynamo() {
   if (!dynamo) {
     dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({
-  region: process.env.AWS_REGION || 'us-east-1',
+      region: process.env.AWS_REGION || process.env.AWS_REGION_S3 || 'us-east-2',
   // Credentials auto-loaded from env: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
 }));
   }
@@ -37,11 +29,11 @@ function getDynamo() {
 router.post('/rsvp', async (req, res) => {
   const { eventId, name, count, meal } = req.body;
 
-  if (!eventId || !name || !count) {
+  if (!eventId || !name || count === undefined || count === null) {
     return res.status(400).json({ error: 'eventId, name and count are required' });
   }
-  if (isNaN(count) || +count < 1 || +count > 20) {
-    return res.status(400).json({ error: 'count must be between 1 and 20' });
+  if (isNaN(count) || +count < 0 || +count > 20) {
+    return res.status(400).json({ error: 'count must be between 0 and 20' });
   }
 
   const item = {
@@ -53,14 +45,21 @@ router.post('/rsvp', async (req, res) => {
     createdAt: new Date().toISOString(),
   };
 
+  try {
   await getDynamo().send(new PutCommand({ TableName: TABLE, Item: item }));
   return res.status(201).json({ success: true, rsvpId: item.rsvpId });
+  } catch (err) {
+    console.error('[RSVP] DynamoDB PutCommand error:', err);
+    return res.status(500).json({ error: 'Failed to save RSVP', details: err.message });
+  }
 });
 
 // ── GET /api/rsvp/:eventId  — fetch all RSVPs for an event (admin) ───────────
 router.get('/rsvp/:eventId', adminGuard, async (req, res) => {
   const { eventId } = req.params;
+  console.log('[RSVP] Fetching RSVPs for eventId:', eventId);
 
+  try {
   const result = await getDynamo().send(new QueryCommand({
     TableName:                TABLE,
     KeyConditionExpression:   'eventId = :eid',
@@ -84,23 +83,40 @@ router.get('/rsvp/:eventId', adminGuard, async (req, res) => {
     return acc;
   }, {});
 
+    console.log('[RSVP] Found', items.length, 'RSVPs,', totalCount, 'guests');
   return res.json({ items, totalCount, mealBreakdown, timeline });
+  } catch (err) {
+    console.error('[RSVP] DynamoDB QueryCommand error:', err);
+    return res.status(500).json({ error: 'Failed to fetch RSVPs', details: err.message });
+  }
 });
 
 // ── DELETE /api/rsvp/:eventId/:rsvpId  — remove one RSVP (admin) ─────────────
 router.delete('/rsvp/:eventId/:rsvpId', adminGuard, async (req, res) => {
   const { eventId, rsvpId } = req.params;
+  try {
   await getDynamo().send(new DeleteCommand({ TableName: TABLE, Key: { eventId, rsvpId } }));
+    console.log('[RSVP] Deleted RSVP:', rsvpId);
   return res.json({ success: true });
+  } catch (err) {
+    console.error('[RSVP] DynamoDB DeleteCommand error:', err);
+    return res.status(500).json({ error: 'Failed to delete RSVP', details: err.message });
+  }
 });
 
 // ── Simple admin guard ────────────────────────────────────────────────────────
 function adminGuard(req, res, next) {
+  if (req.session && req.session.isAuthenticated) {
+    return next();
+  }
   const secret = process.env.ADMIN_SECRET;
-  if (!secret) return next(); // no secret set → open (dev mode)
+  if (secret) {
   const provided = req.headers['x-admin-secret'] || req.query.secret;
-  if (provided !== secret) return res.status(401).json({ error: 'Unauthorized' });
+    if (provided === secret) {
   return next();
+    }
+  }
+  return res.status(401).json({ error: 'Unauthorized - Admin login required' });
 }
 
 module.exports = router;

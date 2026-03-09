@@ -7,6 +7,10 @@ Remove-Item -Path "..\server\dist-frontend" -Recurse -Force
 New-Item -ItemType Directory -Path "..\server\dist-frontend"
 Copy-Item -Path "dist\*" -Destination "..\server\dist-frontend\" -Recurse -Force
 
+Remove-Item -Path "..\server\dist-frontend" -Recurse -Force -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Path "..\server\dist-frontend" -Force
+Copy-Item -Path "dist\*" -Destination "..\server\dist-frontend\" -Recurse -Force
+
 # Step 3: Build and push Docker
 cd C:\My_Projects\temple-calendar-complete\server
 docker build --platform linux/amd64 -t temple-calendar-server .

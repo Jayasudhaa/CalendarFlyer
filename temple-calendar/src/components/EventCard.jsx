@@ -1,57 +1,143 @@
 /**
- * EventCard Component
- * Displays individual event with type-based styling
+ * EventCard - CLEANER with compact icon row
  */
 
 import React from 'react';
-import { Edit, Trash2, FileImage } from 'lucide-react';
+import { openGoogleCalendar } from '../utils/gcalUtils';
 
 const EventCard = ({ event, onEdit, onDelete, onCreateFlyer, isAdmin }) => {
   const typeColors = {
-    pooja: 'bg-orange-100 border-orange-300',
-    festival: 'bg-purple-300 border-purple-300',
-    holiday: 'bg-blue-100 border-blue-300',
-    kalyanam: 'bg-pink-200 border-pink-200',
-    abhishekam: 'bg-green-200 border-green-200',
-    panchang: 'bg-amber-100 border-amber-400'
+    festival: { bg: '#fef3c7', text: '#78350f', border: '#fbbf24' },
+    pooja: { bg: '#fce7f3', text: '#831843', border: '#f472b6' },
+    abhishekam: { bg: '#dbeafe', text: '#1e40af', border: '#60a5fa' },
+    jayanti: { bg: '#e0e7ff', text: '#3730a3', border: '#818cf8' },
+    special: { bg: '#dcfce7', text: '#14532d', border: '#4ade80' },
   };
 
+  const style = typeColors[event.type] || typeColors.special;
   return (
-    <div className={`p-2 mb-2 rounded border-l-4 ${typeColors[event.type] || 'bg-gray-100 border-gray-300'}`}>
-      <div className="flex justify-between items-start">
-        <div className="flex-1">
-          <div style={{ fontFamily:"'Georgia',serif", fontWeight:"600", fontSize:"0.9rem", lineHeight:"1.35" }}>{event.title}</div>
-          {event.time && <div style={{ fontFamily:"'Georgia',serif", fontSize:"0.8rem", color:"#4b5563" }}>{event.time}</div>}
-          {event.tithi && <div style={{ fontFamily:"'Georgia',serif", fontSize:"0.8rem", color:"#6b7280" }}>T: {event.tithi}</div>}
-          {event.nakshatra && <div style={{ fontFamily:"'Georgia',serif", fontSize:"0.8rem", color:"#6b7280" }}>N: {event.nakshatra}</div>}
-        </div>
+    <div style={{
+      backgroundColor: style.bg,
+      borderLeft: `4px solid ${style.border}`,
+      borderRadius: '6px',
+      padding: '8px 10px',
+      fontSize: '0.75rem',
+      lineHeight: '1.3',
+      color: style.text,
+      position: 'relative',
+      transition: 'all 0.2s',
+    }}>
+      {/* Event Title & Type */}
+      <div style={{ fontWeight: '700', marginBottom: '4px', paddingRight: isAdmin ? '0' : '0' }}>
+            {event.title}
+          </div>
+      {/* Time */}
+          {event.time && (
+        <div style={{ fontSize: '0.7rem', opacity: 0.8, marginBottom: '4px' }}>
+          🕐 {event.time}
+            </div>
+          )}
 
+      {/* Tithi & Nakshatra (compact) */}
+      {(event.tithi || event.nakshatra) && (
+        <div style={{ fontSize: '0.65rem', opacity: 0.75, marginBottom: isAdmin ? '6px' : '0' }}>
+          {event.tithi && <span>T: {event.tithi}</span>}
+          {event.tithi && event.nakshatra && <span> • </span>}
+          {event.nakshatra && <span>N: {event.nakshatra}</span>}
+            </div>
+          )}
+
+      {/* Admin Action Icons - COMPACT ROW */}
         {isAdmin && (
-          <div className="flex gap-1 ml-2">
+          <div style={{ 
+            display: 'flex', 
+            gap: '6px',
+          marginTop: '8px',
+          paddingTop: '6px',
+          borderTop: `1px solid ${style.border}30`
+          }}>
+            {/* Google Calendar */}
             <button
-              onClick={() => onCreateFlyer && onCreateFlyer(event)}
-              className="p-1 hover:bg-purple-200 rounded transition-colors"
-              title="Create flyer"
+            onClick={(e) => { e.stopPropagation(); openGoogleCalendar(event); }}
+              style={{
+              padding: '4px 8px',
+              fontSize: '0.7rem',
+              backgroundColor: '#10b981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+              gap: '3px'
+              }}
+            title="Add to Google Calendar"
             >
-              <FileImage className="w-4 h-4 text-purple-600" />
+            📅 GCal
             </button>
+            {/* Flyer */}
             <button
-              onClick={() => onEdit(event)}
-              className="p-1 hover:bg-blue-200 rounded transition-colors"
-              title="Edit event"
+            onClick={(e) => { e.stopPropagation(); onCreateFlyer(event); }}
+              style={{
+              padding: '4px 8px',
+              fontSize: '0.7rem',
+              backgroundColor: '#8b5cf6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+              gap: '3px'
+              }}
+            title="Create Flyer"
             >
-              <Edit className="w-4 h-4 text-blue-600" />
+            🎨 Flyer
             </button>
+            {/* Edit */}
             <button
-              onClick={() => onDelete(event.id)}
-              className="p-1 hover:bg-red-200 rounded transition-colors"
-              title="Delete event"
+            onClick={(e) => { e.stopPropagation(); onEdit(event); }}
+              style={{
+              padding: '4px 8px',
+              fontSize: '0.7rem',
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+              gap: '3px'
+              }}
+            title="Edit Event"
             >
-              <Trash2 className="w-4 h-4 text-red-600" />
+            ✏️ Edit
+            </button>
+            {/* Delete */}
+            <button
+            onClick={(e) => { e.stopPropagation(); onDelete(event.id); }}
+              style={{
+              padding: '4px 8px',
+              fontSize: '0.7rem',
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+              gap: '3px'
+              }}
+            title="Delete Event"
+            >
+            🗑️ Del
             </button>
           </div>
         )}
-      </div>
     </div>
   );
 };

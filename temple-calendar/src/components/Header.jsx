@@ -1,14 +1,13 @@
 /**
- * Header Component
- * Temple information and authentication controls
+ * Header Component - UPDATED with Flyer Studio button
  */
 
 import React, { useState } from 'react';
-import { Calendar, Lock, LogOut, Unlock, BarChart, Plus, TrendingUp, X } from 'lucide-react';
+import { Calendar, Lock, LogOut, Unlock, BarChart, TrendingUp, Send, Palette } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getAdminUrl, encodeEventId } from '../utils/rsvpUrl';
+import { getAdminUrl } from '../utils/rsvpUrl';
 
-const Header = ({ onShowLogin, onShowDashboard, onShowAddEvent, events = [] }) => {
+const Header = ({ onShowLogin, onShowDashboard, onShowBroadcast, onShowFlyerStudio, events = [] }) => {
   const { user, logout, isAuthenticated } = useAuth();
   const [showEventPicker, setShowEventPicker] = useState(false);
   const [search, setSearch] = useState('');
@@ -16,10 +15,8 @@ const Header = ({ onShowLogin, onShowDashboard, onShowAddEvent, events = [] }) =
   const templeInfo = {
     name: "Sri Venkateswara Swamy Temple of Colorado",
     address: "1495 South Ridge Road, Castle Rock, CO 80104",
-    website: "www.svtempleco.org",
     phone: "303 660 9555",
-    manager: "303 898 5514",
-    email: "manager@svtempleco.org"
+    manager: "303 898 5514"
   };
 
   const handleLogout = () => {
@@ -38,7 +35,6 @@ const Header = ({ onShowLogin, onShowDashboard, onShowAddEvent, events = [] }) =
     .filter(e => e.title?.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  // Group by month
   const groupedByMonth = filteredEvents.reduce((acc, event) => {
     const d = new Date(event.date + 'T12:00:00');
     const key = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -94,7 +90,7 @@ const Header = ({ onShowLogin, onShowDashboard, onShowAddEvent, events = [] }) =
                   </div>
                 </div>
 
-                {/* Admin Actions */}
+                {/* Admin Actions - UPDATED: 4 buttons only */}
                 <div className="flex gap-2 flex-wrap justify-end">
                   <button
                     onClick={onShowDashboard}
@@ -103,21 +99,31 @@ const Header = ({ onShowLogin, onShowDashboard, onShowAddEvent, events = [] }) =
                     <BarChart className="w-4 h-4" />
                     Dashboard
                   </button>
-                  {/* RSVP Analytics button */}
+                  
                   <button
-                    onClick={() => setShowEventPicker(true)}
+                    onClick={onShowBroadcast}
+                    className="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 flex items-center gap-2 font-medium transition-all"
+                    style={{ boxShadow: '0 2px 8px rgba(34,197,94,0.25)' }}
+                  >
+                    <Send className="w-4 h-4" />
+                    Broadcast
+                  </button>
+                  {/* NEW: Flyer Studio Button */}
+                  <button
+                    onClick={onShowFlyerStudio}
                     className="bg-white text-purple-600 px-4 py-2 rounded-lg hover:bg-purple-50 flex items-center gap-2 font-medium transition-all"
                     style={{ boxShadow: '0 2px 8px rgba(124,58,237,0.25)' }}
                   >
-                    <TrendingUp className="w-4 h-4" />
-                    RSVP Analytics
+                    <Palette className="w-4 h-4" />
+                    Flyer Studio
                   </button>
                   <button
-                    onClick={onShowAddEvent}
-                    className="bg-white text-orange-600 px-4 py-2 rounded-lg hover:bg-orange-50 flex items-center gap-2 font-medium transition-all"
+                    onClick={() => setShowEventPicker(true)}
+                    className="bg-white text-cyan-600 px-4 py-2 rounded-lg hover:bg-cyan-50 flex items-center gap-2 font-medium transition-all"
+                    style={{ boxShadow: '0 2px 8px rgba(6,182,212,0.25)' }}
                   >
-                    <Plus className="w-4 h-4" />
-                    Add Event
+                    <TrendingUp className="w-4 h-4" />
+                    RSVP Analytics
                   </button>
                   <button
                     onClick={handleLogout}
@@ -132,7 +138,7 @@ const Header = ({ onShowLogin, onShowDashboard, onShowAddEvent, events = [] }) =
           </div>
         </div>
       </div>
-      {/* ── Event picker modal ── */}
+      {/* Event picker modal - same as before */}
       {showEventPicker && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 99999,
@@ -145,11 +151,10 @@ const Header = ({ onShowLogin, onShowDashboard, onShowAddEvent, events = [] }) =
             boxShadow: '0 24px 60px rgba(0,0,0,0.25)',
             overflow: 'hidden',
           }} onClick={e => e.stopPropagation()}>
-            {/* Modal header */}
             <div style={{
               padding: '18px 20px', borderBottom: '1px solid #f3f4f6',
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              background: 'linear-gradient(135deg,#7c3aed,#6366f1)',
+              background: 'linear-gradient(135deg,#0891b2,#06b6d4)',
             }}>
               <div>
                 <div style={{ color: 'white', fontWeight: '700', fontSize: '1rem' }}>📊 RSVP Analytics</div>
@@ -163,7 +168,6 @@ const Header = ({ onShowLogin, onShowDashboard, onShowAddEvent, events = [] }) =
                 ✕
               </button>
             </div>
-            {/* Search */}
             <div style={{ padding: '12px 16px', borderBottom: '1px solid #f3f4f6' }}>
               <input
                 autoFocus
@@ -177,7 +181,6 @@ const Header = ({ onShowLogin, onShowDashboard, onShowAddEvent, events = [] }) =
                 }}
               />
             </div>
-            {/* Event list */}
             <div style={{ maxHeight: 340, overflowY: 'auto' }}>
               {filteredEvents.length === 0 ? (
                 <div style={{ padding: 32, textAlign: 'center', color: '#9ca3af', fontSize: '0.85rem' }}>
@@ -185,18 +188,16 @@ const Header = ({ onShowLogin, onShowDashboard, onShowAddEvent, events = [] }) =
                 </div>
               ) : Object.entries(groupedByMonth).map(([month, monthEvents]) => (
                 <div key={month}>
-                  {/* Month header */}
                   <div style={{
-                    padding: '8px 16px', background: '#f5f3ff',
-                    borderBottom: '1px solid #ede9fe', borderTop: '1px solid #ede9fe',
-                    fontSize: '0.7rem', fontWeight: '700', color: '#7c3aed',
+                    padding: '8px 16px', background: '#f0fdfa',
+                    borderBottom: '1px solid #ccfbf1', borderTop: '1px solid #ccfbf1',
+                    fontSize: '0.7rem', fontWeight: '700', color: '#0891b2',
                     textTransform: 'uppercase', letterSpacing: '0.08em',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   }}>
                     <span>📅 {month}</span>
-                    <span style={{ fontWeight: '400', color: '#a78bfa' }}>{monthEvents.length} event{monthEvents.length !== 1 ? 's' : ''}</span>
+                    <span style={{ fontWeight: '400', color: '#22d3ee' }}>{monthEvents.length} event{monthEvents.length !== 1 ? 's' : ''}</span>
                   </div>
-                  {/* Events in this month */}
                   {monthEvents.map(event => (
                 <button key={event.id} onClick={() => openAnalytics(event)}
                   style={{
@@ -205,7 +206,7 @@ const Header = ({ onShowLogin, onShowDashboard, onShowAddEvent, events = [] }) =
                     cursor: 'pointer', display: 'flex', justifyContent: 'space-between',
                     alignItems: 'center', transition: 'background 0.1s',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#faf5ff'}
+                      onMouseEnter={e => e.currentTarget.style.background = '#f0fdfa'}
                   onMouseLeave={e => e.currentTarget.style.background = 'white'}>
                   <div>
                         <div style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111827' }}>
@@ -216,8 +217,8 @@ const Header = ({ onShowLogin, onShowDashboard, onShowAddEvent, events = [] }) =
                           {event.time ? ` · ${event.time}` : ''}
                     </div>
                   </div>
-                      <div style={{ fontSize: '0.7rem', color: '#7c3aed', fontWeight: '600',
-                        background: '#f5f3ff', padding: '4px 10px', borderRadius: 20, flexShrink: 0 }}>
+                      <div style={{ fontSize: '0.7rem', color: '#0891b2', fontWeight: '600',
+                        background: '#f0fdfa', padding: '4px 10px', borderRadius: 20, flexShrink: 0 }}>
                     View →
                   </div>
                 </button>

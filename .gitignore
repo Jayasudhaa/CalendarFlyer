@@ -36,3 +36,6 @@ server/apprunner-config.json
 apprunner-config.json
 instance-config.json
 *-config.json
+
+# Ignore zip archives
+*.zip

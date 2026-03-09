@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { BarChart, Calendar, Download, Upload, Users, Settings } from 'lucide-react';
+import { BarChart, Calendar, Download, Upload, Users, Settings, Plus } from 'lucide-react';
 
-function AdminDashboard({ events, onBulkImport, onClearAll }) {
+function AdminDashboard({ events, onBulkImport, onClearAll, onShowAddEvent }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [importData, setImportData] = useState('');
 
@@ -23,43 +23,30 @@ function AdminDashboard({ events, onBulkImport, onClearAll }) {
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      console.log('[AdminDashboard] File selected:', file.name, file.size, 'bytes');
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const text = e.target.result;
-          console.log('[AdminDashboard] File read, length:', text?.length || 0);
           const json = JSON.parse(text);
-          console.log('[AdminDashboard] JSON parsed successfully:', Array.isArray(json) ? json.length : 'not array', 'events');
           setImportData(JSON.stringify(json, null, 2));
         } catch (error) {
-          console.error('[AdminDashboard] JSON parse error:', error);
           alert('❌ Invalid JSON file\n\n' + error.message);
         }
-      };
-      reader.onerror = (e) => {
-        console.error('[AdminDashboard] File read error:', e);
-        alert('❌ Error reading file');
       };
       reader.readAsText(file);
     }
   };
 
   const handleBulkImport = () => {
-    console.log('[AdminDashboard] Starting bulk import, data length:', importData?.length || 0);
     try {
       const eventsToImport = JSON.parse(importData);
-      console.log('[AdminDashboard] Parsed events:', Array.isArray(eventsToImport) ? eventsToImport.length : 'not array');
       if (Array.isArray(eventsToImport)) {
-        console.log('[AdminDashboard] Calling onBulkImport with', eventsToImport.length, 'events');
         onBulkImport(eventsToImport);
         setImportData('');
-        // Success message shown by App.jsx with year protection info
       } else {
         alert('❌ Data must be an array of events.\n\nExpected format: [{"id":"...","date":"2026-01-01",...}]');
       }
     } catch (error) {
-      console.error('[AdminDashboard] Bulk import error:', error);
       alert('❌ Error parsing JSON:\n\n' + error.message + '\n\nMake sure the file is valid JSON.');
     }
   };
@@ -107,6 +94,17 @@ function AdminDashboard({ events, onBulkImport, onClearAll }) {
       {/* Overview Tab */}
       {activeTab === 'overview' && (
         <div>
+          {/* ADD EVENT BUTTON - NEW */}
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold text-gray-800">Statistics</h3>
+            <button
+              onClick={onShowAddEvent}
+              className="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 flex items-center gap-2 font-semibold shadow-lg transition-all hover:shadow-xl"
+            >
+              <Plus className="w-5 h-5" />
+              Add New Event
+            </button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="text-3xl font-bold text-blue-600">{stats.totalEvents}</div>
@@ -246,42 +244,7 @@ function AdminDashboard({ events, onBulkImport, onClearAll }) {
           </div>
 
           <div className="border-t pt-6">
-            <h3 className="font-bold mb-3">Admin Password</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              Change the admin access password
-            </p>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium mb-1">Current Password</label>
-                <input
-                  type="password"
-                  placeholder="Enter current password"
-                  className="w-full border rounded px-3 py-2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">New Password</label>
-                <input
-                  type="password"
-                  placeholder="Enter new password"
-                  className="w-full border rounded px-3 py-2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Confirm New Password</label>
-                <input
-                  type="password"
-                  placeholder="Confirm new password"
-                  className="w-full border rounded px-3 py-2"
-                />
-              </div>
-              <button className="bg-orange-600 text-white px-6 py-2 rounded hover:bg-orange-700">
-                Update Password
-              </button>
-            </div>
-          </div>
 
-          <div className="border-t pt-6">
             <h3 className="font-bold mb-3 text-red-700">⚠️ Danger Zone</h3>
             <button 
               onClick={onClearAll}
