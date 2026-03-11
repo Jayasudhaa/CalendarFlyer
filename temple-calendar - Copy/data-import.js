@@ -1,0 +1,122 @@
+// Data Import Script for Temple Calendar
+// Run this script to import events from the PDF calendar into your cloud database
+
+const events2026 = [
+  // January 2026
+  { id: "jan-1", date: "2026-01-01", title: "New Year Day", time: "All Day", type: "holiday", tithi: "Trayodasi 9:52 AM", nakshatra: "Rohini 10:17 AM" },
+  { id: "jan-2", date: "2026-01-02", title: "Sri Satyanarayana Swamy Pooja & Vratham", time: "10:00 AM", type: "pooja", tithi: "Chaturdasi 6:25 AM", nakshatra: "Mrigasira 7:34 AM" },
+  { id: "jan-3", date: "2026-01-03", title: "Sri Siva Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Dwitiya 9:29 PM", nakshatra: "Pushyami 12:55 AM Mon" },
+  { id: "jan-10", date: "2026-01-10", title: "Sri Venkateswara Kalyanam", time: "11:00 AM", type: "kalyanam", tithi: "Ashtami 9:54 PM", nakshatra: "Chitta 5:44 AM Sun" },
+  { id: "jan-11", date: "2026-01-11", title: "Sri Vijaya Ganapathi / Murugan Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Navami 12:17 AM Mon", nakshatra: "Swathi 8:27 AM Mon" },
+  { id: "jan-13", date: "2026-01-13", title: "Bhogi", time: "All Day", type: "festival", tithi: "Dwadasi 7:45 AM Thu", nakshatra: "Anuradha 2:32 PM" },
+  { id: "jan-13-2", date: "2026-01-13", title: "Sri Goda (Andal) Kalyanam", time: "6:00 PM", type: "kalyanam", tithi: "Dwadasi 7:45 AM Thu", nakshatra: "Anuradha 2:32 PM" },
+  { id: "jan-14", date: "2026-01-14", title: "Makara Sankranti / Pongal", time: "All Day", type: "festival", tithi: "Dwadasi 7:45 AM", nakshatra: "Jyeshta 5:05 PM" },
+  { id: "jan-14-2", date: "2026-01-14", title: "Uttarayanam Begins", time: "All Day", type: "festival", tithi: "Dwadasi 7:45 AM", nakshatra: "Jyeshta 5:05 PM" },
+  { id: "jan-15", date: "2026-01-15", title: "Kanuma", time: "All Day", type: "festival", tithi: "Trayodasi 9:50 AM", nakshatra: "Mula 7:39 PM" },
+  { id: "jan-15-2", date: "2026-01-15", title: "Sri Andal Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Trayodasi 9:50 AM", nakshatra: "Mula 7:39 PM" },
+  { id: "jan-16", date: "2026-01-16", title: "Sri Mahalakshmi Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Chaturdasi 11:32 AM", nakshatra: "Purvashadha 9:41 PM" },
+  { id: "jan-17", date: "2026-01-17", title: "Sri Venkateswara Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Prathama 12:03 AM Sun", nakshatra: "Punarvasu 2:43 AM Sun" },
+  { id: "jan-18", date: "2026-01-18", title: "Sri Shirdi Sai Baba / Raghavendra Swamy Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Amavasya 12:50 PM", nakshatra: "Uttarashadha 11:10 PM" },
+  { id: "jan-23", date: "2026-01-23", title: "Vasanta Panchami", time: "All Day", type: "festival", tithi: "Panchami 1:15 PM", nakshatra: "Uttarabhadra 1:44 AM Sat" },
+  { id: "jan-24", date: "2026-01-24", title: "Sri Hanuman Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Shashti 12:10 PM", nakshatra: "Revathi 12:56 AM Sun" },
+  { id: "jan-25", date: "2026-01-25", title: "Sri Sudarsana/Narasimha Homam & Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Saptami 10:41 AM", nakshatra: "Aswini 12:02 AM Mon" },
+  { id: "jan-25-2", date: "2026-01-25", title: "Ratha Saptami", time: "All Day", type: "festival", tithi: "Saptami 10:41 AM", nakshatra: "Aswini 12:02 AM Mon" },
+  { id: "jan-28", date: "2026-01-28", title: "Bheeshma Ekadasi", time: "All Day", type: "festival", tithi: "Ekadasi 1:29 AM Thu", nakshatra: "Rohini 7:03 PM" },
+  { id: "jan-31", date: "2026-01-31", title: "Sri Satyanarayana Swamy Pooja & Vratham", time: "10:00 AM", type: "pooja", tithi: "Chaturdasi 5:24 PM", nakshatra: "Punarvasu 1:04 PM" },
+
+  // February 2026
+  { id: "feb-1", date: "2026-02-01", title: "Sri Siva Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Purnima 3:09 PM", nakshatra: "Pushyami 11:27 AM" },
+  { id: "feb-1-2", date: "2026-02-01", title: "Taipoosam", time: "All Day", type: "festival", tithi: "Purnima 3:09 PM", nakshatra: "Pushyami 11:27 AM" },
+  { id: "feb-8", date: "2026-02-08", title: "Sri Vijaya Ganapathi / Murugan Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Saptami 4:35 PM", nakshatra: "Swathi 4:24 PM" },
+  { id: "feb-14", date: "2026-02-14", title: "Sri Venkateswara Kalyanam", time: "11:00 AM", type: "kalyanam", tithi: "Trayodasi 4:35 AM Sun", nakshatra: "Uttarashadha 7:08 AM Sun" },
+  { id: "feb-14-2", date: "2026-02-14", title: "Sani Trayodasi", time: "All Day", type: "festival", tithi: "Trayodasi 4:35 AM Sun", nakshatra: "Uttarashadha 7:08 AM Sun" },
+  { id: "feb-15", date: "2026-02-15", title: "Sri Shirdi Sai Baba / Raghavendra Swamy Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Chaturdasi 5:06 AM Mon", nakshatra: "Uttarashadha 7:08 AM" },
+  { id: "feb-15-2", date: "2026-02-15", title: "Maha Sivaratri", time: "All Day", type: "festival", tithi: "Chaturdasi 5:06 AM Mon", nakshatra: "Uttarashadha 7:08 AM" },
+  { id: "feb-20", date: "2026-02-20", title: "Sri Andal Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Chaturthi 12:27 AM Sat", nakshatra: "Uttarabhadra 7:33 AM" },
+  { id: "feb-21", date: "2026-02-21", title: "Sri Mahalakshmi Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Panchami 10:37 PM", nakshatra: "Revathi 6:24 AM" },
+  { id: "feb-22", date: "2026-02-22", title: "Sri Venkateswara Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Shashti 2:28 PM", nakshatra: "Chitta 2:00 PM" },
+  { id: "feb-22-2", date: "2026-02-22", title: "Sri Sudarsana/Narasimha Homam & Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Shashti 8:38 PM", nakshatra: "Bharani 4:01 AM Mon" },
+  { id: "feb-27", date: "2026-02-27", title: "Sri Hanuman Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Dwadasi 8:19 AM", nakshatra: "Pushyami 8:07 PM" },
+  { id: "feb-28", date: "2026-02-28", title: "Sani Trayodasi", time: "All Day", type: "festival", tithi: "Trayodasi 6:42 AM", nakshatra: "Aslesha 7:13 PM" },
+
+  // March 2026
+  { id: "mar-1", date: "2026-03-01", title: "Sri Siva Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Trayodasi 6:42 AM", nakshatra: "Aslesha 7:13 PM" },
+  { id: "mar-2", date: "2026-03-02", title: "Sri Satyanarayana Swamy Pooja & Vratham", time: "10:00 AM", type: "pooja", tithi: "Purnima 4:37 AM Tue", nakshatra: "Magha 7:00 PM" },
+  { id: "mar-2-2", date: "2026-03-02", title: "Holi / Lunar Eclipse", time: "Evening", type: "festival", tithi: "Purnima 4:37 AM Tue", nakshatra: "Magha 7:00 PM" },
+  { id: "mar-2-3", date: "2026-03-02", title: "Sri Mahalakshmi Jayanti", time: "All Day", type: "festival", tithi: "Purnima 4:37 AM Tue", nakshatra: "Magha 7:00 PM" },
+  { id: "mar-8", date: "2026-03-08", title: "Sri Vijaya Ganapathi / Murugan Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Panchami 8:44 AM", nakshatra: "Visakha 3:41 AM Mon" },
+  { id: "mar-14", date: "2026-03-14", title: "Sri Venkateswara Kalyanam", time: "11:00 AM", type: "kalyanam", tithi: "Ekadasi 8:47 PM", nakshatra: "Uttarashadha 4:08 PM" },
+  { id: "mar-15", date: "2026-03-15", title: "Sri Shirdi Sai Baba / Raghavendra Swamy Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Dwadasi 9:14 PM", nakshatra: "Sravana 5:27 PM" },
+  { id: "mar-19", date: "2026-03-19", title: "Sri Parabhava Naama Samvatsara Ugadi", time: "All Day", type: "festival", tithi: "Prathama 4:22 PM", nakshatra: "Uttarabhadra 3:33 PM" },
+  { id: "mar-19-2", date: "2026-03-19", title: "Sri Varaha Jayanti", time: "All Day", type: "festival", tithi: "Prathama 4:22 PM", nakshatra: "Uttarabhadra 3:33 PM" },
+  { id: "mar-20", date: "2026-03-20", title: "Sri Andal Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Dwitiya 1:59 PM", nakshatra: "Revathi 1:46 PM" },
+  { id: "mar-21", date: "2026-03-21", title: "Sri Mahalakshmi Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Tritiya 11:24 AM", nakshatra: "Aswini 12:04 AM" },
+  { id: "mar-22", date: "2026-03-22", title: "Sri Venkateswara Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Chaturthi 6:50 AM", nakshatra: "Swathi 12:52 AM Sun" },
+  { id: "mar-22-2", date: "2026-03-22", title: "Sri Sudarsana/Narasimha Homam & Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Chaturthi 8:45 AM", nakshatra: "Bharani 10:09 AM" },
+  { id: "mar-26", date: "2026-03-26", title: "Sri Rama Navami", time: "All Day", type: "festival", tithi: "Dasami 8:22 PM", nakshatra: "Pushyami 2:24 AM Sat" },
+  { id: "mar-28", date: "2026-03-28", title: "Sri Sitarama Kalyanam", time: "6:00 PM", type: "kalyanam", tithi: "Dwadasi 6:43 PM", nakshatra: "Magha 2:19 AM Mon" },
+  { id: "mar-28-2", date: "2026-03-28", title: "Sri Hanuman Abhishekam", time: "10:00 AM", type: "abhishekam", tithi: "Dwadasi 6:43 PM", nakshatra: "Magha 2:19 AM Mon" },
+  { id: "mar-31", date: "2026-03-31", title: "Panguni Uttaram", time: "All Day", type: "festival", tithi: "Chaturdasi 6:38 PM", nakshatra: "Uttaraphalguni 3:38 AM Wed" },
+
+  // Add more months as needed...
+];
+
+// Function to import events to Firebase
+async function importToFirebase(events) {
+  const { initializeApp } = await import('firebase/app');
+  const { getDatabase, ref, set } = await import('firebase/database');
+  
+  const firebaseConfig = {
+    // Add your Firebase config here
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+    projectId: "YOUR_PROJECT"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  for (const event of events) {
+    await set(ref(db, `events/${event.id}`), event);
+    console.log(`Imported: ${event.title}`);
+  }
+
+  console.log('✅ All events imported successfully!');
+}
+
+// Function to export events as JSON
+function exportAsJSON(events) {
+  const json = JSON.stringify(events, null, 2);
+  console.log('Copy this JSON and save it:');
+  console.log(json);
+  
+  // If running in browser
+  if (typeof document !== 'undefined') {
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'temple-events-2026.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+}
+
+// Run the import
+if (typeof window !== 'undefined') {
+  // Running in browser
+  console.log('Temple Calendar Data Import Script');
+  console.log('Total events:', events2026.length);
+  
+  // Uncomment to export as JSON
+  // exportAsJSON(events2026);
+  
+  // Uncomment to import to Firebase (after adding config)
+  // importToFirebase(events2026);
+} else {
+  // Running in Node.js
+  module.exports = { events2026, importToFirebase, exportAsJSON };
+}

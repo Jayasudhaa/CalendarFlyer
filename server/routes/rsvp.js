@@ -9,16 +9,19 @@
 const express   = require('express');
 const router    = express.Router();
 const { DynamoDBClient }             = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, PutCommand, QueryCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
+const { DynamoDBDocumentClient, PutCommand, QueryCommand, DeleteCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
 const { v4: uuidv4 } = require('uuid');
+const { requireOrganization } = require('../middleware/tenant');
+const { incrementUsage } = require('../organizations');
 
-const TABLE = process.env.RSVP_TABLE || 'temple_rsvp';
+const EVENTS_TABLE = 'calendarfly_events';
+const RSVP_TABLE = process.env.RSVP_TABLE || 'temple_rsvp';
 
 let dynamo = null;
 function getDynamo() {
   if (!dynamo) {
     dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({
-      region: process.env.AWS_REGION || process.env.AWS_REGION_S3 || 'us-east-2',
+      region: process.env.AWS_REGION || 'us-east-2',
   // Credentials auto-loaded from env: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
 }));
   }
@@ -46,10 +49,15 @@ router.post('/rsvp', async (req, res) => {
   };
 
   try {
-  await getDynamo().send(new PutCommand({ TableName: TABLE, Item: item }));
+    await getDynamo().send(new PutCommand({ TableName: RSVP_TABLE, Item: item }));
+    if (req.org) {
+      await incrementUsage(req.org.org_id, 'rsvp_responses').catch(err => 
+        console.error('[RSVP] Failed to increment usage:', err)
+      );
+    }
   return res.status(201).json({ success: true, rsvpId: item.rsvpId });
   } catch (err) {
-    console.error('[RSVP] DynamoDB PutCommand error:', err);
+    console.error('[RSVP] Error saving RSVP:', err);
     return res.status(500).json({ error: 'Failed to save RSVP', details: err.message });
   }
 });
@@ -61,7 +69,7 @@ router.get('/rsvp/:eventId', adminGuard, async (req, res) => {
 
   try {
   const result = await getDynamo().send(new QueryCommand({
-    TableName:                TABLE,
+      TableName: RSVP_TABLE,
     KeyConditionExpression:   'eventId = :eid',
     ExpressionAttributeValues: { ':eid': eventId },
   }));
@@ -86,7 +94,7 @@ router.get('/rsvp/:eventId', adminGuard, async (req, res) => {
     console.log('[RSVP] Found', items.length, 'RSVPs,', totalCount, 'guests');
   return res.json({ items, totalCount, mealBreakdown, timeline });
   } catch (err) {
-    console.error('[RSVP] DynamoDB QueryCommand error:', err);
+    console.error('[RSVP] Error fetching RSVPs:', err);
     return res.status(500).json({ error: 'Failed to fetch RSVPs', details: err.message });
   }
 });
@@ -95,11 +103,14 @@ router.get('/rsvp/:eventId', adminGuard, async (req, res) => {
 router.delete('/rsvp/:eventId/:rsvpId', adminGuard, async (req, res) => {
   const { eventId, rsvpId } = req.params;
   try {
-  await getDynamo().send(new DeleteCommand({ TableName: TABLE, Key: { eventId, rsvpId } }));
+    await getDynamo().send(new DeleteCommand({ 
+      TableName: RSVP_TABLE, 
+      Key: { eventId, rsvpId } 
+    }));
     console.log('[RSVP] Deleted RSVP:', rsvpId);
   return res.json({ success: true });
   } catch (err) {
-    console.error('[RSVP] DynamoDB DeleteCommand error:', err);
+    console.error('[RSVP] Error deleting RSVP:', err);
     return res.status(500).json({ error: 'Failed to delete RSVP', details: err.message });
   }
 });

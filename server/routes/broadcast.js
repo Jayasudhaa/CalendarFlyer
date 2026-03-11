@@ -20,6 +20,7 @@
 const express  = require('express');
 const fetch    = require('node-fetch');
 const FormData = require('form-data');
+const { incrementUsage } = require('../organizations');
 
 const router = express.Router();
 
@@ -27,17 +28,38 @@ function base64ToBuffer(dataUrl) {
   const base64 = dataUrl.replace(/^data:image\/\w+;base64,/, '');
   return Buffer.from(base64, 'base64');
 }
-function getWhatsAppRecipient() {
+function getOrgCredentials(org, platform) {
+  if (platform === 'whatsapp') {
+    return {
+      token: process.env.WHATSAPP_TOKEN,
+      phoneId: process.env.WHATSAPP_PHONE_ID,
+      groupId: process.env.WHATSAPP_GROUP_ID,
+      testRecipient: process.env.TEST_RECIPIENT_NUMBER
+    };
+  } else if (platform === 'facebook') {
+    return {
+      token: process.env.FB_PAGE_TOKEN,
+      pageId: process.env.FB_PAGE_ID
+    };
+  } else if (platform === 'instagram') {
+    return {
+      token: process.env.FB_PAGE_TOKEN,
+      accountId: process.env.IG_ACCOUNT_ID
+    };
+  }
+  return {};
+}
+function getWhatsAppRecipient(org) {
   const isTest = process.env.TEST_MODE === 'true';
   if (isTest) {
     const num = process.env.TEST_RECIPIENT_NUMBER;
-    if (!num) throw new Error('TEST_MODE=true but TEST_RECIPIENT_NUMBER not set in .env');
-    console.log(`[broadcast] 🧪 TEST MODE — sending to ${num}`);
+    if (!num) throw new Error('TEST_MODE=true but TEST_RECIPIENT_NUMBER not set');
+    console.log(`[BROADCAST] 🧪 TEST MODE — sending to ${num}`);
     return num;
   }
   const groupId = process.env.WHATSAPP_GROUP_ID;
-  if (!groupId) throw new Error('WHATSAPP_GROUP_ID not set in .env');
-  console.log(`[broadcast] 🚀 PROD MODE — sending to group`);
+  if (!groupId) throw new Error('WHATSAPP_GROUP_ID not set');
+  console.log(`[BROADCAST] 🚀 PROD MODE — sending to group`);
   return groupId;
 }
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -46,17 +68,17 @@ function getWhatsAppRecipient() {
 
 // ── WhatsApp ──────────────────────────────────────────────────────────────────
 
-async function broadcastWhatsApp({ imageBase64, caption }) {
-  const token   = process.env.WHATSAPP_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_ID;
+async function broadcastWhatsApp({ imageBase64, caption, org }) {
+  const creds = getOrgCredentials(org, 'whatsapp');
+  const { token, phoneId } = creds;
 
-  if (!token)   throw new Error('WHATSAPP_TOKEN not set in .env');
-  if (!phoneId) throw new Error('WHATSAPP_PHONE_ID not set in .env');
+  if (!token) throw new Error('WHATSAPP_TOKEN not set');
+  if (!phoneId) throw new Error('WHATSAPP_PHONE_ID not set');
 
-  const recipient = getWhatsAppRecipient();
+  const recipient = getWhatsAppRecipient(org);
 
   // Step 1: Upload image to WhatsApp media
-  console.log('[broadcast] uploading image...');
+  console.log(`[BROADCAST] ${org?.name || 'Unknown'} - Uploading image to WhatsApp...`);
   const imgBuffer = base64ToBuffer(imageBase64);
   const form = new FormData();
   form.append('file', imgBuffer, { filename: 'flyer.png', contentType: 'image/png' });
@@ -76,7 +98,7 @@ async function broadcastWhatsApp({ imageBase64, caption }) {
     throw new Error(uploadData.error?.message || 'WhatsApp media upload failed');
   }
   const mediaId = uploadData.id;
-  console.log(`[broadcast] ✓ uploaded mediaId: ${mediaId}`);
+  console.log(`[BROADCAST] ✓ MediaId: ${mediaId}`);
 
   // Step 2: Send image message with caption
   const msgRes = await fetch(
@@ -98,18 +120,18 @@ async function broadcastWhatsApp({ imageBase64, caption }) {
   }
 
   const messageId = msgData.messages?.[0]?.id;
-  console.log(`[broadcast] ✓ sent to ${recipient}`);
+  console.log(`[BROADCAST] ✓ Sent to ${recipient}`);
   return { messageId, recipient, testMode: process.env.TEST_MODE === 'true' };
 }
 
 // ── Facebook ──────────────────────────────────────────────────────────────────
 
-async function broadcastFacebook({ imageBase64, caption }) {
-  const token  = process.env.FB_PAGE_TOKEN;
-  const pageId = process.env.FB_PAGE_ID;
+async function broadcastFacebook({ imageBase64, caption, org }) {
+  const creds = getOrgCredentials(org, 'facebook');
+  const { token, pageId } = creds;
 
-  if (!token)  throw new Error('FB_PAGE_TOKEN not set in .env');
-  if (!pageId) throw new Error('FB_PAGE_ID not set in .env');
+  if (!token) throw new Error('FB_PAGE_TOKEN not set');
+  if (!pageId) throw new Error('FB_PAGE_ID not set');
   const isTest = process.env.TEST_MODE === 'true';
 
   // Facebook /photos endpoint accepts multipart upload with caption
@@ -129,30 +151,35 @@ async function broadcastFacebook({ imageBase64, caption }) {
     throw new Error(data.error?.message || 'Facebook post failed');
   }
 
-  console.log(`[broadcast] ✓ Facebook ${isTest ? 'draft' : 'post'} id: ${data.id}`);
+  console.log(`[BROADCAST] ✓ Facebook ${isTest ? 'draft' : 'post'} id: ${data.id}`);
   return { postId: data.id, testMode: isTest };
 }
 
-async function broadcastInstagram({ imageBase64, caption }) {
-  const token   = process.env.FB_PAGE_TOKEN;    // same token as Facebook
-  const igAccId = process.env.IG_ACCOUNT_ID;    // Instagram Business Account ID
-  if (!token)   throw new Error('FB_PAGE_TOKEN not set in .env');
-  if (!igAccId) throw new Error('IG_ACCOUNT_ID not set in .env — find in Meta Business Suite → Instagram account ID');
+async function broadcastInstagram({ imageBase64, caption, org }) {
+  const creds = getOrgCredentials(org, 'instagram');
+  const { token, accountId } = creds;
+  if (!token) throw new Error('FB_PAGE_TOKEN not set');
+  if (!accountId) throw new Error('IG_ACCOUNT_ID not set');
   const isTest = process.env.TEST_MODE === 'true';
   const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
-  const s3 = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+  const s3 = new S3Client({ 
+    region: process.env.AWS_REGION_S3 || process.env.AWS_REGION || 'us-east-2' 
+  });
   const imgBuffer = base64ToBuffer(imageBase64);
-  const key = `broadcast-temp/flyer-${Date.now()}.png`;
+  const org_prefix = org ? `orgs/${org.org_id}/broadcast-temp/` : 'broadcast-temp/';
+  const key = `${org_prefix}flyer-${Date.now()}.png`;
   await s3.send(new PutObjectCommand({
-    Bucket:      process.env.S3_BUCKET,
+    Bucket: process.env.S3_BUCKET_NAME,
     Key:         key,
     Body:        imgBuffer,
     ContentType: 'image/png',
+    ACL: 'public-read',
   }));
+  const region = process.env.AWS_REGION_S3 || process.env.AWS_REGION || 'us-east-2';
   const imageUrl = `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${key}`;
-  console.log(`[broadcast] Instagram image URL: ${imageUrl}`);
+  console.log(`[BROADCAST] Instagram image URL: ${imageUrl}`);
   const containerRes = await fetch(
-    `https://graph.facebook.com/v20.0/${igAccId}/media`,
+    `https://graph.facebook.com/v20.0/${accountId}/media`,
     {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -168,13 +195,13 @@ async function broadcastInstagram({ imageBase64, caption }) {
     throw new Error(containerData.error?.message || 'Instagram container creation failed');
   }
   const containerId = containerData.id;
-  console.log(`[broadcast] ✓ Instagram container: ${containerId}`);
+  console.log(`[BROADCAST] ✓ Instagram container: ${containerId}`);
   if (isTest) {
-    console.log('[broadcast] 🧪 TEST MODE — Instagram container created but not published');
+    console.log('[BROADCAST] 🧪 TEST MODE — Container created but not published');
     return { containerId, testMode: true, published: false };
   }
   const publishRes = await fetch(
-    `https://graph.facebook.com/v20.0/${igAccId}/media_publish`,
+    `https://graph.facebook.com/v20.0/${accountId}/media_publish`,
     {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -185,7 +212,7 @@ async function broadcastInstagram({ imageBase64, caption }) {
   if (!publishRes.ok || publishData.error) {
     throw new Error(publishData.error?.message || 'Instagram publish failed');
   }
-  console.log(`[broadcast] ✓ Instagram published: ${publishData.id}`);
+  console.log(`[BROADCAST] ✓ Instagram published: ${publishData.id}`);
   return { postId: publishData.id, testMode: false, published: true };
 }
 // ── Route ─────────────────────────────────────────────────────────────────────
@@ -201,18 +228,25 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: `Unknown platform: ${platform}` });
   }
 
-  console.log(`[broadcast] ${platform} | "${event?.title || 'unknown'}" | test:${process.env.TEST_MODE}`);
+  const org = req.org;
+  const orgName = org ? org.name : 'Unknown';
+  console.log(`[BROADCAST] ${orgName} | ${platform} | "${event?.title || 'unknown'}"`);
 
   try {
     let result;
-    if (platform === 'whatsapp')        result = await broadcastWhatsApp({ imageBase64, caption });
-    else if (platform === 'facebook')   result = await broadcastFacebook({ imageBase64, caption });
-    else if (platform === 'instagram')  result = await broadcastInstagram({ imageBase64, caption });
+    if (platform === 'whatsapp') result = await broadcastWhatsApp({ imageBase64, caption, org });
+    else if (platform === 'facebook') result = await broadcastFacebook({ imageBase64, caption, org });
+    else if (platform === 'instagram') result = await broadcastInstagram({ imageBase64, caption, org });
 
+    if (org) {
+      await incrementUsage(org.org_id, 'flyers').catch(err =>
+        console.error('[BROADCAST] Failed to increment usage:', err)
+      );
+    }
     return res.status(200).json({ success: true, ...result });
 
   } catch (err) {
-    console.error(`[broadcast] ✗`, err.message);
+    console.error(`[BROADCAST] ✗`, err.message);
     return res.status(500).json({ error: err.message });
   }
 });

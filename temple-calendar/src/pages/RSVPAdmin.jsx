@@ -1,287 +1,381 @@
 /**
  * src/pages/RSVPAdmin.jsx
- * Premium RSVP Admin Dashboard — light theme, elegant design
+ * ULTRA-PREMIUM RSVP Analytics Dashboard
+ * Matches Flyer Studio / Broadcast Studio design
  */
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { Download, RefreshCw, Search, Trash2, X, TrendingUp } from 'lucide-react';
+import { useEvents } from '../hooks/useEvents';
 
 const API = import.meta.env.VITE_API_URL || '';
 
-const decodeEventInfo = (eventId) => {
-  try { return JSON.parse(atob(eventId)); } catch { return { title: 'Event', date: '' }; }
-};
 
-const MEAL_COLORS = {
-  'Vegetarian Prasadam': '#16a34a',
-  'Veg Lunch':           '#2563eb',
-  'No Meal':             '#9ca3af',
-  'not specified':       '#d1d5db',
-};
 export default function RSVPAdmin() {
-  const { eventId }       = useParams();
-  const [searchParams]    = useSearchParams();
-  const secret         = searchParams.get('secret') || import.meta.env.VITE_ADMIN_SECRET || '';
-  const eventInfo         = decodeEventInfo(eventId);
-
-  const [data,    setData]    = useState(null);
+  const { events } = useEvents();
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [rsvpData, setRsvpData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState('');
+  const [search, setSearch] = useState('');
   const [deleting, setDeleting] = useState(null);
-  const [search,  setSearch]  = useState('');
+  const [eventSearch, setEventSearch] = useState('');
 
-  const fetchData = useCallback(async () => {
-    setLoading(true); setError('');
+  // Group events by month
+  const groupedEvents = React.useMemo(() => {
+    const filtered = events.filter(e => 
+      e.title.toLowerCase().includes(eventSearch.toLowerCase())
+    );
+
+    const groups = {};
+    filtered.forEach(event => {
+      const date = new Date(event.date + 'T12:00:00');
+      const monthKey = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+      if (!groups[monthKey]) {
+        groups[monthKey] = [];
+      }
+      groups[monthKey].push(event);
+      });
+    
+    // Sort months (most recent first)
+    return Object.entries(groups).sort((a, b) => {
+      const dateA = new Date(a[1][0].date + 'T12:00:00');
+      const dateB = new Date(b[1][0].date + 'T12:00:00');
+      return dateB - dateA;
+    });
+  }, [events, eventSearch]);
+  // Select first event on load
+  useEffect(() => {
+    if (events?.length > 0 && !selectedEvent) {
+      setSelectedEvent(events[0]);
+      fetchRSVPData(events[0].id);
+      }
+  }, [events]);
+
+  const fetchRSVPData = async (eventId) => {
+    setLoading(true);
     try {
       const res = await fetch(`${API}/api/rsvp/${eventId}`, {
         credentials: 'include',
-        headers: { 'x-admin-secret': secret },
+        headers: { 
+          'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET || '',
+        },
       });
-      if (res.status === 401) throw new Error('Invalid admin secret');
       if (!res.ok) throw new Error('Failed to fetch RSVP data');
-      setData(await res.json());
+      const data = await res.json();
+      setRsvpData(data);
+      setError('');
     } catch (err) {
+      console.error('RSVP fetch error:', err);
       setError(err.message);
+      setRsvpData({ items: [], totalCount: 0, timeline: {}, attendingBreakdown: {} });
     } finally {
       setLoading(false);
     }
-  }, [eventId, secret]);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
+  };
+  const handleEventSelect = (event) => {
+    setSelectedEvent(event);
+    fetchRSVPData(event.id);
+  };
 
   const handleDelete = async (rsvpId, name) => {
     if (!window.confirm(`Remove RSVP for ${name}?`)) return;
     setDeleting(rsvpId);
-    await fetch(`${API}/api/rsvp/${eventId}/${rsvpId}`, {
+    try {
+      await fetch(`${API}/api/rsvp/${selectedEvent.id}/${rsvpId}`, {
       method: 'DELETE',
-      credentials: 'include',
-      headers: { 'x-admin-secret': secret },
+        credentials: 'include',
+        headers: { 
+          'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET || '',
+        },
     });
+      fetchRSVPData(selectedEvent.id);
+    } catch (err) {
+      alert('Failed to delete RSVP');
+    } finally {
     setDeleting(null);
-    fetchData();
+    }
   };
 
   const exportCSV = () => {
-    if (!data?.items?.length) return;
+    if (!rsvpData?.items?.length) return;
     const rows = [
-      ['Name', 'Attendees', 'Meal Preference', 'Submitted At'],
-      ...data.items.map(i => [i.name, i.count, i.meal, new Date(i.createdAt).toLocaleString()]),
+      ['Name', 'Attendees', 'Attending', 'Phone', 'Notes', 'Submitted At'],
+      ...rsvpData.items.map(i => [
+        i.name, 
+        i.count, 
+        i.attending || 'yes',
+        i.phone || '',
+        i.notes || '',
+        new Date(i.createdAt).toLocaleString()
+      ]),
     ];
     const csv  = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const a    = document.createElement('a');
     a.href     = URL.createObjectURL(blob);
-    a.download = `rsvp_${eventInfo.title?.replace(/\s+/g,'_') || 'event'}.csv`;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    a.download = `rsvp_${selectedEvent?.title?.replace(/\s+/g, '_') || 'event'}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
-  // ── Timeline bar chart ──────────────────────────────────────────────────────
-  const TimelineChart = ({ timeline }) => {
-    const entries = Object.entries(timeline).sort(([a],[b]) => a.localeCompare(b));
-    if (!entries.length) return <div style={{ color:'#9ca3af', fontSize:'0.85rem', padding:'24px 0', textAlign:'center' }}>No timeline data yet</div>;
-    const max = Math.max(...entries.map(([,v]) => v));
-    return (
-      <div style={{ display:'flex', alignItems:'flex-end', gap:8, height:120, paddingTop:8 }}>
-        {entries.map(([date, val]) => (
-          <div key={date} style={{ display:'flex', flexDirection:'column', alignItems:'center', flex:1, minWidth:0 }}>
-            <div style={{ fontSize:'0.72rem', color:'#7c3aed', fontWeight:'700', marginBottom:4 }}>{val}</div>
-            <div style={{ width:'100%',
-              background:'linear-gradient(to top, #7c3aed, #a78bfa)',
-              height:`${Math.round((val/max)*90)+8}px`,
-              borderRadius:'6px 6px 0 0', minHeight:10,
-              boxShadow:'0 4px 12px rgba(124,58,237,0.2)' }} />
-            <div style={{ fontSize:'0.62rem', color:'#9ca3af', marginTop:5, textAlign:'center',
-              overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'100%' }}>
-              {new Date(date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  // ── Meal breakdown bars ─────────────────────────────────────────────────────
-  const MealBreakdown = ({ breakdown, total }) => (
-    <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-        {Object.entries(breakdown).map(([meal, cnt]) => (
-        <div key={meal}>
-          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
-            <span style={{ fontSize:'0.82rem', color:'#374151', fontWeight:'500' }}>{meal}</span>
-            <span style={{ fontSize:'0.82rem', color: MEAL_COLORS[meal]||'#6b7280', fontWeight:'700' }}>
-              {cnt} guest{cnt!==1?'s':''}
-            </span>
-          </div>
-          <div style={{ background:'#f3f4f6', borderRadius:8, height:10, overflow:'hidden' }}>
-            <div style={{
-              width:`${Math.round((cnt/total)*100)}%`, height:'100%',
-              background: MEAL_COLORS[meal]||'#9ca3af',
-              borderRadius:8, transition:'width 0.6s ease',
-              boxShadow:`0 2px 8px ${MEAL_COLORS[meal]||'#9ca3af'}44`
-            }} />
-            </div>
-          <div style={{ fontSize:'0.68rem', color:'#9ca3af', marginTop:3 }}>
-            {Math.round((cnt/total)*100)}% of total guests
-          </div>
-        </div>
-        ))}
-      </div>
-    );
-
-  const filtered = data?.items?.filter(i =>
+  const filtered = rsvpData?.items?.filter(i =>
     i.name.toLowerCase().includes(search.toLowerCase())
   ) || [];
 
-  // ── Loading ─────────────────────────────────────────────────────────────────
-  if (loading) return (
-    <div style={s.page}>
-      <div style={{ textAlign:'center', paddingTop:80 }}>
-        <div style={{ fontSize:'2rem', marginBottom:12 }}>⏳</div>
-        <div style={{ color:'#6b7280', fontSize:'1rem' }}>Loading RSVP data…</div>
+  // Calculate stats
+  const stats = {
+    totalRsvps: rsvpData?.items?.length || 0,
+    totalGuests: rsvpData?.totalCount || 0,
+    avgPartySize: rsvpData?.items?.length 
+      ? (rsvpData.totalCount / rsvpData.items.length).toFixed(1) 
+      : '0',
+    yesCount: rsvpData?.items?.filter(i => i.attending === 'yes')?.length || 0,
+    noCount: rsvpData?.items?.filter(i => i.attending === 'no')?.length || 0,
+    maybeCount: rsvpData?.items?.filter(i => i.attending === 'maybe')?.length || 0,
+  };
+  if (loading && !rsvpData) {
+    return (
+      <div style={styles.page}>
+        <div style={{ textAlign: 'center', paddingTop: '80px' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
+          <div style={{ color: '#9ca3af', fontSize: '1.1rem' }}>Loading analytics...</div>
+            </div>
       </div>
-    </div>
-  );
-  if (error) return (
-    <div style={s.page}>
-      <div style={{ maxWidth:480, margin:'80px auto', padding:32, background:'white',
-        borderRadius:16, border:'1px solid #fecaca', textAlign:'center',
-        boxShadow:'0 8px 32px rgba(0,0,0,0.08)' }}>
-        <div style={{ fontSize:'2.5rem', marginBottom:12 }}>⚠️</div>
-        <div style={{ color:'#dc2626', fontWeight:'700', fontSize:'1.1rem', marginBottom:8 }}>Access Error</div>
-        <div style={{ color:'#6b7280', fontSize:'0.88rem' }}>{error}</div>
-      </div>
-    </div>
-  );
+    );
+  }
 
   return (
-    <div style={s.page}>
-      <div style={s.container}>
-
-        {/* ── Page header ── */}
-        <div style={s.pageHeader}>
-          <div style={s.breadcrumb}>🛕 Sri Venkateswara Swamy Temple · RSVP Analytics</div>
-            <div style={s.eventTitle}>{eventInfo.title}</div>
-          {eventInfo.date && (
-            <div style={s.eventDate}>
-              📅 {new Date(eventInfo.date+'T12:00:00').toLocaleDateString('en-US',{
-                weekday:'long', year:'numeric', month:'long', day:'numeric'
-              })}
-          </div>
-          )}
-          <div style={{ display:'flex', gap:10, marginTop:20, flexWrap:'wrap' }}>
-            <button onClick={fetchData} style={s.btnOutline}>↺ Refresh</button>
-            <button onClick={exportCSV} disabled={!data?.items?.length} style={s.btnPrimary}>
-              ⬇ Export CSV
-            </button>
-          </div>
+    <div style={styles.page}>
+      {/* Header */}
+      <div style={styles.header}>
+        <div>
+          <h1 style={styles.title}>
+            <TrendingUp style={{ width: '32px', height: '32px', marginRight: '12px' }} />
+            RSVP Analytics
+          </h1>
+          <p style={styles.subtitle}>Track event responses and attendance</p>
         </div>
-
-        {/* ── Stat cards ── */}
-        <div style={s.statsGrid}>
-          {[
-            { label:'Total RSVPs',    value: data.items.length,  icon:'📋', color:'#7c3aed', bg:'#f5f3ff' },
-            { label:'Total Guests',   value: data.totalCount,    icon:'👥', color:'#059669', bg:'#f0fdf4' },
-            { label:'Avg Party Size', value: data.items.length ? (data.totalCount/data.items.length).toFixed(1) : '—', icon:'👨‍👩‍👧', color:'#d97706', bg:'#fffbeb' },
-            { label:'Days Active',    value: Object.keys(data.timeline).length, icon:'📅', color:'#2563eb', bg:'#eff6ff' },
-          ].map(({ label, value, icon, color, bg }) => (
-            <div key={label} style={{ ...s.statCard, background: bg, borderColor: color+'33' }}>
-              <div style={{ fontSize:'2rem', marginBottom:8 }}>{icon}</div>
-              <div style={{ fontSize:'2.4rem', fontWeight:'900', color, lineHeight:1 }}>{value}</div>
-              <div style={{ fontSize:'0.78rem', color:'#6b7280', marginTop:6, fontWeight:'500' }}>{label}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Charts row ── */}
-        <div style={s.chartsRow}>
-          <div style={s.card}>
-            <div style={s.cardTitle}>📈 RSVPs Over Time</div>
-            <div style={{ color:'#9ca3af', fontSize:'0.72rem', marginBottom:16 }}>Guests per day</div>
-            <TimelineChart timeline={data.timeline} />
+        <button onClick={() => window.history.back()} style={styles.closeBtn}>
+          <X className="w-5 h-5" />
+        </button>
           </div>
-          <div style={s.card}>
-            <div style={s.cardTitle}>🍽 Meal Preferences</div>
-            <div style={{ color:'#9ca3af', fontSize:'0.72rem', marginBottom:20 }}>
-              {data.totalCount} total guests
-            </div>
-            {Object.keys(data.mealBreakdown).length
-              ? <MealBreakdown breakdown={data.mealBreakdown} total={data.totalCount} />
-              : <div style={{ color:'#9ca3af', fontSize:'0.85rem' }}>No meal data yet</div>}
-          </div>
-        </div>
 
-        {/* ── RSVP table ── */}
-        <div style={s.card}>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:12 }}>
-            <div>
-              <div style={s.cardTitle}>👥 All RSVPs</div>
-              <div style={{ color:'#9ca3af', fontSize:'0.72rem', marginTop:2 }}>
-                {filtered.length} {filtered.length===1?'entry':'entries'}
-              </div>
-            </div>
+      <div style={styles.container}>
+        {/* Event Selector */}
+        <div style={styles.eventSelector}>
+          <div style={styles.sectionLabel}>SELECT EVENT</div>
+          <div style={styles.eventSearch}>
+            <Search className="w-4 h-4" style={{ color: '#6b7280' }} />
             <input
-              placeholder="🔍 Search by name…"
+              type="text"
+              placeholder="Search events..."
+              value={eventSearch}
+              onChange={(e) => setEventSearch(e.target.value)}
+              style={styles.eventSearchInput}
+            />
+            </div>
+          {/* Month-grouped events */}
+          <div style={styles.eventList}>
+            {groupedEvents.map(([month, monthEvents]) => (
+              <div key={month} style={styles.monthGroup}>
+                <div style={styles.monthHeader}>
+                  <span>{month}</span>
+                  <span style={styles.monthCount}>{monthEvents.length}</span>
+                </div>
+                {monthEvents.map(event => (
+              <div
+                key={event.id}
+                onClick={() => handleEventSelect(event)}
+                style={{
+                  ...styles.eventCard,
+                  ...(selectedEvent?.id === event.id ? styles.eventCardActive : {}),
+                }}
+              >
+                <div style={styles.eventCardTitle}>{event.title}</div>
+                <div style={styles.eventCardDate}>
+                      {new Date(event.date + 'T12:00:00').toLocaleDateString('en-US', { 
+                        weekday: 'short', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })}
+                      {event.time && ` • ${event.time}`}
+          </div>
+                {selectedEvent?.id === event.id && (
+                      <div style={styles.viewBadge}>Viewing</div>
+                )}
+        </div>
+        ))}
+      </div>
+            ))}
+            {groupedEvents.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '8px' }}>📅</div>
+                <div style={{ fontSize: '0.85rem' }}>
+                  {eventSearch ? 'No events found' : 'No events available'}
+                </div>
+              </div>
+            )}
+      </div>
+        </div>
+        {/* Analytics Panel */}
+        {selectedEvent && rsvpData && (
+          <div style={styles.analyticsPanel}>
+            {/* Stats Grid */}
+            <div style={styles.statsGrid}>
+              <div style={{ ...styles.statCard, background: 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)' }}>
+                <div style={styles.statIcon}>📋</div>
+                <div style={styles.statValue}>{stats.totalRsvps}</div>
+                <div style={styles.statLabel}>Total RSVPs</div>
+    </div>
+              <div style={{ ...styles.statCard, background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)' }}>
+                <div style={styles.statIcon}>👥</div>
+                <div style={styles.statValue}>{stats.totalGuests}</div>
+                <div style={styles.statLabel}>Total Guests</div>
+      </div>
+              <div style={{ ...styles.statCard, background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)' }}>
+                <div style={styles.statIcon}>👨‍👩‍👧</div>
+                <div style={styles.statValue}>{stats.avgPartySize}</div>
+                <div style={styles.statLabel}>Avg Party Size</div>
+    </div>
+              <div style={{ ...styles.statCard, background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)' }}>
+
+                <div style={styles.statIcon}>✅</div>
+
+                <div style={styles.statValue}>{stats.yesCount}</div>
+                <div style={styles.statLabel}>Confirmed</div>
+              </div>
+          </div>
+
+            {/* Attendance Breakdown */}
+            <div style={styles.card}>
+              <div style={styles.cardTitle}>📊 Attendance Breakdown</div>
+              <div style={styles.attendanceGrid}>
+                <div style={styles.attendanceCard}>
+                  <div style={{ ...styles.attendanceLabel, color: '#16a34a' }}>✅ Yes</div>
+                  <div style={styles.attendanceValue}>{stats.yesCount}</div>
+                  <div style={styles.attendanceBar}>
+                    <div style={{
+                      width: `${stats.totalRsvps ? (stats.yesCount / stats.totalRsvps * 100) : 0}%`,
+                      height: '100%',
+                      background: '#16a34a',
+                      borderRadius: '6px',
+                      transition: 'width 0.5s ease',
+                    }} />
+          </div>
+        </div>
+
+                <div style={styles.attendanceCard}>
+                  <div style={{ ...styles.attendanceLabel, color: '#d97706' }}>🤔 Maybe</div>
+                  <div style={styles.attendanceValue}>{stats.maybeCount}</div>
+                  <div style={styles.attendanceBar}>
+                    <div style={{
+                      width: `${stats.totalRsvps ? (stats.maybeCount / stats.totalRsvps * 100) : 0}%`,
+                      height: '100%',
+                      background: '#d97706',
+                      borderRadius: '6px',
+                      transition: 'width 0.5s ease',
+                    }} />
+            </div>
+        </div>
+
+                <div style={styles.attendanceCard}>
+                  <div style={{ ...styles.attendanceLabel, color: '#dc2626' }}>❌ No</div>
+                  <div style={styles.attendanceValue}>{stats.noCount}</div>
+                  <div style={styles.attendanceBar}>
+                    <div style={{
+                      width: `${stats.totalRsvps ? (stats.noCount / stats.totalRsvps * 100) : 0}%`,
+                      height: '100%',
+                      background: '#dc2626',
+                      borderRadius: '6px',
+                      transition: 'width 0.5s ease',
+                    }} />
+          </div>
+            </div>
+          </div>
+        </div>
+
+            {/* RSVP List */}
+            <div style={styles.card}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div>
+                  <div style={styles.cardTitle}>👥 All RSVPs</div>
+                  <div style={styles.cardSubtitle}>{filtered.length} entries</div>
+              </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button onClick={() => fetchRSVPData(selectedEvent.id)} style={styles.iconBtn}>
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                  <button onClick={exportCSV} style={styles.iconBtn} disabled={!rsvpData?.items?.length}>
+                    <Download className="w-4 h-4" />
+                  </button>
+            </div>
+              </div>
+              <div style={styles.searchBox}>
+                <Search className="w-4 h-4" style={{ color: '#6b7280' }} />
+            <input
+                  type="text"
+                  placeholder="Search by name..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={s.searchInput}
+                  style={styles.searchInput}
             />
           </div>
 
           {filtered.length === 0 ? (
-            <div style={{ textAlign:'center', padding:'48px 0', color:'#9ca3af' }}>
-              <div style={{ fontSize:'2.5rem', marginBottom:12 }}>📭</div>
-              <div style={{ fontSize:'0.9rem' }}>No RSVPs yet for this event</div>
+                <div style={styles.emptyState}>
+                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📭</div>
+                  <div style={{ fontSize: '1.1rem', color: '#9ca3af' }}>No RSVPs yet</div>
             </div>
           ) : (
-              <div style={{ overflowX:'auto' }}>
-              <table style={{ width:'100%', borderCollapse:'collapse' }}>
+                <div style={styles.tableWrapper}>
+                  <table style={styles.table}>
                   <thead>
-                  <tr style={{ borderBottom:'2px solid #f3f4f6' }}>
-                    {['#','Name','Guests','Meal Preference','Submitted',''].map(h => (
-                      <th key={h} style={{ padding:'10px 14px', textAlign:'left',
-                        color:'#9ca3af', fontWeight:'600', fontSize:'0.72rem',
-                        textTransform:'uppercase', letterSpacing:'0.06em' }}>
-                        {h}
-                      </th>
-                      ))}
+                      <tr style={styles.tableHeaderRow}>
+                        <th style={styles.tableHeader}>#</th>
+                        <th style={styles.tableHeader}>Name</th>
+                        <th style={styles.tableHeader}>Guests</th>
+                        <th style={styles.tableHeader}>Status</th>
+                        <th style={styles.tableHeader}>Phone</th>
+                        <th style={styles.tableHeader}>Submitted</th>
+                        <th style={styles.tableHeader}></th>
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.map((item, idx) => (
-                    <tr key={item.rsvpId}
-                      style={{ borderBottom:'1px solid #f9fafb', transition:'background 0.1s' }}
-                      onMouseEnter={e=>e.currentTarget.style.background='#fafafa'}
-                        onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                      <td style={{ padding:'14px 14px', color:'#d1d5db', fontSize:'0.8rem' }}>{idx+1}</td>
-                      <td style={{ padding:'14px 14px', fontWeight:'600', color:'#111827', fontSize:'0.92rem' }}>
+                        <tr key={item.rsvpId} style={styles.tableRow}>
+                          <td style={styles.tableCell}>{idx + 1}</td>
+                          <td style={{ ...styles.tableCell, fontWeight: '600', color: '#e2e8f0' }}>
                         {item.name}
                       </td>
-                      <td style={{ padding:'14px 14px', textAlign:'center' }}>
-                        <span style={{ background:'#f0fdf4', color:'#16a34a', fontWeight:'800',
-                          fontSize:'0.92rem', padding:'3px 12px', borderRadius:20 }}>
-                          {item.count}
+                          <td style={styles.tableCell}>
+                            <span style={styles.guestBadge}>{item.count}</span>
+                      </td>
+                          <td style={styles.tableCell}>
+                            <span style={{
+                              ...styles.statusBadge,
+                              background: item.attending === 'yes' ? '#16a34a22' : item.attending === 'no' ? '#dc262622' : '#d9770622',
+                              color: item.attending === 'yes' ? '#16a34a' : item.attending === 'no' ? '#dc2626' : '#d97706',
+                            }}>
+                              {item.attending === 'yes' ? '✅ Yes' : item.attending === 'no' ? '❌ No' : '🤔 Maybe'}
                         </span>
                       </td>
-                      <td style={{ padding:'14px 14px' }}>
-                        <span style={{ background:`${MEAL_COLORS[item.meal]||'#9ca3af'}18`,
-                          color: MEAL_COLORS[item.meal]||'#6b7280',
-                          padding:'3px 10px', borderRadius:20, fontSize:'0.78rem', fontWeight:'500' }}>
-                          {item.meal}
-                        </span>
-                      </td>
-                      <td style={{ padding:'14px 14px', color:'#9ca3af', fontSize:'0.78rem' }}>
+                          <td style={styles.tableCell}>{item.phone || '—'}</td>
+                          <td style={styles.tableCell}>
                         {new Date(item.createdAt).toLocaleDateString('en-US',{
-                          month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
                         })}
                         </td>
-                      <td style={{ padding:'14px 14px' }}>
-                          <button onClick={()=>handleDelete(item.rsvpId, item.name)}
+                          <td style={styles.tableCell}>
+                            <button
+                              onClick={() => handleDelete(item.rsvpId, item.name)}
                             disabled={deleting===item.rsvpId}
-                          style={{ padding:'5px 12px', background:'white',
-                            border:'1.5px solid #fca5a5', color:'#ef4444',
-                            borderRadius:7, cursor:'pointer', fontSize:'0.75rem',
-                            transition:'all 0.15s' }}
-                          onMouseEnter={e=>{ e.currentTarget.style.background='#fef2f2'; }}
-                          onMouseLeave={e=>{ e.currentTarget.style.background='white'; }}>
-                          {deleting===item.rsvpId ? '…' : '🗑 Remove'}
+                              style={styles.deleteBtn}
+                            >
+                              <Trash2 className="w-4 h-4" />
                           </button>
                         </td>
                       </tr>
@@ -292,33 +386,317 @@ export default function RSVPAdmin() {
             )}
         </div>
 
-        <div style={{ textAlign:'center', color:'#d1d5db', fontSize:'0.72rem', marginTop:24, paddingBottom:24 }}>
-          Sri Venkateswara Swamy Temple of Colorado · RSVP Analytics Platform
         </div>
+        )}
       </div>
     </div>
   );
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
-const s = {
+const styles = {
   page: {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #faf5ff 0%, #f8fafc 50%, #f0f9ff 100%)',
-    padding: '32px 24px',
-    fontFamily: "'Georgia', 'Times New Roman', serif",
+    background: '#0f172a',
+    color: '#e2e8f0',
+    fontFamily: 'system-ui, -apple-system, sans-serif',
   },
-  container:   { maxWidth: 1100, margin: '0 auto' },
-  pageHeader:  { marginBottom: 36, paddingBottom: 28, borderBottom: '1px solid #e5e7eb' },
-  breadcrumb:  { fontSize: '0.72rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 },
-  eventTitle:  { fontSize: '2rem', fontWeight: '900', color: '#111827', marginBottom: 6, lineHeight: 1.2 },
-  eventDate:   { fontSize: '0.92rem', color: '#6b7280' },
-  statsGrid:   { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 },
-  statCard:    { borderRadius: 16, padding: '24px 20px', textAlign: 'center', border: '1.5px solid', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' },
-  chartsRow:   { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 },
-  card:        { background: 'white', borderRadius: 16, padding: '24px', border: '1px solid #f3f4f6', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' },
-  cardTitle:   { fontSize: '0.88rem', fontWeight: '700', color: '#111827', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 },
-  btnOutline:  { padding: '10px 20px', background: 'white', border: '1.5px solid #e5e7eb', color: '#374151', borderRadius: 9, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '500' },
-  btnPrimary:  { padding: '10px 20px', background: 'linear-gradient(135deg,#7c3aed,#6366f1)', border: 'none', color: 'white', borderRadius: 9, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '700', boxShadow: '0 4px 12px rgba(124,58,237,0.3)' },
-  searchInput: { padding: '9px 14px', background: '#f9fafb', border: '1.5px solid #e5e7eb', color: '#374151', borderRadius: 9, fontSize: '0.85rem', outline: 'none', minWidth: 220 },
+  header: {
+    background: '#1e293b',
+    borderBottom: '1px solid #334155',
+    padding: '24px 32px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: '1.8rem',
+    fontWeight: '800',
+    color: '#fff',
+    margin: 0,
+    display: 'flex',
+    alignItems: 'center',
+  },
+  subtitle: {
+    fontSize: '0.9rem',
+    color: '#94a3b8',
+    margin: '4px 0 0 44px',
+  },
+  closeBtn: {
+    background: 'transparent',
+    border: '1px solid #334155',
+    color: '#94a3b8',
+    padding: '10px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  container: {
+    display: 'grid',
+    gridTemplateColumns: '320px 1fr',
+    gap: '24px',
+    padding: '24px 32px',
+    maxWidth: '1400px',
+    margin: '0 auto',
+  },
+  eventSelector: {
+    background: '#1e293b',
+    borderRadius: '12px',
+    border: '1px solid #334155',
+    padding: '20px',
+    height: 'fit-content',
+    maxHeight: 'calc(100vh - 120px)',
+    overflowY: 'auto',
+  },
+  sectionLabel: {
+    fontSize: '0.7rem',
+    color: '#64748b',
+    fontWeight: '700',
+    letterSpacing: '0.1em',
+    marginBottom: '12px',
+  },
+  monthGroup: {
+    marginBottom: '20px',
+  },
+  monthHeader: {
+    fontSize: '0.75rem',
+    color: '#94a3b8',
+    fontWeight: '700',
+    letterSpacing: '0.05em',
+    marginBottom: '10px',
+    paddingBottom: '6px',
+    borderBottom: '1px solid #334155',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  monthCount: {
+    fontSize: '0.7rem',
+    color: '#64748b',
+    fontWeight: '500',
+    background: '#0f172a',
+    padding: '2px 8px',
+    borderRadius: '10px',
+  },
+  eventSearch: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    background: '#0f172a',
+    border: '1px solid #334155',
+    borderRadius: '8px',
+    padding: '10px 12px',
+    marginBottom: '16px',
+  },
+  eventSearchInput: {
+    background: 'transparent',
+    border: 'none',
+    color: '#e2e8f0',
+    fontSize: '0.9rem',
+    outline: 'none',
+    flex: 1,
+  },
+  eventList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  eventCard: {
+    background: '#0f172a',
+    border: '1px solid #334155',
+    borderRadius: '8px',
+    padding: '12px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    position: 'relative',
+  },
+  eventCardActive: {
+    background: '#1e40af22',
+    borderColor: '#3b82f6',
+  },
+  eventCardTitle: {
+    fontSize: '0.9rem',
+    fontWeight: '600',
+    color: '#e2e8f0',
+    marginBottom: '4px',
+  },
+  eventCardDate: {
+    fontSize: '0.75rem',
+    color: '#64748b',
+  },
+  viewBadge: {
+    position: 'absolute',
+    top: '8px',
+    right: '8px',
+    background: '#3b82f6',
+    color: '#fff',
+    fontSize: '0.65rem',
+    fontWeight: '700',
+    padding: '2px 8px',
+    borderRadius: '4px',
+  },
+  analyticsPanel: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  },
+  statsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: '16px',
+  },
+  statCard: {
+    borderRadius: '12px',
+    padding: '24px 20px',
+    textAlign: 'center',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+  },
+  statIcon: {
+    fontSize: '2rem',
+    marginBottom: '8px',
+  },
+  statValue: {
+    fontSize: '2.5rem',
+    fontWeight: '900',
+    color: '#fff',
+    lineHeight: 1,
+  },
+  statLabel: {
+    fontSize: '0.75rem',
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: '8px',
+    fontWeight: '500',
+  },
+  card: {
+    background: '#1e293b',
+    borderRadius: '12px',
+    border: '1px solid #334155',
+    padding: '24px',
+  },
+  cardTitle: {
+    fontSize: '0.9rem',
+    fontWeight: '700',
+    color: '#e2e8f0',
+    marginBottom: '4px',
+  },
+  cardSubtitle: {
+    fontSize: '0.75rem',
+    color: '#64748b',
+  },
+  attendanceGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '16px',
+    marginTop: '20px',
+  },
+  attendanceCard: {
+    background: '#0f172a',
+    borderRadius: '8px',
+    padding: '16px',
+  },
+  attendanceLabel: {
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    marginBottom: '8px',
+  },
+  attendanceValue: {
+    fontSize: '2rem',
+    fontWeight: '800',
+    color: '#e2e8f0',
+    marginBottom: '12px',
+  },
+  attendanceBar: {
+    background: '#334155',
+    height: '8px',
+    borderRadius: '6px',
+    overflow: 'hidden',
+  },
+  searchBox: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    background: '#0f172a',
+    border: '1px solid #334155',
+    borderRadius: '8px',
+    padding: '12px 16px',
+    marginBottom: '20px',
+  },
+  searchInput: {
+    background: 'transparent',
+    border: 'none',
+    color: '#e2e8f0',
+    fontSize: '0.9rem',
+    outline: 'none',
+    flex: 1,
+  },
+  iconBtn: {
+    background: '#0f172a',
+    border: '1px solid #334155',
+    color: '#94a3b8',
+    padding: '10px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tableWrapper: {
+    overflowX: 'auto',
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+  },
+  tableHeaderRow: {
+    borderBottom: '2px solid #334155',
+  },
+  tableHeader: {
+    padding: '12px 14px',
+    textAlign: 'left',
+    color: '#64748b',
+    fontWeight: '600',
+    fontSize: '0.75rem',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
+  tableRow: {
+    borderBottom: '1px solid #334155',
+    transition: 'background 0.2s',
+  },
+  tableCell: {
+    padding: '14px',
+    fontSize: '0.85rem',
+    color: '#94a3b8',
+  },
+  guestBadge: {
+    background: '#16a34a22',
+    color: '#16a34a',
+    fontWeight: '700',
+    fontSize: '0.9rem',
+    padding: '4px 12px',
+    borderRadius: '20px',
+  },
+  statusBadge: {
+    padding: '4px 10px',
+    borderRadius: '20px',
+    fontSize: '0.75rem',
+    fontWeight: '600',
+  },
+  deleteBtn: {
+    background: 'transparent',
+    border: '1px solid #dc2626',
+    color: '#dc2626',
+    padding: '8px',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyState: {
+    textAlign: 'center',
+    padding: '60px 0',
+    color: '#64748b',
+  },
 };

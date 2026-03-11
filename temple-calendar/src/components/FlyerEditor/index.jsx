@@ -102,9 +102,14 @@ export default function FlyerEditor({ event, onClose }) {
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2800); };
 
   // ── Canvas init ───────────────────────────────────────────────────────────
+  const layoutStates  = useRef({});          // { square: fabricJSON, portrait: fabricJSON, … }
+  const placedImgUrl  = useRef('');          // last image URL placed — survives layout switch
+  // ── Canvas init — runs ONCE when Fabric is ready ──────────────────────────
   useEffect(() => {
     if (!fabricReady || !canvasRef.current) return;
     if (fabricRef.current) { try { fabricRef.current.dispose(); } catch (e) {} }
+    const dims = LAYOUTS[layout];
+    const t    = THEMES[theme];
     const canvas = new window.fabric.Canvas(canvasRef.current, {
       width: dims.w, height: dims.h,
       backgroundColor: t.bg, preserveObjectStacking: true,
@@ -112,7 +117,74 @@ export default function FlyerEditor({ event, onClose }) {
     fabricRef.current = canvas;
     buildFlyer({ canvas, dims, theme: t, event, onSelectionChange: setSelectedObject });
     return () => { try { canvas.dispose(); } catch (e) {} };
-  }, [fabricReady, layout, theme]); // eslint-disable-line
+  }, [fabricReady]); // eslint-disable-line  ← only runs once on mount
+  // ── Layout switch — save current state, resize, restore or rebuild ─────────
+  useEffect(() => {
+    const canvas = fabricRef.current;
+    if (!canvas || !fabricReady) return;
+    const newDims = LAYOUTS[layout];
+    // 1. Save the outgoing layout's full canvas JSON (includes images)
+    //    We store the *previous* layout key via a ref so we know what to key under
+    const prevKey = canvas._currentLayoutKey;
+    if (prevKey && prevKey !== layout) {
+      layoutStates.current[prevKey] = canvas.toJSON([
+        'name', 'selectable', 'evented', 'originX', 'originY',
+        'strokeDashArray', 'lineHeight', 'cropX', 'cropY',
+      ]);
+    }
+    canvas._currentLayoutKey = layout;
+    // 2. Resize canvas
+    canvas.setWidth(newDims.w);
+    canvas.setHeight(newDims.h);
+    const savedState = layoutStates.current[layout];
+    if (savedState) {
+      // 3a. Restore previously-saved state for this layout
+      canvas.loadFromJSON(savedState, () => canvas.renderAll());
+    } else {
+      // 3b. First visit — build fresh flyer, then re-place image if one exists
+      canvas.clear();
+      canvas.setBackgroundColor(THEMES[theme].bg, () => {});
+      buildFlyer({ canvas, dims: newDims, theme: THEMES[theme], event, onSelectionChange: setSelectedObject });
+      // Re-place image carried over from another layout
+      if (placedImgUrl.current) {
+        _placeImage({ canvas, url: placedImgUrl.current, dims: newDims });
+      }
+    }
+  }, [layout]); // eslint-disable-line  ← only layout changes trigger this
+  // ── Theme change — update colors WITHOUT destroying the canvas ─────────────
+  useEffect(() => {
+    const canvas = fabricRef.current;
+    if (!canvas || !fabricReady) return;
+    const t    = THEMES[theme];
+    const dims = LAYOUTS[layout];
+    // Update background
+    canvas.setBackgroundColor(t.bg, () => canvas.renderAll());
+    // Update named objects that carry theme colors
+    const colorMap = {
+      header_bg:  { fill: t.header },
+      footer_bg:  { fill: t.header },
+      temple_name: { fill: '#FFFFFF' },
+      temple_addr: { fill: 'rgba(255,255,255,0.85)' },
+      temple_info: { fill: 'rgba(255,255,255,0.75)' },
+      event_title: { fill: t.title },
+      event_date:  { fill: t.date },
+      event_time:  { fill: t.date },
+      event_desc:  { fill: t.text },
+      rsvp_link:   { fill: t.text },
+      img_hint:    { fill: t.date },
+      img_placeholder: { fill: t.accent, stroke: t.border },
+      sponsorship: { fill: t.title },
+    };
+    canvas.getObjects().forEach(obj => {
+      const updates = colorMap[obj.name];
+      if (updates) obj.set(updates);
+    });
+    // Update border rects (no name, but they are the first two objects)
+    canvas.getObjects()
+      .filter(o => o.type === 'rect' && !o.name)
+      .forEach(o => o.set({ stroke: t.border }));
+    canvas.renderAll();
+  }, [theme]); // eslint-disable-line  ← only theme changes trigger this
 
   // ── Responsive zoom ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -129,8 +201,9 @@ export default function FlyerEditor({ event, onClose }) {
   // ── Auto-build prompt from event ──────────────────────────────────────────
   // ── Place image on canvas ─────────────────────────────────────────────────
   const placeDeityImage = useCallback((url) => {
-    _placeImage({ canvas: fabricRef.current, url, dims });
-  }, [dims]);
+    placedImgUrl.current = url;                               // ← remember URL
+    _placeImage({ canvas: fabricRef.current, url, dims: LAYOUTS[layout] });
+  }, [layout]);
   useEffect(() => { setGenPrompt(buildPrompt(event)); }, [event]);
 
   // ── Keyboard delete ───────────────────────────────────────────────────────
@@ -426,67 +499,123 @@ export default function FlyerEditor({ event, onClose }) {
       <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: '#0f172a', display: 'flex', flexDirection: 'column', fontFamily: 'Georgia,serif' }}>
 
         {/* ═══ TOP TOOLBAR ═══ */}
-        <div style={{ height: 56, background: '#1e293b', borderBottom: '1px solid #334155', display: 'flex', alignItems: 'center', padding: '0 14px', gap: 10, flexShrink: 0, boxShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
-          <div style={{ background: 'linear-gradient(135deg,#c2410c,#7c2d12)', borderRadius: 8, padding: '5px 12px', color: 'white', fontWeight: '900', fontSize: '0.82rem', letterSpacing: '0.04em', flexShrink: 0 }}>
+        <div style={{ height: 72, background: '#1e293b', borderBottom: '2px solid #334155', display: 'flex', alignItems: 'center', padding: '0 16px', gap: 7, flexShrink: 0, boxShadow: '0 4px 24px rgba(0,0,0,0.6)', overflowX: 'auto' }}>
+          <div style={{ background: 'linear-gradient(135deg,#c2410c,#7c2d12)', borderRadius: 10, padding: '10px 16px', color: 'white', fontWeight: '900', fontSize: '0.95rem', letterSpacing: '0.04em', flexShrink: 0, boxShadow: '0 2px 12px rgba(194,65,12,0.6)', fontFamily: 'Georgia, serif' }}>
             🪔 Flyer Studio
           </div>
 
           {/* Event name */}
-          <span style={{ color: '#ffffff', fontSize: '0.9rem', fontWeight: '700', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>
+          <span style={{ color: '#ffffff', fontSize: '0.95rem', fontWeight: '800', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>
             {event?.title || 'New Flyer'}
           </span>
 
           {/* Language switcher */}
-          <div style={{ display: 'flex', gap: 4, marginLeft: 8 }}>
-            {LANGUAGES.map(lang => (
+          <div style={{ display: 'flex', gap: 4, marginLeft: 6 }}>
+            {LANGUAGES.map(lang => {
+              const active = activeLang === lang.code;
+              return (
               <button key={lang.code} onClick={() => handleTranslate(lang.code)} disabled={translating} style={{
-                padding: '4px 8px', border: `1px solid ${activeLang === lang.code ? '#c2410c' : '#334155'}`,
-                background: activeLang === lang.code ? 'rgba(194,65,12,0.2)' : 'transparent',
-                color: 'white', fontWeight: activeLang === lang.code ? '800' : '500',
-                borderRadius: 6, cursor: 'pointer', fontSize: '0.82rem',
+                  padding: '9px 12px', border: `2px solid ${active ? '#fb923c' : 'rgba(251,146,60,0.4)'}`,
+                  background: active ? 'linear-gradient(135deg,#c2410c,#92400e)' : 'rgba(251,146,60,0.1)',
+                  color: '#fff', fontWeight: '800', borderRadius: 9, cursor: 'pointer',
+                  fontSize: '0.82rem', fontFamily: 'Georgia, serif',
+                  boxShadow: active ? '0 2px 10px rgba(251,146,60,0.4)' : 'none',
               }}>
                 {lang.label}
               </button>
-            ))}
+              );
+            })}
           </div>
 
+          {/* Divider */}
+          <div style={{ width: 1, height: 38, background: '#475569', margin: '0 3px', flexShrink: 0 }} />
+
           {/* Layout picker */}
-          <div style={{ display: 'flex', gap: 4, marginLeft: 8 }}>
-            {Object.entries(LAYOUTS).map(([key, l]) => (
-              <button key={key} onClick={() => setLayout(key)} style={{
-                padding: '4px 10px', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.72rem',
-                background: layout === key ? '#c2410c' : 'rgba(255,255,255,0.1)',
-                color: 'white', fontWeight: layout === key ? '800' : '600',
+          <div style={{ display: 'flex', gap: 5, marginLeft: 8 }}>
+            {Object.entries(LAYOUTS).map(([key, l]) => {
+              const active = layout === key;
+              const colors = { square: '#f97316', portrait: '#6366f1', landscape: '#0891b2', story: '#a855f7' };
+              const c = colors[key];
+              return (
+                <button key={key} onClick={() => {
+                  if (key === layout) return;
+                  // Save current canvas JSON before switching
+                  if (fabricRef.current) {
+                    layoutStates.current[layout] = fabricRef.current.toJSON([
+                      'name','selectable','evented','originX','originY','strokeDashArray','lineHeight','cropX','cropY',
+                    ]);
+                    fabricRef.current._currentLayoutKey = key;
+                  }
+                  setLayout(key);
+                }} style={{
+                  padding: '9px 14px',
+                  border: `2px solid ${active ? c : c + '55'}`,
+                  borderRadius: 9, cursor: 'pointer', fontSize: '0.82rem', fontWeight: '800',
+                  background: active ? `linear-gradient(135deg,${c},${c}cc)` : `${c}22`,
+                  color: '#fff',
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  boxShadow: active ? `0 3px 12px ${c}55` : 'none',
+                  transform: active ? 'translateY(-1px)' : 'none',
+                  transition: 'all 0.15s',
+                  fontFamily: 'Georgia, serif',
               }}>
-                {l.icon} {l.label} <span style={{ opacity: 0.65, fontSize: '0.72rem' }}>{l.desc}</span>
-              </button>
-            ))}
+                  {l.icon} {l.label}
+                  <span style={{ opacity: 0.75, fontSize: '0.7rem' }}>{l.desc}</span>
+                </button>
+              );
+            })}
           </div>
 
           <div style={{ flex: 1 }} />
 
-          {/* Action buttons */}
-          <button onClick={() => setShowHistory(true)} style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid #334155', color: '#ffffff', borderRadius: 8, cursor: 'pointer', fontSize: '0.84rem', fontWeight:'700' }}>📚 History</button>
-          <button onClick={handleSaveDraft} disabled={saving} style={{ padding: '6px 12px', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.35)', color: '#34d399', borderRadius: 8, cursor: 'pointer', fontSize: '0.84rem', fontWeight:'700' }}>
-            💾 {saving ? 'Saving…' : 'Save Draft'}
-          </button>
-          <button onClick={handleSaveToS3} disabled={uploading} style={{ padding: '6px 12px', background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.35)', color: '#ffffff', borderRadius: 8, cursor: 'pointer', fontSize: '0.84rem', fontWeight:'700' }}>
-            ☁ {uploading ? 'Uploading…' : 'Save to Cloud'}
-          </button>
-          <button onClick={handleDownload} disabled={downloading} style={{ padding: '6px 16px', background: downloading ? '#334155' : 'linear-gradient(135deg,#16a34a,#065f46)', border: 'none', color: 'white', borderRadius: 8, cursor: downloading ? 'not-allowed' : 'pointer', fontWeight: '900', fontSize: '0.9rem' }}>
-            ⬇ Download
-          </button>
-          {/* Broadcast to WhatsApp / Facebook */}
-          <button onClick={() => setShowBroadcast(true)} style={{
-            padding: '6px 14px', border: 'none',
-            background: 'linear-gradient(135deg,#7c3aed,#4c1d95)',
-            color: 'white', borderRadius: 8, cursor: 'pointer',
-            fontWeight: '800', fontSize: '0.9rem', whiteSpace: 'nowrap',
-          }}>
-            📣 Broadcast
-          </button>
+          {/* Action buttons — match admin toolbar style */}
+          <button onClick={() => setShowHistory(true)} style={{
+            padding: '10px 14px', background: 'linear-gradient(135deg,#37415188,#1e293b88)',
+            border: '2px solid #64748b', color: '#fff', borderRadius: 10, cursor: 'pointer',
+            fontSize: '0.88rem', fontWeight: '800', fontFamily: 'Georgia, serif',
+            boxShadow: '0 2px 8px rgba(100,116,139,0.25)', display: 'flex', alignItems: 'center', gap: 6,
+          }}>🕐 History</button>
 
-          <button onClick={onClose} style={{ width: 32, height: 32, background: 'rgba(255,255,255,0.06)', border: '1px solid #475569', color: '#94a3b8', borderRadius: 8, cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✕</button>
+          <button onClick={handleSaveDraft} disabled={saving} style={{
+            padding: '10px 14px', background: 'linear-gradient(135deg,#0f766e88,#0d948888)',
+            border: '2px solid #14b8a6', color: '#fff', borderRadius: 10, cursor: 'pointer',
+            fontSize: '0.88rem', fontWeight: '800', fontFamily: 'Georgia, serif',
+            boxShadow: '0 2px 8px rgba(20,184,166,0.3)', display: 'flex', alignItems: 'center', gap: 6,
+          }}>💾 {saving ? 'Saving…' : 'Save Draft'}</button>
+
+          <button onClick={handleSaveToS3} disabled={uploading} style={{
+            padding: '10px 14px', background: 'linear-gradient(135deg,#0e749088,#0891b288)',
+            border: '2px solid #06b6d4', color: '#fff', borderRadius: 10, cursor: 'pointer',
+            fontSize: '0.88rem', fontWeight: '800', fontFamily: 'Georgia, serif',
+            boxShadow: '0 2px 8px rgba(6,182,212,0.3)', display: 'flex', alignItems: 'center', gap: 6,
+          }}>☁ {uploading ? 'Uploading…' : 'Save to Cloud'}</button>
+
+          <button onClick={handleDownload} disabled={downloading} style={{
+            padding: '10px 18px', background: downloading ? '#334155' : 'linear-gradient(135deg,#16a34a,#15803d)',
+            border: '2px solid #22c55e', color: 'white', borderRadius: 10,
+            cursor: downloading ? 'not-allowed' : 'pointer', fontWeight: '900', fontSize: '0.92rem',
+            boxShadow: '0 4px 16px rgba(22,163,74,0.5)', fontFamily: 'Georgia, serif',
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>⬇ Download</button>
+
+          <button onClick={() => setShowBroadcast(true)} style={{
+            padding: '10px 18px', border: '2px solid #a855f7',
+            background: 'linear-gradient(135deg,#6d28d9,#5b21b6)',
+            color: 'white', borderRadius: 10, cursor: 'pointer',
+            fontWeight: '900', fontSize: '0.92rem', fontFamily: 'Georgia, serif',
+            boxShadow: '0 4px 16px rgba(124,58,237,0.5)', whiteSpace: 'nowrap',
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>📣 Broadcast</button>
+
+          {/* Divider */}
+          <div style={{ width: 1, height: 38, background: '#475569', margin: '0 2px', flexShrink: 0 }} />
+
+          <button onClick={onClose} style={{
+            width: 38, height: 38, background: 'linear-gradient(135deg,#9f121288,#7f1d1d88)',
+            border: '2px solid #ef4444', color: '#fff', borderRadius: 10, cursor: 'pointer',
+            fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>✕</button>
+
         </div>
 
         {/* Toast */}
