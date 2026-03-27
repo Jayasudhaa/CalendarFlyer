@@ -1,0 +1,202 @@
+[
+  {
+    "id": "sep-04-krishnashtami",
+    "date": "2026-09-04",
+    "title": "Sri Krishnashtami",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Ashtami 11:47 AM",
+    "nakshatra": "Rohini 10:36 AM"
+  },
+  {
+    "id": "sep-05-mahalakshmi",
+    "date": "2026-09-05",
+    "title": "Sri Mahalakshmi Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Navami 9:28 AM",
+    "nakshatra": "Mrigasira 9:04 AM"
+  },
+  {
+    "id": "sep-06-siva",
+    "date": "2026-09-06",
+    "title": "Sri Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dasami 7:05 AM, Ekadasi afterwards",
+    "nakshatra": "Arudra 7:19 AM, Punarvasu afterwards"
+  },
+  {
+    "id": "sep-07-laborday",
+    "date": "2026-09-07",
+    "title": "Labor Day",
+    "time": "All Day",
+    "type": "holiday",
+    "tithi": "Dwadasi 2:17 AM Tue",
+    "nakshatra": "Pushyami 4:12 AM Tue"
+  },
+  {
+    "id": "sep-10-amavasya",
+    "date": "2026-09-10",
+    "title": "Amavasya",
+    "time": "8:25 PM",
+    "type": "panchang",
+    "tithi": "Amavasya 8:25 PM",
+    "nakshatra": "Purvaphalguni 12:43 PM Fri",
+    "moonPhase": "new"
+  },
+  {
+    "id": "sep-11-bhadrapada",
+    "date": "2026-09-11",
+    "title": "Bhadrapada Maasa Sukla Paksham starts",
+    "time": "All Day",
+    "type": "panchang",
+    "tithi": "Prathama 7:14 PM",
+    "nakshatra": "Uttaraphalguni 12:13 AM Sat"
+  },
+  {
+    "id": "sep-12-sudarsana",
+    "date": "2026-09-12",
+    "title": "Sri Sudarsana/Narasimha Homam & Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwitiya 6:37 PM",
+    "nakshatra": "Hasta 12:35 AM Sun"
+  },
+  {
+    "id": "sep-13-ganapathi",
+    "date": "2026-09-13",
+    "title": "Sri Vijaya Ganapathi / Murugan Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Tritiya 6:37 PM",
+    "nakshatra": "Chitta 1:25 AM Mon"
+  },
+  {
+    "id": "sep-14-vinayaka",
+    "date": "2026-09-14",
+    "title": "Sri Vinayaka Chaturthi",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Chaturthi 7:16 PM",
+    "nakshatra": "Swathi 2:43 AM Tue"
+  },
+  {
+    "id": "sep-18-andal",
+    "date": "2026-09-18",
+    "title": "Sri Andal Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Ashtami 2:56 AM Sat",
+    "nakshatra": "Jyeshta 10:04 AM"
+  },
+  {
+    "id": "sep-19-nimajjanam",
+    "date": "2026-09-19",
+    "title": "Sri Vinayaka Nimajjanam",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Navami 5:19 AM Sun",
+    "nakshatra": "Mula 1:11 PM"
+  },
+  {
+    "id": "sep-19-hanuman",
+    "date": "2026-09-19",
+    "title": "Sri Hanuman Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Navami 5:19 AM Sun",
+    "nakshatra": "Mula 1:11 PM"
+  },
+  {
+    "id": "sep-20-saibaba",
+    "date": "2026-09-20",
+    "title": "Sri Shirdi Sai Baba / Raghavendra Swamy Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dasami 7:29 AM Mon",
+    "nakshatra": "Purvashadha 4:02 PM"
+  },
+  {
+    "id": "sep-22-venkateswara-abhishekam",
+    "date": "2026-09-22",
+    "title": "Sri Venkateswara Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Ekadasi 9:13 AM",
+    "nakshatra": "Sravana 8:39 PM"
+  },
+  {
+    "id": "sep-22-jayanti",
+    "date": "2026-09-22",
+    "title": "Sri Venkateswara Swamy Jayanti / Sri Vedanta Desikar Tirunakshatram",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Ekadasi 9:13 AM",
+    "nakshatra": "Sravana 8:39 PM"
+  },
+  {
+    "id": "sep-24-ankurarpanam",
+    "date": "2026-09-24",
+    "title": "Pavitrotsavam Ankurarpanam",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Trayodasi 10:52 AM",
+    "nakshatra": "Satabhisha 10:46 PM"
+  },
+  {
+    "id": "sep-25-satyanarayana",
+    "date": "2026-09-25",
+    "title": "Sri Satyanarayana Swamy Pooja & Vratham (TBD)",
+    "time": "10:00 AM",
+    "type": "pooja",
+    "tithi": "Chaturdasi 10:41 AM",
+    "nakshatra": "Purvabhadra 11:04 PM"
+  },
+  {
+    "id": "sep-25-pavitrotsavam",
+    "date": "2026-09-25",
+    "title": "Pavitrotsavam Begins",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Chaturdasi 10:41 AM",
+    "nakshatra": "Purvabhadra 11:04 PM"
+  },
+  {
+    "id": "sep-26-purnima",
+    "date": "2026-09-26",
+    "title": "Purnima",
+    "time": "9:52 AM",
+    "type": "panchang",
+    "tithi": "Purnima 9:52 AM",
+    "nakshatra": "Uttarabhadra 10:39 PM",
+    "moonPhase": "full"
+  },
+  {
+    "id": "sep-27-kalyanam",
+    "date": "2026-09-27",
+    "title": "Sri Venkateswara Kalyanam",
+    "time": "11:00 AM",
+    "type": "kalyanam",
+    "tithi": "Prathama 8:30 AM",
+    "nakshatra": "Revathi 9:37 PM"
+  },
+  {
+    "id": "sep-27-shanti-kalyanam",
+    "date": "2026-09-27",
+    "title": "Shanti Kalyanam / Pavitrotsavam Ends",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Prathama 8:30 AM",
+    "nakshatra": "Revathi 9:37 PM"
+  },
+  {
+    "id": "sep-28-bhadrapada-krishna",
+    "date": "2026-09-28",
+    "title": "Bhadrapada Maasa Krishna Paksham starts",
+    "time": "All Day",
+    "type": "panchang",
+    "tithi": "Dwitiya 6:44 AM, Tritiya afterwards",
+    "nakshatra": "Aswini 8:32 PM"
+  }
+]
