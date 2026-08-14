@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CalendarFly theme: Cream/Saffron (locked default) ─────────────────────
+   Every component reads these instead of hardcoding colors, so the palette
+   stays consistent across the whole app — admin, public calendar, modals. */
+:root {
+  --cf-bg-base:        #fdf8f0;   /* page background */
+  --cf-bg-surface:     #fffaf1;   /* cards, panels, headers */
+  --cf-bg-deep:         #f5ead4;  /* recessed areas, code chips */
+  --cf-bg-card:        #fffaf1;   /* event/day cards */
+  --cf-sidebar-bg:     #fdf6e8;   /* left sidebar */
+  --cf-header-bg:      #231206;   /* top toolbar stays dark for contrast */
+  --cf-subheader-bg:   #f7ecd6;   /* address/phone strip */
+  --cf-border:         #e8d5a3;   /* default border */
+  --cf-border-accent:  #c9943a55; /* accent-tinted border */
+  --cf-accent:         #92400e;   /* gold-brown accent (headings, TODAY badge) */
+  --cf-accent-hover:   #7c3a0d;   /* accent on hover/active */
+  --cf-accent-glow:    #c9943a20; /* soft glow behind TODAY / spotlight */
+  --cf-text-primary:   #3d2b1a;   /* main text */
+  --cf-text-secondary: #7c4a12;   /* sub-headings, dates */
+  --cf-text-muted:     #9c8563;   /* metadata, timestamps */
+  --cf-btn-bg:         linear-gradient(135deg,#c2410c,#7c2d12); /* primary buttons */
+}
+body {
+  margin: 0;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--cf-bg-base);
+  color: var(--cf-text-primary);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+.cf-font-heading {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+.cf-font-body {
+  font-family: 'DM Sans', sans-serif;
+}

@@ -1,0 +1,175 @@
+[
+  {
+    "id": "mar-01",
+    "date": "2026-03-01",
+    "title": "Sri Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Trayodasi 6:42 AM, Chaturdasi afterwards",
+    "nakshatra": "Aslesha 7:13 PM"
+  },
+  {
+    "id": "mar-02-satyanarayana",
+    "date": "2026-03-02",
+    "title": "Sri Satyanarayana Swamy Pooja & Vratham",
+    "time": "10:00 AM",
+    "type": "pooja",
+    "tithi": "Purnima 4:37 AM Tue",
+    "nakshatra": "Magha 7:00 PM"
+  },
+  {
+    "id": "mar-02-holi",
+    "date": "2026-03-02",
+    "title": "Holi / Lunar Eclipse",
+    "time": "Evening",
+    "type": "festival",
+    "tithi": "Purnima 4:37 AM Tue",
+    "nakshatra": "Magha 7:00 PM"
+  },
+  {
+    "id": "mar-02-mahalakshmi-jayanti",
+    "date": "2026-03-02",
+    "title": "Sri Mahalakshmi Jayanti",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Purnima 4:37 AM Tue",
+    "nakshatra": "Magha 7:00 PM"
+  },
+  {
+    "id": "20260302-moon",
+    "date": "2026-03-02",
+    "title": "Purnima",
+    "time": "Purnima",
+    "type": "panchang",
+    "tithi": "Purnima 4:37 AM Tue",
+    "nakshatra": "Hasta 5:02 AM",
+    "moonPhase": "full"
+  },
+  {
+    "id": "mar-08",
+    "date": "2026-03-08",
+    "title": "Sri Vijaya Ganapathi / Murugan Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Panchami 8:44 AM",
+    "nakshatra": "Visakha 3:41 AM Mon"
+  },
+  {
+    "id": "mar-14",
+    "date": "2026-03-14",
+    "title": "Sri Venkateswara Kalyanam",
+    "time": "11:00 AM",
+    "type": "kalyanam",
+    "tithi": "Ekadasi 8:47 PM",
+    "nakshatra": "Uttarashadha 4:08 PM"
+  },
+  {
+    "id": "mar-15",
+    "date": "2026-03-15",
+    "title": "Sri Shirdi Sai Baba / Raghavendra Swamy Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwadasi 9:14 PM",
+    "nakshatra": "Sravana 5:27 PM"
+  },
+  {
+    "id": "20260318-moon",
+    "date": "2026-03-18",
+    "title": "Amavasya",
+    "time": "Amavasya",
+    "type": "panchang",
+    "tithi": "Amavasya 6:24 PM",
+    "nakshatra": "Uttarabhadra 9:05 PM",
+    "moonPhase": "new"
+  },
+  {
+    "id": "mar-19-ugadi",
+    "date": "2026-03-19",
+    "title": "Sri Parabhava Naama Samvatsara Ugadi",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Prathama 4:22 PM",
+    "nakshatra": "Uttarabhadra 3:33 PM"
+  },
+  {
+    "id": "mar-19-varaha",
+    "date": "2026-03-19",
+    "title": "Sri Varaha Jayanti",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Prathama 4:22 PM",
+    "nakshatra": "Uttarabhadra 3:33 PM"
+  },
+  {
+    "id": "mar-20",
+    "date": "2026-03-20",
+    "title": "Sri Andal Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwitiya 1:59 PM",
+    "nakshatra": "Revathi 1:46 PM"
+  },
+  {
+    "id": "mar-21",
+    "date": "2026-03-21",
+    "title": "Sri Mahalakshmi Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Tritiya 11:24 AM",
+    "nakshatra": "Aswini 12:04 AM"
+  },
+  {
+    "id": "mar-22-venkateswara",
+    "date": "2026-03-22",
+    "title": "Sri Venkateswara Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturthi 6:50 AM",
+    "nakshatra": "Swathi 12:52 AM Sun"
+  },
+  {
+    "id": "mar-22-sudarsana",
+    "date": "2026-03-22",
+    "title": "Sri Sudarsana/Narasimha Homam & Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturthi 8:45 AM",
+    "nakshatra": "Bharani 10:09 AM"
+  },
+  {
+    "id": "mar-26",
+    "date": "2026-03-26",
+    "title": "Sri Rama Navami",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Dasami 8:22 PM",
+    "nakshatra": "Pushyami 2:24 AM Sat"
+  },
+  {
+    "id": "mar-28-kalyanam",
+    "date": "2026-03-28",
+    "title": "Sri Sitarama Kalyanam",
+    "time": "6:00 PM",
+    "type": "kalyanam",
+    "tithi": "Dwadasi 6:43 PM",
+    "nakshatra": "Magha 2:19 AM Mon"
+  },
+  {
+    "id": "mar-28-hanuman",
+    "date": "2026-03-28",
+    "title": "Sri Hanuman Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwadasi 6:43 PM",
+    "nakshatra": "Magha 2:19 AM Mon"
+  },
+  {
+    "id": "mar-31",
+    "date": "2026-03-31",
+    "title": "Panguni Uttaram",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Chaturdasi 6:38 PM",
+    "nakshatra": "Uttaraphalguni 3:38 AM Wed"
+  }
+]

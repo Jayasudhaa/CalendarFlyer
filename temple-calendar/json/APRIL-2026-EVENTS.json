@@ -1,0 +1,157 @@
+[
+  {
+    "id": "apr-01",
+    "date": "2026-04-01",
+    "title": "Sri Satyanarayana Swamy Pooja & Vratham",
+    "time": "10:00 AM",
+    "type": "pooja",
+    "tithi": "Purnima 7:13 PM",
+    "nakshatra": "Hasta 5:09 AM Thu"
+  },
+  {
+    "id": "20260401-moon",
+    "date": "2026-04-01",
+    "title": "Purnima",
+    "time": "Purnima",
+    "type": "panchang",
+    "tithi": "Purnima 7:13 PM",
+    "nakshatra": "Uttaraphalguni 10:38 PM",
+    "moonPhase": "full"
+  },
+  {
+    "id": "apr-05",
+    "date": "2026-04-05",
+    "title": "Sri Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturthi 1:41 AM Mon",
+    "nakshatra": "Visakha 11:37 AM"
+  },
+  {
+    "id": "apr-11",
+    "date": "2026-04-11",
+    "title": "Sri Venkateswara Kalyanam",
+    "time": "11:00 AM",
+    "type": "kalyanam",
+    "tithi": "Navami 12:08 PM",
+    "nakshatra": "Sravana 2:44 AM Sun"
+  },
+  {
+    "id": "apr-12",
+    "date": "2026-04-12",
+    "title": "Sri Vijaya Ganapathi / Murugan Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dasami 12:50 PM",
+    "nakshatra": "Dhanishta 3:35 AM Mon"
+  },
+  {
+    "id": "apr-14-tamil-new-year",
+    "date": "2026-04-14",
+    "title": "Tamil New Year / Vishu",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Trayodasi 10:03 AM",
+    "nakshatra": "Uttarabhadra 1:28 AM Thu"
+  },
+  {
+    "id": "apr-17",
+    "date": "2026-04-17",
+    "title": "Sri Andal Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Prathama 1:41 AM Sat",
+    "nakshatra": "Aswini 9:11 PM"
+  },
+  {
+    "id": "20260417-moon",
+    "date": "2026-04-17",
+    "title": "Amavasya",
+    "time": "Amavasya",
+    "type": "panchang",
+    "tithi": "Amavasya 4:42 AM",
+    "nakshatra": "Uttarabhadra 4:21 AM",
+    "moonPhase": "new"
+  },
+  {
+    "id": "apr-18",
+    "date": "2026-04-18",
+    "title": "Sri Mahalakshmi Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwitiya 10:21 PM",
+    "nakshatra": "Bharani 6:39 PM"
+  },
+  {
+    "id": "apr-19-venkateswara",
+    "date": "2026-04-19",
+    "title": "Sri Venkateswara Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Tritiya 11:32 PM",
+    "nakshatra": "Swathi 8:56 AM"
+  },
+  {
+    "id": "apr-19-sai-baba",
+    "date": "2026-04-19",
+    "title": "Sri Shirdi Sai Baba / Raghavendra Swamy Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Tritiya 7:00 PM",
+    "nakshatra": "Krittika 3:58 PM"
+  },
+  {
+    "id": "apr-19-akshaya-tritiya",
+    "date": "2026-04-19",
+    "title": "Akshaya Tritiya",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Tritiya 7:00 PM",
+    "nakshatra": "Krittika 3:58 PM"
+  },
+  {
+    "id": "apr-21",
+    "date": "2026-04-21",
+    "title": "Sri Sankaracharya Jayanti",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Panchami 12:54 PM",
+    "nakshatra": "Mrigasira 11:31 AM"
+  },
+  {
+    "id": "apr-22",
+    "date": "2026-04-22",
+    "title": "Sri Ramanuja Jayanti",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Shashti 10:23 AM",
+    "nakshatra": "Arudra 9:37 AM"
+  },
+  {
+    "id": "apr-25",
+    "date": "2026-04-25",
+    "title": "Sri Hanuman Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Navami 6:00 AM, Dasami afterwards",
+    "nakshatra": "Aslesha 7:26 AM"
+  },
+  {
+    "id": "apr-26",
+    "date": "2026-04-26",
+    "title": "Sri Sudarsana/Narasimha Homam & Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Ekadasi 5:48 AM Mon",
+    "nakshatra": "Magha 7:57 AM"
+  },
+  {
+    "id": "apr-30",
+    "date": "2026-04-30",
+    "title": "Sri Nrusimha Jayanti",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Chaturdasi 8:46 AM",
+    "nakshatra": "Chitta 1:48 PM"
+  }
+]

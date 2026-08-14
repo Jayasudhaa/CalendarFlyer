@@ -1,0 +1,31 @@
+{
+  "name": "temple-calendar-server",
+  "version": "1.0.0",
+  "description": "Backend server for Temple Calendar - handles OpenAI image generation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.993.0",
+    "@aws-sdk/client-s3": "^3.994.0",
+    "@aws-sdk/client-sts": "^3.994.0",
+    "@aws-sdk/lib-dynamodb": "^3.993.0",
+    "aws-sdk": "^2.1693.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-session": "^1.19.0",
+    "form-data": "^4.0.5",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.0.2",
+    "node-fetch": "^2.7.0",
+    "openai": "^6.22.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

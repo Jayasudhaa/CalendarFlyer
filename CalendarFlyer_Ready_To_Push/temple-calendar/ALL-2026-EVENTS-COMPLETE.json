@@ -1,0 +1,182 @@
+[
+  {
+    "id": "jan-01",
+    "date": "2026-01-01",
+    "title": "New Year Day",
+    "time": "All Day",
+    "type": "holiday",
+    "tithi": "Trayodasi 9:52 AM",
+    "nakshatra": "Rohini 10:17 AM"
+  },
+  {
+    "id": "jan-02",
+    "date": "2026-01-02",
+    "title": "Sri Satyanarayana Swamy Pooja & Vratham",
+    "time": "10:00 AM",
+    "type": "pooja",
+    "tithi": "Chaturdasi 6:25 AM, Purnima afterwards",
+    "nakshatra": "Mrigasira 7:34 AM, Arudra afterwards"
+  },
+  {
+    "id": "jan-03",
+    "date": "2026-01-03",
+    "title": "Sri Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwitiya 9:29 PM",
+    "nakshatra": "Pushyami 12:55 AM Mon"
+  },
+  {
+    "id": "jan-10",
+    "date": "2026-01-10",
+    "title": "Sri Venkateswara Kalyanam",
+    "time": "11:00 AM",
+    "type": "kalyanam",
+    "tithi": "Ashtami 9:54 PM",
+    "nakshatra": "Chitta 5:44 AM Sun"
+  },
+  {
+    "id": "jan-11",
+    "date": "2026-01-11",
+    "title": "Sri Vijaya Ganapathi / Murugan Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Navami 12:17 AM Mon",
+    "nakshatra": "Swathi 8:27 AM Mon"
+  },
+  {
+    "id": "jan-13-1",
+    "date": "2026-01-13",
+    "title": "Bhogi",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Dwadasi 7:45 AM Thu",
+    "nakshatra": "Anuradha 2:32 PM"
+  },
+  {
+    "id": "jan-13-2",
+    "date": "2026-01-13",
+    "title": "Sri Goda (Andal) Kalyanam",
+    "time": "6:00 PM",
+    "type": "kalyanam",
+    "tithi": "Dwadasi 7:45 AM Thu",
+    "nakshatra": "Anuradha 2:32 PM"
+  },
+  {
+    "id": "jan-14-1",
+    "date": "2026-01-14",
+    "title": "Makara Sankranti / Pongal",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Dwadasi 7:45 AM",
+    "nakshatra": "Jyeshta 5:05 PM"
+  },
+  {
+    "id": "jan-14-2",
+    "date": "2026-01-14",
+    "title": "Uttarayanam Begins",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Dwadasi 7:45 AM",
+    "nakshatra": "Jyeshta 5:05 PM"
+  },
+  {
+    "id": "jan-15-1",
+    "date": "2026-01-15",
+    "title": "Kanuma",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Trayodasi 9:50 AM",
+    "nakshatra": "Mula 7:39 PM"
+  },
+  {
+    "id": "jan-15-2",
+    "date": "2026-01-15",
+    "title": "Sri Andal Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Trayodasi 9:50 AM",
+    "nakshatra": "Mula 7:39 PM"
+  },
+  {
+    "id": "jan-16",
+    "date": "2026-01-16",
+    "title": "Sri Mahalakshmi Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturdasi 11:32 AM",
+    "nakshatra": "Purvashadha 9:41 PM"
+  },
+  {
+    "id": "jan-17",
+    "date": "2026-01-17",
+    "title": "Sri Venkateswara Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Prathama 12:03 AM Sun",
+    "nakshatra": "Punarvasu 2:43 AM Sun"
+  },
+  {
+    "id": "jan-18",
+    "date": "2026-01-18",
+    "title": "Sri Shirdi Sai Baba / Raghavendra Swamy Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Amavasya 12:50 PM",
+    "nakshatra": "Uttarashadha 11:10 PM"
+  },
+  {
+    "id": "jan-23",
+    "date": "2026-01-23",
+    "title": "Vasanta Panchami",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Panchami 1:15 PM",
+    "nakshatra": "Uttarabhadra 1:44 AM Sat"
+  },
+  {
+    "id": "jan-24",
+    "date": "2026-01-24",
+    "title": "Sri Hanuman Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Shashti 12:10 PM",
+    "nakshatra": "Revathi 12:56 AM Sun"
+  },
+  {
+    "id": "jan-25-1",
+    "date": "2026-01-25",
+    "title": "Sri Sudarsana/Narasimha Homam & Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Saptami 10:41 AM",
+    "nakshatra": "Aswini 12:02 AM Mon"
+  },
+  {
+    "id": "jan-25-2",
+    "date": "2026-01-25",
+    "title": "Ratha Saptami",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Saptami 10:41 AM",
+    "nakshatra": "Aswini 12:02 AM Mon"
+  },
+  {
+    "id": "jan-28",
+    "date": "2026-01-28",
+    "title": "Bheeshma Ekadasi",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Ekadasi 1:29 AM Thu",
+    "nakshatra": "Rohini 7:03 PM"
+  },
+  {
+    "id": "jan-31",
+    "date": "2026-01-31",
+    "title": "Sri Satyanarayana Swamy Pooja & Vratham",
+    "time": "10:00 AM",
+    "type": "pooja",
+    "tithi": "Chaturdasi 5:24 PM",
+    "nakshatra": "Punarvasu 1:04 PM"
+  }
+]
