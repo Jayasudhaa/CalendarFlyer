@@ -8,7 +8,7 @@ Live app: [calendarflyapp.com](https://calendarflyapp.com) · Admin: [calendarfl
 
 ## The Problem
 
-Temples, gurdwaras, and cultural community organizations run their event calendars the same way they did 20 years ago: a volunteer manually posts flyers, forwards WhatsApp messages one group at a time, and tracks RSVPs in a spreadsheet or not at all. There's no single source of truth for "what's happening this month," no automated multi-channel broadcast, and no way for a devotee to just *ask* — in their own language — what's coming up. Off-the-shelf tools like Eventbrite or Mailchimp aren't built for this audience: they don't understand a Hindu panchang, they're not WhatsApp-first (the primary channel for diaspora communities), and they assume paid marketing budgets small nonprofits don't have.
+Temples, non profit organizations and cultural community organizations run their event calendars the same way they did 20 years ago: a volunteer manually posts flyers, forwards WhatsApp messages one group at a time, and tracks RSVPs in a spreadsheet or not at all. There's no single source of truth for "what's happening this month," no automated multi-channel broadcast, and no way for a devotee to just *ask* — in their own language — what's coming up. Off-the-shelf tools like Eventbrite or Mailchimp aren't built for this audience: they don't understand a Hindu panchang, they're not WhatsApp-first (the primary channel for diaspora communities), and they assume paid marketing budgets small nonprofits don't have.
 
 ## The Solution
 
