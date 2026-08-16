@@ -4,8 +4,6 @@
 
 Live app: [calendarflyapp.com](https://calendarflyapp.com) · Admin: [calendarflyapp.com/admin](https://calendarflyapp.com/admin)
 
-Built for and running in production at **Sri Venkateswara Swamy Temple of Colorado**.
-
 ---
 
 ## The Problem
