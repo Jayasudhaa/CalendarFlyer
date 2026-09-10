@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment variables - NEVER commit these
+.env
+server/.env
+*.env
+*.env.local
+
+.env
+temple-calendar/.env
+temple-calendar-complete/server/.env
+server/env.dev-prod-updated.txt
+*.env
+
+# Build output
+dist/
+build/
+temple-calendar/dist/
+
+# AWS
+.aws/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vite cache
+.vite/
+temple-calendar/.vite/
+
+# Runtime-editable AI settings (super admin panel writes here)
+server/data/
+
+# Secret files - API keys and configs
+server/apprunner-config.json
+apprunner-config.json
+instance-config.json
+*-config.json
+
+# Ignore zip archives
+*.zip
+
+# node
+node_modules/
+
+# build
+dist/
+server/dist-frontend/
+
+# misc
+*.log
+
+server/apprunner.jsonserver/env.dev-prod-updated.txt
+Claude outputs/

@@ -1,0 +1,545 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CalendarFly theme: Jet Black header / White pages ──────────────────────
+   Every component reads these instead of hardcoding colors, so the palette
+   stays consistent across the whole app — admin, public calendar, modals.
+   Was a cream/saffron page bg with a dark-brown toolbar; page surfaces are
+   now pure white (with a faint off-white for recessed/card layering) and
+   the toolbar reads var(--cf-header-bg) for its jet-black base — see
+   AdminToolbar.jsx for the glossy highlight layered on top of it. --cf-accent
+   (gold-brown) and the text colors are unchanged — only backgrounds/borders
+   and the toolbar moved. */
+:root {
+  --cf-bg-base:        #ffffff;   /* page background */
+  --cf-bg-surface:     #ffffff;   /* cards, panels, headers */
+  --cf-bg-deep:         #fafafa;  /* recessed areas, code chips */
+  --cf-bg-card:        #fafafa;   /* event/day cards */
+  --cf-sidebar-bg:     #ffffff;   /* left sidebar */
+  --cf-header-bg:      #000000;   /* top toolbar — jet black */
+  --cf-subheader-bg:   #ffffff;   /* address/phone strip */
+  --cf-border:         #d4d4d8;   /* default border — darkened from #e5e5e6 for grid/panel visibility */
+  --cf-border-accent:  #00000014; /* accent-tinted border */
+  --cf-accent:         #92400e;   /* gold-brown accent (headings, TODAY badge) */
+  --cf-accent-hover:   #7c3a0d;   /* accent on hover/active */
+  --cf-accent-glow:    #c9943a20; /* soft glow behind TODAY / spotlight */
+  /* Text tokens flipped from brown to true black/gray — the brown values
+     below were left over from the cream theme and were reading as muddy,
+     low-contrast text against the new white/black surfaces. */
+  --cf-text-primary:   #0a0a0a;   /* main text — near-black */
+  --cf-text-secondary: #27272a;   /* sub-headings, dates */
+  --cf-text-muted:     #52525b;   /* metadata, timestamps — still muted but readable */
+  --cf-btn-bg:         linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 55%), linear-gradient(135deg,#3a3a3a,#000000); /* primary buttons — glossy black */
+}
+html {
+  /* Slightly larger base size — scales every rem-based text site-wide (Tailwind
+     pages + the toolbar) without touching individual component styles. */
+  font-size: 106%;
+}
+body {
+  margin: 0;
+  /* Playfair Display is a display/headline serif — thin hairline strokes,
+     high stroke contrast. Great for big titles and toolbar buttons, but it
+     reads blurry and unclear at the small sizes used for body copy, form
+     labels and helper text. DM Sans is the legible workhorse font for that;
+     Playfair stays reserved for headings (see h1-h6 / .cf-font-heading below)
+     and anywhere a component explicitly asks for it (toolbar, page titles). */
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--cf-bg-base);
+  color: var(--cf-text-primary);
+}
+/* Darken the two most commonly-used muted Tailwind text colors (used across
+   Settings / My Profile / Subscription / Landing / Login for helper text and
+   labels) — color-only change, no layout impact. */
+.text-gray-400 { color: #6b7280 !important; }
+.text-gray-500 { color: #52525b !important; }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+.cf-font-heading {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+.cf-font-body {
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Admin-area chrome (toolbar, account menu, shared card/grid tweaks) ────
+   Moved here from App.jsx's AdminCalendar-only inline <style> tag so it's
+   available on every admin-area page (Profile/Settings/Subscription/
+   Analytics/Flyer Studio all render <AdminToolbar/> now, not just /admin —
+   these rules can't only exist while AdminCalendar itself is mounted). */
+@keyframes cfShimmer { 0%,100%{opacity:0.3;transform:translateX(-120%)} 50%{opacity:1;transform:translateX(120%)} }
+@keyframes cfPulse   { 0%,100%{opacity:0.3} 50%{opacity:0.9} }
+@keyframes cfGlow    { 0%,100%{box-shadow:0 0 8px #c9943a20} 50%{box-shadow:0 0 24px #c9943a50} }
+@keyframes cfNavShine { 0%{left:-60%} 30%{left:130%} 100%{left:130%} }
+
+/* ── "Boom" success celebration — Social Connect wizard (SocialMediaPage.jsx) ──
+   One checkmark pop + expanding ring + a burst of dots, colored per platform
+   via .cf-boom-ig (defaults to Facebook's gold). Respects reduced-motion. */
+@keyframes cfBoomCheckPop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  55%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes cfBoomRing {
+  0%   { transform: scale(0.6); opacity: 0.55; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+@keyframes cfBoomDot {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-42px) scale(0.3); opacity: 0; }
+}
+.cf-boom-stage {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  margin: 4px auto 14px;
+  --boom-c1: #f0b429;
+  --boom-c2: #fbbf24;
+}
+.cf-boom-stage.cf-boom-ig {
+  --boom-c1: #e1306c;
+  --boom-c2: #833ab4;
+}
+.cf-boom-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 2px solid var(--boom-c2);
+  animation: cfBoomRing 900ms ease-out both;
+}
+.cf-boom-check {
+  position: absolute;
+  inset: 12px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--boom-c1), var(--boom-c2));
+  box-shadow: 0 8px 20px -6px rgba(0,0,0,0.35);
+  animation: cfBoomCheckPop 450ms cubic-bezier(.34,1.56,.64,1) both;
+}
+.cf-boom-spoke {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+}
+.cf-boom-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--boom-c2);
+  margin-top: -3px;
+  animation: cfBoomDot 700ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cf-boom-ring, .cf-boom-check, .cf-boom-dot { animation: none; }
+}
+
+/* ── Settings page — bigger type scale + a bit more polish ────────────────
+   Scoped to .cf-settings-premium (PremiumSettings.jsx's root) rather than
+   edited into hundreds of className strings — remaps Tailwind's utility
+   sizes one step up so every label/hint/heading on the page grows together,
+   plus softer shadows/rounder cards on the repeated section-card pattern
+   used throughout (Organization, Branding, Subscription, Social Media, …). */
+.cf-settings-premium .text-xs   { font-size: 0.875rem !important; line-height: 1.4 !important; }
+.cf-settings-premium .text-sm   { font-size: 1rem !important; line-height: 1.55 !important; }
+.cf-settings-premium .text-base { font-size: 1.125rem !important; line-height: 1.6 !important; }
+.cf-settings-premium .text-lg   { font-size: 1.3125rem !important; line-height: 1.4 !important; }
+.cf-settings-premium .text-xl   { font-size: 1.5rem !important; line-height: 1.35 !important; }
+.cf-settings-premium .text-2xl  { font-size: 1.75rem !important; line-height: 1.3 !important; }
+.cf-settings-premium .text-3xl  { font-size: 2.125rem !important; line-height: 1.25 !important; }
+.cf-settings-premium input, .cf-settings-premium select, .cf-settings-premium textarea {
+  font-size: 1.0625rem;
+}
+.cf-settings-premium label { letter-spacing: 0.01em; }
+.cf-settings-premium .bg-white.rounded-xl.shadow-sm.border.border-gray-200 {
+  border-radius: 1.15rem;
+  box-shadow: 0 14px 36px -20px rgba(0,0,0,0.16);
+  border-color: #ececea;
+}
+.cf-settings-premium .rounded-lg { border-radius: 0.75rem; }
+.cf-settings-premium h1, .cf-settings-premium h2 { letter-spacing: -0.01em; }
+
+/* The one "highlighted" section — Social Media Connections, now the home
+   for every Broadcast channel. A gold→pink top bar (echoing the Facebook
+   wizard's gold and the Instagram wizard's pink/purple) plus a warm-tinted
+   border/shadow instead of the plain white-card look. */
+.cf-settings-premium .cf-settings-highlight {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(240, 180, 41, 0.35) !important;
+  box-shadow: 0 0 0 1px rgba(240, 180, 41, 0.16), 0 22px 50px -22px rgba(225, 48, 108, 0.28), 0 14px 36px -20px rgba(0,0,0,0.14);
+}
+.cf-settings-highlight::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #f0b429, #fbbf24, #e1306c, #833ab4);
+}
+
+* { box-sizing: border-box; }
+/* ── Toolbar nav buttons — jet-black/white "ghost" style ──────────────────
+   Was a gold-glow-on-dark-brown look tuned for the old cream/saffron
+   toolbar; restyled monochrome (white text/borders on the jet-black
+   toolbar) to match — see AdminToolbar.jsx's .cf-toolbar background. The
+   org/temple name keeps its gold accent (a deliberate, separately-styled
+   exception — see the inline `.org`-equivalent span in AdminToolbar.jsx),
+   everything else here went neutral. */
+.cf-nav-btn {
+  padding: 8px 13px;
+  border-radius: 7px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  font-family: 'Playfair Display', Georgia, serif;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #f4f4f5;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.12), 0 1px 3px rgba(0,0,0,0.5);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cf-nav-btn:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.18);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+.cf-nav-btn.cf-nav-active {
+  background: rgba(255,255,255,0.11);
+  border-color: rgba(255,255,255,0.2);
+  color: #ffffff;
+}
+.cf-nav-btn.cf-nav-danger:hover {
+  background: rgba(220,60,50,0.14);
+  border-color: rgba(220,90,80,0.55);
+  color: #ffb8a8;
+}
+.cf-nav-btn.cf-nav-cta {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 55%), linear-gradient(135deg,#3a3a3a,#000000);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 3px 14px -4px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.16);
+}
+.cf-nav-btn.cf-nav-cta::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 35%; height: 100%;
+  background: linear-gradient(115deg, transparent, rgba(255,255,255,0.65), transparent);
+  transform: skewX(-20deg);
+  animation: cfNavShine 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+.cf-nav-btn.cf-nav-cta:hover {
+  background: linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 55%), linear-gradient(135deg,#4a4a4a,#000000);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 18px -4px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.2);
+  color: #fff;
+}
+/* ── Today's calendar cell — same diagonal shine sweep as "+ Add Event" ── */
+.cf-today-shine { position: relative; }
+.cf-today-shine::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 35%; height: 100%;
+  background: linear-gradient(115deg, transparent, rgba(255,235,180,0.55), transparent);
+  transform: skewX(-20deg);
+  animation: cfNavShine 3.6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+/* ── Account menu — jet-black/white, matching the nav buttons above ── */
+.cf-acct-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 6px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+.cf-acct-btn:hover, .cf-acct-btn.cf-nav-active {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.24);
+}
+.cf-acct-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,#57534e,#1c1917);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  border: 1px solid rgba(255,255,255,0.18);
+  flex-shrink: 0;
+}
+.cf-acct-btn-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+  max-width: 100px;
+}
+.cf-acct-btn-name {
+  color: #f8f8f7;
+  font-size: 0.94rem;
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.12), 0 1px 3px rgba(0,0,0,0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.cf-acct-chevron { color: #d4d4d3; margin-left: 2px; }
+.cf-acct-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 268px;
+  background: linear-gradient(180deg,#1a1a1a,#000000);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.3);
+  overflow: hidden;
+  font-family: 'Playfair Display', Georgia, serif;
+  z-index: 151;
+}
+.cf-acct-menu-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+}
+.cf-acct-menu-header .org { color: #f5f5f4; font-size: 0.92rem; font-weight: 800; }
+.cf-acct-menu-header .email { color: #8a8a88; font-size: 0.7rem; margin-top: 2px; }
+.cf-acct-menu-group { padding: 6px; }
+.cf-acct-menu-divider { height: 1px; background: rgba(255,255,255,0.12); margin: 4px 0; }
+.cf-acct-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 10px 10px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  color: #d4d4d2;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+.cf-acct-menu-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.cf-acct-menu-item .ic { flex-shrink: 0; color: #a8a29e; }
+.cf-acct-menu-item:hover .ic { color: #e7e5e4; }
+.cf-acct-menu-item .badge {
+  margin-left: auto;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  background: rgba(255,255,255,0.14);
+  color: #e7e5e4;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.cf-acct-menu-item.cf-acct-danger { color: #e69a8c; }
+.cf-acct-menu-item.cf-acct-danger .ic { color: #e69a8c; }
+.cf-acct-menu-item.cf-acct-danger:hover { background: rgba(220,60,50,0.14); color: #ffb8a8; }
+.cf-acct-menu-item.cf-acct-danger:hover .ic { color: #ffb8a8; }
+/* ── Laptop (max 1360px): keep icons + tooltips, drop secondary labels so the bigger toolbar font still fits ── */
+@media(max-width:1360px){
+  .cf-nav-btn .cf-nav-btn-text { display: none; }
+  .cf-nav-btn.cf-nav-cta .cf-nav-btn-text { display: inline; }
+  .cf-nav-btn { padding: 7px 10px; }
+}
+/* ── Tablet (max 900px) ── */
+@media(max-width:900px){
+  .cf-desktop-nav{display:none !important;}
+  .cf-hamburger{display:flex !important;}
+  .cf-sidebar{display:none !important;}
+  .cf-subheader { flex-direction: column !important; gap: 4px !important; padding: 6px 12px !important; }
+  .cf-subheader-url { display: none !important; }
+  .cf-body { flex-direction: column !important; }
+  .cf-calendar-area { min-width: 0 !important; }
+}
+/* ── Phone (max 600px) ── */
+@media(max-width:600px){
+  .cf-toolbar { height: auto !important; min-height: 52px; padding: 8px 12px !important; flex-wrap: wrap; gap: 6px; }
+  .cf-toolbar-logo { flex-shrink: 0; }
+  .cf-toolbar-title { font-size: 0.78rem !important; max-width: 140px !important; }
+  .cf-subheader { display: none !important; }
+  .cf-mobile-menu-btn { padding: 4px 6px !important; }
+  .cf-calendar-padding { padding: 8px !important; }
+  .cf-month-header { font-size: 1.1rem !important; }
+  .pub-grid{grid-template-columns:1fr !important;}
+  .cf-modal-inner { margin: 8px !important; border-radius: 12px !important; }
+  .cf-broadcast-grid { grid-template-columns: 1fr !important; }
+  .cf-stat-grid { grid-template-columns: 1fr 1fr !important; }
+  .cf-analytics-body { grid-template-columns: 1fr !important; }
+  .cf-analytics-sidebar { border-right: none !important; border-bottom: 1px solid var(--cf-border) !important; max-height: 220px !important; }
+}
+/* ── Mobile menu items ── */
+.cf-mobile-menu-item {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  font-size: 0.92rem;
+  text-align: left;
+  width: 100%;
+  transition: background 0.15s;
+}
+/* ── Touch targets ── */
+@media(max-width:600px){
+  button { min-height: 36px; }
+  input, select, textarea { font-size: 16px !important; } /* prevents iOS zoom */
+}
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--cf-border); border-radius: 4px; }
+
+/* ── Marketing-site shine/glitter — monochrome versions of the shine
+   effects above, tinted white/grey instead of gold to match the black &
+   white marketing site (MarketingNav.jsx, MarketingFooter.jsx,
+   PremiumLanding.jsx) instead of the app's brand-gold accent. ──────────── */
+
+/* Shimmering wordmark — same idea as .cf-today-shine's diagonal sweep, but
+   as an animated text gradient so "CalendarFly" itself catches the light. */
+@keyframes cfTextShine {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+.cf-shine-text {
+  /* Base tone stays near-white throughout (#f0f0f0), with a brighter pure-
+     white band sweeping across for the "catches the light" effect — the
+     earlier version dipped to a mid-grey (#8a8a8a) between sweeps, which
+     read as dim/grey rather than shining white. */
+  background-image: linear-gradient(100deg, #ffffff 15%, #f0f0f0 35%, #ffffff 50%, #f0f0f0 65%, #ffffff 85%);
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: cfTextShine 5s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,0.45));
+}
+
+/* Ambient diagonal light sweep for a dark surface (nav bar, footer band) —
+   reuses the existing cfNavShine keyframe, just white-tinted. Give the
+   element position:relative + overflow:hidden. */
+.cf-mkt-shine { position: relative; overflow: hidden; }
+.cf-mkt-shine::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 35%; height: 100%;
+  background: linear-gradient(115deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-20deg);
+  animation: cfNavShine 4.2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Twinkling sparkle dots — scattered decoration, not interactive.
+   .cf-sparkle for a dark/black surface (white glints), .cf-sparkle-dark
+   for a light surface (soft grey glints). */
+@keyframes cfTwinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.7); }
+  50%      { opacity: 1;    transform: scale(1.15); }
+}
+.cf-sparkle {
+  position: absolute;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 0 6px 1px rgba(255,255,255,0.7);
+  animation: cfTwinkle 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+.cf-sparkle-dark {
+  position: absolute;
+  border-radius: 9999px;
+  background: #9a9a9a;
+  box-shadow: 0 0 5px 1px rgba(0,0,0,0.12);
+  animation: cfTwinkle 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-shine-text, .cf-mkt-shine::after, .cf-sparkle, .cf-sparkle-dark {
+    animation: none !important;
+  }
+}
+
+/* "See It In Action" demo cards (PremiumLanding.jsx) — each card pops up
+   into place the first time it scrolls into view (.cf-demo-card, toggled
+   to .cf-demo-in via an IntersectionObserver in useInView()), and its
+   screenshot zooms in gently on hover/focus. Staggered per-card via
+   --cf-demo-delay so the four cards don't all land at once. */
+@keyframes cfDemoPopIn {
+  0%   { opacity: 0; transform: translateY(28px) scale(0.94); }
+  70%  { opacity: 1; transform: translateY(-4px) scale(1.015); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.cf-demo-card {
+  opacity: 0;
+  transform: translateY(28px) scale(0.94);
+}
+.cf-demo-card.cf-demo-in {
+  animation: cfDemoPopIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--cf-demo-delay, 0s);
+}
+.cf-demo-media {
+  overflow: hidden;
+}
+.cf-demo-media img {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: scale(1);
+}
+.cf-demo-card:hover .cf-demo-media img,
+.cf-demo-card:focus-within .cf-demo-media img {
+  transform: scale(1.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-demo-card {
+    opacity: 1;
+    transform: none;
+    animation: none !important;
+  }
+  .cf-demo-media img {
+    transition: none;
+  }
+}

@@ -1,0 +1,184 @@
+[
+  {
+    "id": "oct-01-bhadrapada-krishna",
+    "date": "2026-10-01",
+    "title": "Bhadrapada Maasa Krishna Paksham",
+    "time": "All Day",
+    "type": "panchang",
+    "tithi": "Shashti 9:45 PM",
+    "nakshatra": "Rohini 3:56 PM"
+  },
+  {
+    "id": "oct-03-venkateswara-abhishekam",
+    "date": "2026-10-03",
+    "title": "Sri Venkateswara Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Ashtami 5:25 PM",
+    "nakshatra": "Arudra 12:53 PM"
+  },
+  {
+    "id": "oct-04-siva",
+    "date": "2026-10-04",
+    "title": "Sri Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Navami 3:28 PM",
+    "nakshatra": "Punarvasu 11:46 AM"
+  },
+  {
+    "id": "oct-10-amavasya",
+    "date": "2026-10-10",
+    "title": "Mahalaya Amavasya (Pitru Paksham Ends)",
+    "time": "8:49 AM",
+    "type": "panchang",
+    "tithi": "Amavasya 8:49 AM",
+    "nakshatra": "Hasta 9:11 AM",
+    "moonPhase": "new"
+  },
+  {
+    "id": "oct-10-kalyanam",
+    "date": "2026-10-10",
+    "title": "Sri Venkateswara Kalyanam",
+    "time": "11:00 AM",
+    "type": "kalyanam",
+    "tithi": "Amavasya 8:49 AM",
+    "nakshatra": "Hasta 9:11 AM"
+  },
+  {
+    "id": "oct-11-sarannavaratri",
+    "date": "2026-10-11",
+    "title": "Sarannavaratri Begins",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Prathama 9:01 AM",
+    "nakshatra": "Chitta 10:02 AM"
+  },
+  {
+    "id": "oct-11-aswayuja-sukla",
+    "date": "2026-10-11",
+    "title": "Aswayuja Maasa Sukla Paksham starts",
+    "time": "All Day",
+    "type": "panchang",
+    "tithi": "Prathama 9:01 AM",
+    "nakshatra": "Chitta 10:02 AM"
+  },
+  {
+    "id": "oct-11-ganapathi",
+    "date": "2026-10-11",
+    "title": "Sri Vijaya Ganapathi / Murugan Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Prathama 9:01 AM",
+    "nakshatra": "Chitta 10:02 AM"
+  },
+  {
+    "id": "oct-16-andal",
+    "date": "2026-10-16",
+    "title": "Sri Andal Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Shashti 5:23 PM",
+    "nakshatra": "Mula 9:15 PM"
+  },
+  {
+    "id": "oct-16-saraswati",
+    "date": "2026-10-16",
+    "title": "Saraswati Pooja",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Shashti 5:23 PM",
+    "nakshatra": "Mula 9:15 PM"
+  },
+  {
+    "id": "oct-17-mahalakshmi",
+    "date": "2026-10-17",
+    "title": "Sri Mahalakshmi Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Saptami 7:56 PM",
+    "nakshatra": "Purvashadha 12:16 AM Sun"
+  },
+  {
+    "id": "oct-18-durgashtami",
+    "date": "2026-10-18",
+    "title": "Durgashtami",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Ashtami 10:20 PM",
+    "nakshatra": "Uttarashadha 2:56 AM Mon"
+  },
+  {
+    "id": "oct-18-saibaba",
+    "date": "2026-10-18",
+    "title": "Sri Shirdi Sai Baba / Raghavendra Swamy Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Ashtami 10:20 PM",
+    "nakshatra": "Uttarashadha 2:56 AM Mon"
+  },
+  {
+    "id": "oct-19-maharnavami",
+    "date": "2026-10-19",
+    "title": "Maharnavami / Ayudha Pooja",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Navami 12:20 AM Tue",
+    "nakshatra": "Sravana 5:31 AM Tue"
+  },
+  {
+    "id": "oct-20-vijaya-dasami",
+    "date": "2026-10-20",
+    "title": "Vijaya Dasami",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Dasami 1:43 AM Wed",
+    "nakshatra": "Dhanishta 7:18 AM Wed"
+  },
+  {
+    "id": "oct-24-hanuman",
+    "date": "2026-10-24",
+    "title": "Sri Hanuman Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturdasi 11:29 PM",
+    "nakshatra": "Uttarabhadra 8:04 AM"
+  },
+  {
+    "id": "oct-25-purnima",
+    "date": "2026-10-25",
+    "title": "Purnima",
+    "time": "9:14 PM",
+    "type": "panchang",
+    "tithi": "Purnima 9:14 PM",
+    "nakshatra": "Revathi 6:45 AM, Aswini afterwards",
+    "moonPhase": "full"
+  },
+  {
+    "id": "oct-25-satyanarayana",
+    "date": "2026-10-25",
+    "title": "Sri Satyanarayana Swamy Pooja & Vratham",
+    "time": "10:00 AM",
+    "type": "pooja",
+    "tithi": "Purnima 9:14 PM",
+    "nakshatra": "Revathi 6:45 AM, Aswini afterwards"
+  },
+  {
+    "id": "oct-25-sudarsana",
+    "date": "2026-10-25",
+    "title": "Sri Sudarsana/Narasimha Homam & Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Purnima 9:14 PM",
+    "nakshatra": "Revathi 6:45 AM, Aswini afterwards"
+  },
+  {
+    "id": "oct-26-aswayuja-krishna",
+    "date": "2026-10-26",
+    "title": "Aswayuja Maasa Krishna Paksham starts",
+    "time": "All Day",
+    "type": "panchang",
+    "tithi": "Prathama 6:35 PM",
+    "nakshatra": "Bharani 3:11 AM Tue"
+  }
+]

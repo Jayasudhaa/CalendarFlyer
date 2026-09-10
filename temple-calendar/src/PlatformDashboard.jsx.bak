@@ -1,0 +1,317 @@
+/**
+ * PlatformDashboard.jsx
+ * Owner-only view of who's using CalendarFly and how — total orgs/users/
+ * events, signups and event activity over time, and a per-org breakdown.
+ *
+ * Gated by the ADMIN_SECRET admin code (same one used to unlock a locked
+ * Organization Type in Settings). The code is kept in memory only for this
+ * page load — it is never stored in localStorage or baked into the bundle,
+ * so nothing is visible in the shipped JS the way some of the older
+ * admin-secret usages in this app are.
+ */
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Users, Building2, CalendarDays, RefreshCw, Lock, Sparkles, ImagePlus, ShieldCheck } from 'lucide-react';
+import AISettingsPanel from './components/AISettingsPanel';
+import StockLibraryGenerator from './components/StockLibraryGenerator';
+import UsersAccessPanel from './components/UsersAccessPanel';
+
+const CATEGORY_LABELS = {
+  temple: 'Temple',
+  nonprofit: 'Nonprofit',
+  community: 'Community Org',
+  other: 'Other',
+  'not set': 'Not set',
+};
+
+function formatDate(ms) {
+  if (!ms) return '—';
+  return new Date(ms).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function StatCard({ icon: Icon, label, value, sublabel, color }) {
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+      <div className="flex items-center gap-3 mb-2">
+        <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${color}`}>
+          <Icon className="w-4 h-4" />
+        </div>
+        <p className="text-sm font-semibold text-gray-500">{label}</p>
+      </div>
+      <p className="text-3xl font-bold text-gray-900">{value}</p>
+      {sublabel && <p className="text-xs text-gray-400 mt-1">{sublabel}</p>}
+    </div>
+  );
+}
+
+export default function PlatformDashboard() {
+  const navigate = useNavigate();
+  const [adminCode, setAdminCode] = useState('');
+  const [unlocked, setUnlocked] = useState(false);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [tab, setTab] = useState('overview'); // 'overview' | 'users' | 'ai-settings' | 'library'
+
+  const loadStats = async ({ secret, token, silent } = {}) => {
+    setLoading(true);
+    if (!silent) setError('');
+    try {
+      const res = await fetch('/api/admin/stats', {
+        headers: secret ? { 'x-admin-secret': secret } : { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 401) {
+        if (!silent) setError('Invalid admin code');
+        setLoading(false);
+        return;
+      }
+      if (!res.ok) throw new Error('Failed to load stats');
+      const data = await res.json();
+      setStats(data);
+      setUnlocked(true);
+    } catch (err) {
+      if (!silent) setError(err.message || 'Failed to load stats');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Auto-unlock for an account already granted platform access through its
+  // own regular login (see PLATFORM_ADMIN_EMAILS in server/routes/admin.js's
+  // superAdminGuard) -- skips the manual admin-code prompt below entirely
+  // for that one account. Silent on failure: every other org's staff just
+  // sees the normal code-entry gate, with no error flashed for a check they
+  // were never meant to pass.
+  useEffect(() => {
+    const token = localStorage.getItem('cf_token');
+    if (token) loadStats({ token, silent: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleUnlock = (e) => {
+    e.preventDefault();
+    if (!adminCode) return;
+    loadStats({ secret: adminCode });
+  };
+
+  // Refresh button reuses whichever path actually unlocked the page --
+  // the account's own login token if that's what got in, otherwise the
+  // admin code that was typed in.
+  const refreshStats = () => {
+    const token = localStorage.getItem('cf_token');
+    if (!adminCode && token) loadStats({ token });
+    else loadStats({ secret: adminCode });
+  };
+
+  if (!unlocked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center px-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 w-full max-w-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+              <Lock className="w-5 h-5 text-orange-600" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-gray-900">Platform Overview</h1>
+              <p className="text-xs text-gray-500">Owner-only — enter your admin code</p>
+            </div>
+          </div>
+          <form onSubmit={handleUnlock} className="space-y-3">
+            <input
+              type="password"
+              autoFocus
+              value={adminCode}
+              onChange={(e) => setAdminCode(e.target.value)}
+              placeholder="Admin code"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full px-4 py-3 rounded-lg bg-orange-600 text-white font-semibold hover:bg-orange-700 transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Checking…' : 'View Stats'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate('/admin')} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Platform Overview</h1>
+              <p className="text-sm text-gray-500">Who's using CalendarFly, and how</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {tab === 'overview' && (
+              <button
+                onClick={refreshStats}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto px-6 flex gap-1 border-t border-gray-100">
+          <button
+            onClick={() => setTab('overview')}
+            className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${tab === 'overview' ? 'border-orange-600 text-orange-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            📊 Overview
+          </button>
+          <button
+            onClick={() => setTab('users')}
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${tab === 'users' ? 'border-orange-600 text-orange-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5" /> Users &amp; Access
+          </button>
+          <button
+            onClick={() => setTab('ai-settings')}
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${tab === 'ai-settings' ? 'border-orange-600 text-orange-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            <Sparkles className="w-3.5 h-3.5" /> AI Image Settings
+          </button>
+          <button
+            onClick={() => setTab('library')}
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${tab === 'library' ? 'border-orange-600 text-orange-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            <ImagePlus className="w-3.5 h-3.5" /> Stock Library
+          </button>
+        </div>
+      </div>
+
+      {tab === 'users' && (
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <UsersAccessPanel adminCode={adminCode} organizations={stats?.organizations || []} />
+        </div>
+      )}
+
+      {tab === 'ai-settings' && (
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <AISettingsPanel adminCode={adminCode} />
+        </div>
+      )}
+
+      {tab === 'library' && (
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <StockLibraryGenerator adminCode={adminCode} />
+        </div>
+      )}
+
+      {tab === 'overview' && (
+      <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
+        {error && (
+          <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>
+        )}
+
+        {stats && (
+          <>
+            <div className="grid sm:grid-cols-3 gap-4">
+              <StatCard icon={Building2} label="Organizations" value={stats.totals.organizations}
+                sublabel={`${stats.signups_last_7_days} new in last 7 days · ${stats.signups_last_30_days} in last 30`}
+                color="bg-orange-100 text-orange-600" />
+              <StatCard icon={Users} label="Users" value={stats.totals.users}
+                sublabel="Across all organizations"
+                color="bg-purple-100 text-purple-600" />
+              <StatCard icon={CalendarDays} label="Events" value={stats.totals.events}
+                sublabel={`${stats.events_created_last_7_days} new in last 7 days · ${stats.events_created_last_30_days} in last 30`}
+                color="bg-blue-100 text-blue-600" />
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <p className="text-sm font-semibold text-gray-700 mb-3">Organizations by type</p>
+                <div className="space-y-2">
+                  {Object.entries(stats.organizations_by_category).map(([key, count]) => (
+                    <div key={key} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">{CATEGORY_LABELS[key] || key}</span>
+                      <span className="font-semibold text-gray-900">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <p className="text-sm font-semibold text-gray-700 mb-3">Organizations by plan</p>
+                <div className="space-y-2">
+                  {Object.entries(stats.organizations_by_plan).map(([key, count]) => (
+                    <div key={key} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600 capitalize">{key}</span>
+                      <span className="font-semibold text-gray-900">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-5 border-b border-gray-200">
+                <p className="text-sm font-semibold text-gray-700">All organizations</p>
+                <p className="text-xs text-gray-400">Sorted by most recently signed up</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
+                    <tr>
+                      <th className="text-left px-5 py-2 font-semibold">Organization</th>
+                      <th className="text-left px-5 py-2 font-semibold">Signup email</th>
+                      <th className="text-left px-5 py-2 font-semibold">Type</th>
+                      <th className="text-left px-5 py-2 font-semibold">Plan</th>
+                      <th className="text-right px-5 py-2 font-semibold">Users</th>
+                      <th className="text-right px-5 py-2 font-semibold">Events</th>
+                      <th className="text-left px-5 py-2 font-semibold">Signed up</th>
+                      <th className="text-left px-5 py-2 font-semibold">Last login</th>
+                      <th className="text-left px-5 py-2 font-semibold">Setup</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {stats.organizations.map(org => (
+                      <tr key={org.org_id}>
+                        <td className="px-5 py-3">
+                          <div className="font-semibold text-gray-900">{org.name}</div>
+                          <div className="text-xs text-gray-400">{org.subdomain}.calendarflyapp.com</div>
+                        </td>
+                        <td className="px-5 py-3 text-gray-600">{org.signup_email || '—'}</td>
+                        <td className="px-5 py-3 text-gray-600">{CATEGORY_LABELS[org.category || 'not set'] || org.category}</td>
+                        <td className="px-5 py-3 text-gray-600 capitalize">{org.plan}</td>
+                        <td className="px-5 py-3 text-right text-gray-900">{org.users_count}</td>
+                        <td className="px-5 py-3 text-right text-gray-900">{org.events_count}</td>
+                        <td className="px-5 py-3 text-gray-600">{formatDate(org.created_at)}</td>
+                        <td className="px-5 py-3 text-gray-600">{formatDate(org.last_login_at)}</td>
+                        <td className="px-5 py-3">
+                          {org.onboarding_completed ? (
+                            <span className="text-xs font-semibold text-green-700 bg-green-50 px-2 py-1 rounded-full">Complete</span>
+                          ) : (
+                            <span className="text-xs font-semibold text-yellow-700 bg-yellow-50 px-2 py-1 rounded-full">In progress</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                    {stats.organizations.length === 0 && (
+                      <tr>
+                        <td colSpan={9} className="px-5 py-8 text-center text-gray-400">No organizations yet</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+      )}
+    </div>
+  );
+}

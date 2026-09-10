@@ -1,0 +1,167 @@
+[
+  {
+    "id": "may-01-kurma",
+    "date": "2026-05-01",
+    "title": "Sri Kurma Jayanti",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Purnima 10:26 AM",
+    "nakshatra": "Swathi 3:56 PM"
+  },
+  {
+    "id": "may-01-annamacharya",
+    "date": "2026-05-01",
+    "title": "Sri Annamacharya Jayanti",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Purnima 10:26 AM",
+    "nakshatra": "Swathi 3:56 PM"
+  },
+  {
+    "id": "20260501-moon",
+    "date": "2026-05-01",
+    "title": "Purnima",
+    "time": "Purnima",
+    "type": "panchang",
+    "tithi": "Purnima 10:26 AM",
+    "nakshatra": "Chitta 12:12 PM",
+    "moonPhase": "full"
+  },
+  {
+    "id": "may-03",
+    "date": "2026-05-03",
+    "title": "Sri Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwitiya 2:33 PM",
+    "nakshatra": "Anuradha 9:26 PM"
+  },
+  {
+    "id": "may-09",
+    "date": "2026-05-09",
+    "title": "Sri Venkateswara Kalyanam",
+    "time": "11:00 AM",
+    "type": "kalyanam",
+    "tithi": "Ashtami 2:40 AM Sun",
+    "nakshatra": "Sravana 10:54 AM"
+  },
+  {
+    "id": "may-10",
+    "date": "2026-05-10",
+    "title": "Sri Shirdi Sai Baba / Raghavendra Swamy Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Navami 2:58 AM Mon",
+    "nakshatra": "Dhanishta 12:21 PM"
+  },
+  {
+    "id": "may-11",
+    "date": "2026-05-11",
+    "title": "Sri Hanuman Jayanti",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Dasami 2:45 AM Tue",
+    "nakshatra": "Satabhisha 12:51 PM"
+  },
+  {
+    "id": "may-15",
+    "date": "2026-05-15",
+    "title": "Sri Andal Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturdasi 4:40 PM",
+    "nakshatra": "Aswini 7:41 AM, Bharani afterwards"
+  },
+  {
+    "id": "may-16-mahalakshmi",
+    "date": "2026-05-16",
+    "title": "Sri Mahalakshmi Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Amavasya 1:02 PM",
+    "nakshatra": "Krittika 1:55 AM Sun"
+  },
+  {
+    "id": "may-16-sanischara",
+    "date": "2026-05-16",
+    "title": "Sri Sanischara Jayanti",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Amavasya 1:02 PM",
+    "nakshatra": "Krittika 1:55 AM Sun"
+  },
+  {
+    "id": "20260516-moon",
+    "date": "2026-05-16",
+    "title": "Amavasya",
+    "time": "Amavasya",
+    "type": "panchang",
+    "tithi": "Amavasya 1:02 PM",
+    "nakshatra": "Bharani 7:15 AM",
+    "moonPhase": "new"
+  },
+  {
+    "id": "may-17-venkateswara",
+    "date": "2026-05-17",
+    "title": "Sri Venkateswara Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Prathama 12:23 PM",
+    "nakshatra": "Visakha 6:40 PM"
+  },
+  {
+    "id": "may-17-ganapathi",
+    "date": "2026-05-17",
+    "title": "Sri Vijaya Ganapathi / Murugan Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Prathama 9:15 AM, Dwitiya afterwards",
+    "nakshatra": "Rohini 11:05 PM"
+  },
+  {
+    "id": "may-23",
+    "date": "2026-05-23",
+    "title": "Sri Hanuman Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Ashtami 3:57 PM",
+    "nakshatra": "Magha 1:37 PM"
+  },
+  {
+    "id": "may-24",
+    "date": "2026-05-24",
+    "title": "Sri Sudarsana/Narasimha Homam & Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Navami 4:00 PM",
+    "nakshatra": "Purvaphalguni 2:19 PM"
+  },
+  {
+    "id": "may-29",
+    "date": "2026-05-29",
+    "title": "Nammazhwar Tirunakshatram",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Chaturdasi 11:30 PM",
+    "nakshatra": "Visakha 12:51 AM Sat"
+  },
+  {
+    "id": "may-30",
+    "date": "2026-05-30",
+    "title": "Sri Satyanarayana Swamy Pooja & Vratham",
+    "time": "10:00 AM",
+    "type": "pooja",
+    "tithi": "Purnima 1:46 AM Sun",
+    "nakshatra": "Anuradha 3:41 AM Sun"
+  },
+  {
+    "id": "20260530-moon",
+    "date": "2026-05-30",
+    "title": "Purnima",
+    "time": "Purnima",
+    "type": "panchang",
+    "tithi": "Purnima 1:46 AM Sun",
+    "nakshatra": "Jyeshta 10:34 AM",
+    "moonPhase": "full"
+  }
+]

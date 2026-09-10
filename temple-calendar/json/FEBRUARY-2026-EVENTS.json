@@ -1,0 +1,139 @@
+[
+  {
+    "id": "feb-01-siva",
+    "date": "2026-02-01",
+    "title": "Sri Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Purnima 3:09 PM",
+    "nakshatra": "Pushyami 11:27 AM"
+  },
+  {
+    "id": "feb-01-taipoosam",
+    "date": "2026-02-01",
+    "title": "Taipoosam",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Purnima 3:09 PM",
+    "nakshatra": "Pushyami 11:27 AM"
+  },
+  {
+    "id": "20260201-moon",
+    "date": "2026-02-01",
+    "title": "Purnima",
+    "time": "Purnima",
+    "type": "panchang",
+    "tithi": "Purnima 3:09 PM",
+    "nakshatra": "Aslesha 11:22 PM",
+    "moonPhase": "full"
+  },
+  {
+    "id": "feb-08",
+    "date": "2026-02-08",
+    "title": "Sri Vijaya Ganapathi / Murugan Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Saptami 4:35 PM",
+    "nakshatra": "Swathi 4:24 PM"
+  },
+  {
+    "id": "feb-14-kalyanam",
+    "date": "2026-02-14",
+    "title": "Sri Venkateswara Kalyanam",
+    "time": "11:00 AM",
+    "type": "kalyanam",
+    "tithi": "Trayodasi 4:35 AM Sun",
+    "nakshatra": "Uttarashadha 7:08 AM Sun"
+  },
+  {
+    "id": "feb-14-sani-trayodasi",
+    "date": "2026-02-14",
+    "title": "Sani Trayodasi",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Trayodasi 4:35 AM Sun",
+    "nakshatra": "Uttarashadha 7:08 AM Sun"
+  },
+  {
+    "id": "feb-15-sai-baba",
+    "date": "2026-02-15",
+    "title": "Sri Shirdi Sai Baba / Raghavendra Swamy Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturdasi 5:06 AM Mon",
+    "nakshatra": "Uttarashadha 7:08 AM"
+  },
+  {
+    "id": "feb-15-sivaratri",
+    "date": "2026-02-15",
+    "title": "Maha Sivaratri",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Chaturdasi 5:06 AM Mon",
+    "nakshatra": "Uttarashadha 7:08 AM"
+  },
+  {
+    "id": "20260217-moon",
+    "date": "2026-02-17",
+    "title": "Amavasya",
+    "time": "Amavasya",
+    "type": "panchang",
+    "tithi": "Amavasya 5:02 AM Tue",
+    "nakshatra": "Sravana 12:14 PM",
+    "moonPhase": "new"
+  },
+  {
+    "id": "feb-20",
+    "date": "2026-02-20",
+    "title": "Sri Andal Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturthi 12:27 AM Sat",
+    "nakshatra": "Uttarabhadra 7:33 AM"
+  },
+  {
+    "id": "feb-21",
+    "date": "2026-02-21",
+    "title": "Sri Mahalakshmi Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Panchami 10:37 PM",
+    "nakshatra": "Revathi 6:24 AM, Aswini afterwards"
+  },
+  {
+    "id": "feb-22-venkateswara",
+    "date": "2026-02-22",
+    "title": "Sri Venkateswara Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Shashti 2:28 PM",
+    "nakshatra": "Chitta 2:00 PM"
+  },
+  {
+    "id": "feb-22-sudarsana",
+    "date": "2026-02-22",
+    "title": "Sri Sudarsana/Narasimha Homam & Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Shashti 8:38 PM",
+    "nakshatra": "Bharani 4:01 AM Mon"
+  },
+  {
+    "id": "feb-27",
+    "date": "2026-02-27",
+    "title": "Sri Hanuman Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwadasi 8:19 AM",
+    "nakshatra": "Pushyami 8:07 PM"
+  },
+  {
+    "id": "feb-28",
+    "date": "2026-02-28",
+    "title": "Sani Trayodasi",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Trayodasi 6:42 AM",
+    "nakshatra": "Aslesha 7:13 PM"
+  }
+]

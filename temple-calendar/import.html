@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temple Calendar - Bulk Import Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 {
+            color: #ff6b35;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .temple-info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ff6b35;
+        }
+        .step-number {
+            background: #ff6b35;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .step-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .step-content {
+            color: #666;
+            line-height: 1.6;
+        }
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #ff6b35;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 150px;
+        }
+        .btn-primary {
+            background: #ff6b35;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #e55a2b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,107,53,0.3);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .preview {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .event-preview {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #ff6b35;
+        }
+        .event-date {
+            font-weight: bold;
+            color: #ff6b35;
+            margin-bottom: 5px;
+        }
+        .event-title {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .event-details {
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🕉️ Sri Venkateswara Temple Calendar</h1>
+        <div class="temple-info">
+            1495 South Ridge Road, Castle Rock, CO 80104<br>
+            Phone: 303 660 9555 | Manager: 303 898 5514
+        </div>
+
+        <div class="step">
+            <div class="step-title">
+                <span class="step-number">1</span>
+                Paste Your Calendar Events (JSON Format)
+            </div>
+            <div class="step-content">
+                <p style="margin-bottom: 10px;">Copy and paste the complete event data below. The system will automatically import all events.</p>
+                <textarea id="jsonInput" placeholder='Paste JSON here, example:
+[
+  {
+    "id": "event-1",
+    "date": "2026-01-01",
+    "title": "New Year Day",
+    "time": "All Day",
+    "type": "holiday",
+    "tithi": "Trayodasi 9:52 AM",
+    "nakshatra": "Rohini 10:17 AM"
+  }
+]'></textarea>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" onclick="validateJSON()">✓ Validate JSON</button>
+            <button class="btn-success" onclick="importEvents()">⬆️ Import All Events</button>
+            <button class="btn-secondary" onclick="loadSampleData()">📋 Load Sample Data</button>
+            <button class="btn-secondary" onclick="clearAll()">🗑️ Clear</button>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div id="stats" style="display: none;">
+            <h3 style="margin: 30px 0 15px 0; color: #333;">Import Statistics</h3>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalEvents">0</div>
+                    <div class="stat-label">Total Events</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="stat-number" id="festivals">0</div>
+                    <div class="stat-label">Festivals</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="stat-number" id="poojas">0</div>
+                    <div class="stat-label">Poojas & Abhishekams</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                    <div class="stat-number" id="kalyans">0</div>
+                    <div class="stat-label">Kalyanams</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="preview" style="display: none;">
+            <h3 style="margin: 30px 0 15px 0; color: #333;">Event Preview (First 10)</h3>
+            <div class="preview" id="previewContent"></div>
+        </div>
+    </div>
+
+    <script>
+        function validateJSON() {
+            const input = document.getElementById('jsonInput').value.trim();
+            const statusDiv = document.getElementById('status');
+            
+            if (!input) {
+                showStatus('error', 'Please paste JSON data first!');
+                return false;
+            }
+
+            try {
+                const events = JSON.parse(input);
+                
+                if (!Array.isArray(events)) {
+                    throw new Error('Data must be an array of events');
+                }
+
+                if (events.length === 0) {
+                    throw new Error('Array is empty - no events to import');
+                }
+
+                // Validate each event has required fields
+                let validEvents = 0;
+                for (let i = 0; i < events.length; i++) {
+                    const event = events[i];
+                    if (!event.id || !event.date || !event.title || !event.type) {
+                        throw new Error(`Event at index ${i} is missing required fields (id, date, title, type)`);
+                    }
+                    validEvents++;
+                }
+
+                showStatus('success', `✓ Valid JSON! Found ${validEvents} events ready to import.`);
+                showStats(events);
+                showPreview(events);
+                return true;
+            } catch (error) {
+                showStatus('error', `✗ Invalid JSON: ${error.message}`);
+                return false;
+            }
+        }
+
+        function importEvents() {
+            if (!validateJSON()) {
+                return;
+            }
+
+            const input = document.getElementById('jsonInput').value.trim();
+            const events = JSON.parse(input);
+
+            // Save to localStorage
+            localStorage.setItem('templeEvents', JSON.stringify(events));
+
+            showStatus('success', `🎉 Successfully imported ${events.length} events! Redirecting to calendar...`);
+
+            // Redirect to main calendar after 2 seconds
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+        }
+
+        function showStatus(type, message) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+        }
+
+        function showStats(events) {
+            document.getElementById('stats').style.display = 'block';
+            
+            const stats = {
+                total: events.length,
+                festivals: events.filter(e => e.type === 'festival').length,
+                poojas: events.filter(e => e.type === 'pooja' || e.type === 'abhishekam').length,
+                kalyans: events.filter(e => e.type === 'kalyanam').length
+            };
+
+            document.getElementById('totalEvents').textContent = stats.total;
+            document.getElementById('festivals').textContent = stats.festivals;
+            document.getElementById('poojas').textContent = stats.poojas;
+            document.getElementById('kalyans').textContent = stats.kalyans;
+        }
+
+        function showPreview(events) {
+            document.getElementById('preview').style.display = 'block';
+            const previewDiv = document.getElementById('previewContent');
+            
+            const preview = events.slice(0, 10).map(event => `
+                <div class="event-preview">
+                    <div class="event-date">${event.date}</div>
+                    <div class="event-title">${event.title}</div>
+                    <div class="event-details">
+                        ${event.time ? `Time: ${event.time} | ` : ''}
+                        Type: ${event.type} | 
+                        T: ${event.tithi || 'N/A'} | 
+                        N: ${event.nakshatra || 'N/A'}
+                    </div>
+                </div>
+            `).join('');
+
+            previewDiv.innerHTML = preview + (events.length > 10 ? `<p style="text-align:center; color: #666; margin-top: 15px;">...and ${events.length - 10} more events</p>` : '');
+        }
+
+        function loadSampleData() {
+            const sampleData = [
+                {
+                    "id": "jan-01",
+                    "date": "2026-01-01",
+                    "title": "New Year Day",
+                    "time": "All Day",
+                    "type": "holiday",
+                    "tithi": "Trayodasi 9:52 AM",
+                    "nakshatra": "Rohini 10:17 AM"
+                },
+                {
+                    "id": "jan-02",
+                    "date": "2026-01-02",
+                    "title": "Sri Satyanarayana Swamy Pooja & Vratham",
+                    "time": "10:00 AM",
+                    "type": "pooja",
+                    "tithi": "Chaturdasi 6:25 AM",
+                    "nakshatra": "Mrigasira 7:34 AM"
+                },
+                {
+                    "id": "jan-14",
+                    "date": "2026-01-14",
+                    "title": "Makara Sankranti / Pongal",
+                    "time": "All Day",
+                    "type": "festival",
+                    "tithi": "Dwadasi 7:45 AM",
+                    "nakshatra": "Jyeshta 5:05 PM"
+                }
+            ];
+
+            document.getElementById('jsonInput').value = JSON.stringify(sampleData, null, 2);
+            showStatus('success', 'Sample data loaded! Click "Import All Events" to save.');
+            validateJSON();
+        }
+
+        function clearAll() {
+            document.getElementById('jsonInput').value = '';
+            document.getElementById('status').style.display = 'none';
+            document.getElementById('stats').style.display = 'none';
+            document.getElementById('preview').style.display = 'none';
+        }
+
+        // Check if coming from main app
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('from') === 'app') {
+                showStatus('success', 'Welcome to the bulk import tool! Paste your events JSON below.');
+            }
+        });
+    </script>
+</body>
+</html>
