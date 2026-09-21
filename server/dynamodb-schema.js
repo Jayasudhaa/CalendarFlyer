@@ -448,6 +448,93 @@ const documentsTableParams = {
   }
 };
 
+// Livestreams — server/routes/livestreams.js. One row per scheduled or
+// live event stream (native CalendarFly Live, or an external YouTube/
+// Zoom/Vimeo link). event-index answers "does this event have a stream,
+// and what's its schedule"; org-index answers the Media Overview page's
+// "live now" / "upcoming" panels ("this org's streams, soonest first",
+// filtered by status the same way event_photos' org-index filters by
+// status for the moderation queue).
+const livestreamsTableParams = {
+  TableName: 'calendarfly_livestreams',
+  KeySchema: [
+    { AttributeName: 'stream_id', KeyType: 'HASH' }
+  ],
+  AttributeDefinitions: [
+    { AttributeName: 'stream_id', AttributeType: 'S' },
+    { AttributeName: 'event_id', AttributeType: 'S' },
+    { AttributeName: 'org_id', AttributeType: 'S' },
+    { AttributeName: 'start_time', AttributeType: 'N' }
+  ],
+  GlobalSecondaryIndexes: [
+    {
+      IndexName: 'event-index',
+      KeySchema: [
+        { AttributeName: 'event_id', KeyType: 'HASH' },
+        { AttributeName: 'start_time', KeyType: 'RANGE' }
+      ],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    },
+    {
+      IndexName: 'org-index',
+      KeySchema: [
+        { AttributeName: 'org_id', KeyType: 'HASH' },
+        { AttributeName: 'start_time', KeyType: 'RANGE' }
+      ],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    }
+  ],
+  ProvisionedThroughput: {
+    ReadCapacityUnits: 5,
+    WriteCapacityUnits: 5
+  }
+};
+
+// Photo Albums — server/routes/photoAlbums.js. The admin-facing metadata
+// wrapper around an event's photos (name, cover, visibility, upload/
+// download/approval settings) that calendarfly_event_photos itself never
+// carried -- individual photo rows still live in that table and are found
+// by event_id (and, once assigned, album_id); this table is "one album's
+// settings," queried the same two ways as livestreams above.
+const photoAlbumsTableParams = {
+  TableName: 'calendarfly_photo_albums',
+  KeySchema: [
+    { AttributeName: 'album_id', KeyType: 'HASH' }
+  ],
+  AttributeDefinitions: [
+    { AttributeName: 'album_id', AttributeType: 'S' },
+    { AttributeName: 'event_id', AttributeType: 'S' },
+    { AttributeName: 'org_id', AttributeType: 'S' },
+    { AttributeName: 'created_at', AttributeType: 'N' }
+  ],
+  GlobalSecondaryIndexes: [
+    {
+      IndexName: 'event-index',
+      KeySchema: [
+        { AttributeName: 'event_id', KeyType: 'HASH' },
+        { AttributeName: 'created_at', KeyType: 'RANGE' }
+      ],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    },
+    {
+      IndexName: 'org-index',
+      KeySchema: [
+        { AttributeName: 'org_id', KeyType: 'HASH' },
+        { AttributeName: 'created_at', KeyType: 'RANGE' }
+      ],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    }
+  ],
+  ProvisionedThroughput: {
+    ReadCapacityUnits: 5,
+    WriteCapacityUnits: 5
+  }
+};
+
 // Creates one table, tolerating "already exists" so this script is safe to
 // re-run — important now that a new table (reservations) can be added after
 // the others were already provisioned; a single try/catch around the whole
@@ -483,6 +570,8 @@ async function createTables() {
     await createTableIfMissing('Sign-Up Slots', signupSlotsTableParams);
     await createTableIfMissing('Sign-Up Entries', signupEntriesTableParams);
     await createTableIfMissing('Documents', documentsTableParams);
+    await createTableIfMissing('Livestreams', livestreamsTableParams);
+    await createTableIfMissing('Photo Albums', photoAlbumsTableParams);
 
     console.log('\nWaiting for tables to be active...');
 
@@ -499,6 +588,8 @@ async function createTables() {
     await waitForTable('calendarfly_signup_slots');
     await waitForTable('calendarfly_signup_entries');
     await waitForTable('calendarfly_documents');
+    await waitForTable('calendarfly_livestreams');
+    await waitForTable('calendarfly_photo_albums');
 
     console.log('✓ All tables are now active!');
   } catch (error) {

@@ -13,7 +13,7 @@
  */
 const express = require('express');
 const router = express.Router();
-const { rateLimit } = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const { authenticateToken } = require('./auth');
 const { requireRole } = require('../middleware/roles');
 const { getStripe, getStripePriceId } = require('../utils/stripeClient');
@@ -36,7 +36,7 @@ const checkoutSessionLimiter = rateLimit({
   limit: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => (req.user && req.user.org_id) || req.ip,
+  keyGenerator: (req) => (req.user && req.user.org_id) || ipKeyGenerator(req.ip),
   message: { error: 'Too many checkout attempts — please wait a few minutes and try again.' },
 });
 

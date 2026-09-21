@@ -50,6 +50,7 @@ const PUBLIC_ROUTES = [
 // Routes that are part of the logged-in admin experience.
 const ADMIN_ROUTES = [
   '/admin',
+  '/dashboard',
   '/onboarding',
   '/settings',
   '/profile',
@@ -89,22 +90,21 @@ describe('admin-area pages redirect a logged-out visitor', () => {
   });
 });
 
-describe('/select-mode renders the mode selection screen', () => {
-  // Restored in this pass — it used to just redirect straight to /admin;
-  // now a logged-in user sees the real Public/Admin mode choice again.
-  it('shows Public Mode / Admin Mode choices for a logged-in user', async () => {
-    renderAppAt('/select-mode', { authed: true });
-    await screen.findByRole('heading', { name: 'Public Mode' }, { timeout: 3000 });
-    expect(window.location.pathname).toBe('/select-mode');
-    expect(screen.getByRole('heading', { name: 'Admin Mode' })).toBeTruthy();
+describe('/dashboard renders the admin home page', () => {
+  // Replaces the old ModeSelection "choose Viewer or Admin" picker — login
+  // now sends a manageable account straight here (see PremiumLogin.jsx's
+  // postLoginDestination) instead of an extra click-through screen.
+  it('shows the quick-action tiles for a logged-in user', async () => {
+    renderAppAt('/dashboard', { authed: true });
+    await screen.findByText('Create a flyer', {}, { timeout: 3000 });
+    expect(window.location.pathname).toBe('/dashboard');
+    expect(screen.getByText('Send an announcement')).toBeTruthy();
+    expect(screen.getByText('View analytics')).toBeTruthy();
+    expect(screen.getByText('Copy calendar link')).toBeTruthy();
   });
 
   it('does not crash for a logged-out visitor', async () => {
-    // ModeSelection guards itself with `if (!isAuthenticated) navigate(...)`
-    // (pre-existing code, unchanged here) — this only pins down that
-    // mounting the route doesn't throw, matching this file's other
-    // logged-out-visitor checks above.
-    renderAppAt('/select-mode', { authed: false });
+    renderAppAt('/dashboard', { authed: false });
     await screen.findByText(/./, {}, { timeout: 3000 }).catch(() => {});
     expect(document.body).toBeTruthy();
   });

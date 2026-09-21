@@ -208,6 +208,7 @@ export default function AIVisualPanel({
         posterFields={posterFields} setPosterFields={setPosterFields}
         referencePhotos={referencePhotos}
         onReferenceStepActive={setHighlightReference}
+        promptCategory={promptCategory}
         onStepsChange={onStepsChange}
       />
 

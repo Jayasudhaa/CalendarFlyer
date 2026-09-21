@@ -79,6 +79,27 @@ export default function PhotoSharePage() {
     : '';
 
   const [token, setTok] = useState(getToken());
+  // 'checking' | 'open' | 'gated' -- whether THIS event's album can be
+  // viewed without phone verification. Only checked when there's no
+  // token yet; once verified for any reason the full Album component
+  // handles everything (including a verified_attendees/members_only
+  // album this same visitor is now allowed into).
+  const [publicAccess, setPublicAccess] = useState('checking');
+  const [downloadPermission, setDownloadPermission] = useState(false);
+
+  useEffect(() => {
+    if (!event || token) return undefined;
+    let cancelled = false;
+    setPublicAccess('checking');
+    apiFetch(`/api/public-media/events/${event.id}/photos`)
+      .then((data) => {
+        if (cancelled) return;
+        setDownloadPermission(!!data.download_permission);
+        setPublicAccess('open');
+      })
+      .catch(() => { if (!cancelled) setPublicAccess('gated'); });
+    return () => { cancelled = true; };
+  }, [event?.id, token]);
 
   return (
     <div style={{ minHeight: '100vh', background: '#ffffff', padding: '32px 16px', fontFamily: "'DM Sans', sans-serif" }}>
@@ -95,11 +116,95 @@ export default function PhotoSharePage() {
           <div style={{ textAlign: 'center', color: '#9a7a55', fontSize: '0.9rem' }}>⏳ Loading event…</div>
         ) : !event ? (
           <div style={{ textAlign: 'center', color: '#dc2626', fontSize: '0.9rem' }}>Event not found.</div>
-        ) : !token ? (
-          <PhoneVerify onVerified={(t) => { setToken(t); setTok(t); }} />
-        ) : (
+        ) : token ? (
           <Album eventDbId={event.id} token={token} onTokenInvalid={() => { clearToken(); setTok(null); }} />
+        ) : publicAccess === 'open' ? (
+          <PublicAlbumPreview eventDbId={event.id} downloadPermission={downloadPermission} onVerified={(t) => setTok(t)} />
+        ) : publicAccess === 'gated' ? (
+          <PhoneVerify onVerified={(t) => setTok(t)} />
+        ) : (
+          <div style={{ textAlign: 'center', color: '#9a7a55', fontSize: '0.9rem' }}>⏳ Loading album…</div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ── Public (no phone verification) album preview ────────────────────────
+// Shown when the event's album is 'public' or 'link_only' (or has no
+// album row configured at all -- see publicMedia.js's buildEventMediaSummary
+// for that default-open behavior). Viewing needs no verification;
+// uploading still does, so "Add your photos" reveals PhoneVerify inline
+// instead of gating the whole page like a verified_attendees/members_only
+// album does above.
+
+function PublicAlbumPreview({ eventDbId, downloadPermission, onVerified }) {
+  const [photos, setPhotos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showVerify, setShowVerify] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const data = await apiFetch(`/api/public-media/events/${eventDbId}/photos`);
+      setPhotos(data.photos || []);
+    } catch {
+      // A transient failure here just leaves the last-known grid up rather
+      // than bouncing the visitor into the verification flow.
+    } finally {
+      setLoading(false);
+    }
+  }, [eventDbId]);
+
+  useEffect(() => {
+    load();
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') load();
+    }, POLL_MS);
+    return () => clearInterval(interval);
+  }, [load]);
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+        <button
+          onClick={() => setShowVerify(true)}
+          style={{ padding: '14px 28px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#b45309,#78350f)', color: 'white', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
+        >
+          📷 Share a photo
+        </button>
+      </div>
+
+      {showVerify && (
+        <div style={{ maxWidth: 420, margin: '0 auto 20px' }}>
+          <PhoneVerify onVerified={onVerified} />
+        </div>
+      )}
+
+      {loading ? (
+        <div style={{ textAlign: 'center', color: '#9a7a55', fontSize: '0.9rem' }}>⏳ Loading photos…</div>
+      ) : photos.length === 0 ? (
+        <div style={{ textAlign: 'center', color: '#9a7a55', fontSize: '0.9rem', padding: '40px 0' }}>
+          No photos yet — be the first to share one!
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
+          {photos.map((p) => (
+            <div key={p.photo_id} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', border: '1px solid #e8d5b7', aspectRatio: '1 / 1' }}>
+              <img src={p.url} alt={p.caption || 'Event photo'} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              {downloadPermission && (
+                <a href={p.url} download target="_blank" rel="noopener noreferrer"
+                  style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.55)', color: '#fff', fontSize: '0.7rem', fontWeight: 700, padding: '3px 7px', borderRadius: 6, textDecoration: 'none' }}
+                >
+                  ⬇
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ textAlign: 'center', marginTop: 24, color: '#e8d5b7', fontSize: '0.75rem' }}>
+        🌸 Om Namo Venkatesaya 🌸
       </div>
     </div>
   );

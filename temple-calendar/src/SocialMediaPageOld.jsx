@@ -1,24 +1,29 @@
 /**
- * SocialConnectWizards — the step-by-step Facebook Page / Instagram Business
- * Account connect flow, plus "add a teammate to the Meta App" instructions.
+ * SocialMediaPageOld — OLD standalone test page for a one-click "Connect
+ * with Facebook / Instagram" OAuth flow (via routes/social-connect.js).
  *
- * Moved here from the standalone /social-media test page once the Facebook
- * wizard was confirmed working end to end ("got posting enabled") — this is
- * now the one connect experience, used from Settings' Social Media section.
- * Self-contained: reads/writes organization.social_accounts via useAuth,
- * same as the old manual-entry fields it replaces.
+ * Superseded: the real, working connect experience now lives directly in
+ * Settings > Social Media (SocialConnectButtons.jsx, on top of
+ * routes/facebookAuth.js + routes/instagramAuth.js) -- no standalone page
+ * to navigate to separately. This file is NOT imported/routed anywhere
+ * anymore (confirmed nothing in src/ references it) -- kept only for
+ * reference in case any of its manual-entry wizard logic is useful again.
  */
-import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { ExternalLink, Copy, Check } from 'lucide-react';
-import { playClick } from '../utils/sound';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
+import { ArrowLeft, ExternalLink, Copy, Check } from 'lucide-react';
+import AdminToolbar from './components/AdminToolbar';
 
+const HALO_BG = { backgroundColor: 'var(--cf-bg-base)' };
 const GLOSS_BLACK = {
   background: 'linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 55%), linear-gradient(135deg,#3a3a3a,#000000)',
   boxShadow: '0 3px 10px -4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.18)',
 };
 
-export default function SocialConnectWizards() {
+
+export default function SocialMediaPageOld() {
+  const navigate = useNavigate();
   const { organization, updateOrganization } = useAuth();
 
   // ── Step-by-step manual connect wizard ──────────────────────────────────
@@ -32,6 +37,7 @@ export default function SocialConnectWizards() {
   const [pageTokenInput, setPageTokenInput] = useState('');
   const [wizardError, setWizardError] = useState('');
   const [wizardSaving, setWizardSaving] = useState(false);
+  const [wizardSuccess, setWizardSuccess] = useState('');
   const [copiedQuery, setCopiedQuery] = useState(false);
   const [wizardConnected, setWizardConnected] = useState(false);
 
@@ -64,6 +70,7 @@ export default function SocialConnectWizards() {
   const [igIdInput, setIgIdInput] = useState('');
   const [igWizardError, setIgWizardError] = useState('');
   const [igWizardSaving, setIgWizardSaving] = useState(false);
+  const [igWizardSuccess, setIgWizardSuccess] = useState('');
   const [copiedIgQuery, setCopiedIgQuery] = useState(false);
   const [igConnected, setIgConnected] = useState(false);
 
@@ -144,35 +151,31 @@ export default function SocialConnectWizards() {
     }
   };
 
-  const handleDisconnectFacebook = async () => {
-    if (!window.confirm('Disconnect Facebook? Broadcasts to Facebook will fall back to the shared default account, if one is configured.')) return;
-    const result = await updateOrganization({ disconnect_facebook: true });
-    if (result.success) {
-      setWizardConnected(false);
-      setWizardStep(1);
-      setPageNameInput('');
-      setPageIdInput('');
-    } else {
-      setWizardError(result.error || 'Failed to disconnect Facebook');
-    }
-  };
-
-  const handleDisconnectInstagram = async () => {
-    if (!window.confirm('Disconnect Instagram? Broadcasts to Instagram will fall back to the shared default account, if one is configured.')) return;
-    const result = await updateOrganization({ disconnect_instagram: true });
-    if (result.success) {
-      setIgConnected(false);
-      setIgWizardStep(1);
-      setIgUsernameInput('');
-      setIgIdInput('');
-    } else {
-      setIgWizardError(result.error || 'Failed to disconnect Instagram');
-    }
-  };
-
-
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen" style={HALO_BG}>
+      <AdminToolbar activePage="social-media" />
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-3xl mx-auto px-6 py-4">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate('/settings')}
+              style={{ ...GLOSS_BLACK, width: 36, height: 36, borderRadius: 8, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+            >
+              <ArrowLeft className="w-4 h-4" style={{ color: '#fff' }} />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Social Media (beta)</h1>
+              <p className="text-sm text-gray-500">Step-by-step Facebook connect — separate test page, doesn't touch Settings</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
+        <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+          This is a separate test page — your existing Facebook/Instagram connection in <button className="underline font-semibold" onClick={() => navigate('/settings')}>Settings</button> is unaffected either way. Both pages save to the same place, so finishing the wizard below updates Settings too.
+        </div>
+
         {/* ── Step-by-step manual connect wizard ── */}
         <div className="rounded-2xl shadow-[0_12px_40px_-14px_rgba(0,0,0,0.22)] border border-gray-100 overflow-hidden">
           <div style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 55%), linear-gradient(180deg,#1c1c1e,#000000)' }} className="px-5 py-4">
@@ -218,10 +221,7 @@ export default function SocialConnectWizards() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mt-1" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>🎉 Connected!</h3>
                 <p className="text-sm text-gray-600 mt-1 mb-5">You can now post to <strong>{pageNameInput || 'your Facebook Page'}</strong> on Facebook from Broadcast.</p>
-                <div className="flex items-center justify-center gap-4">
-                  <button type="button" onClick={() => { playClick(); setWizardConnected(false); }} className="text-xs font-semibold text-gray-500 hover:text-gray-800 underline">Edit connection</button>
-                  <button type="button" onClick={() => { playClick(); handleDisconnectFacebook(); }} className="text-xs font-semibold text-red-600 hover:text-red-700 underline">Disconnect</button>
-                </div>
+                <button type="button" onClick={() => setWizardConnected(false)} className="text-xs font-semibold text-gray-500 hover:text-gray-800 underline">Edit connection</button>
               </div>
             ) : (
             <>
@@ -245,7 +245,7 @@ export default function SocialConnectWizards() {
                   <button
                     type="button"
                     disabled={!pageNameInput.trim()}
-                    onClick={() => { playClick(); setWizardStep(2); }}
+                    onClick={() => setWizardStep(2)}
                     className="px-5 py-2 rounded-lg text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed"
                     style={GLOSS_BLACK}
                   >
@@ -267,7 +267,7 @@ export default function SocialConnectWizards() {
                   <code className="flex-1 px-3 py-2 rounded-lg bg-gray-100 border border-gray-200 text-sm font-mono text-gray-800">{GRAPH_QUERY}</code>
                   <button
                     type="button"
-                    onClick={() => { playClick(); copyGraphQuery(); }}
+                    onClick={copyGraphQuery}
                     className="px-3 py-2 rounded-lg border border-gray-300 text-gray-600 hover:border-gray-400 flex items-center gap-1.5 text-xs font-semibold flex-shrink-0"
                   >
                     {copiedQuery ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -285,8 +285,8 @@ export default function SocialConnectWizards() {
                 </a>
                 <p className="text-xs text-gray-400 mb-4">Meta doesn't allow Graph API Explorer to be embedded directly on other sites (it blocks that for login security), so this opens it in a new tab with the query already typed in — you just need to pick your Page and hit Submit.</p>
                 <div className="flex justify-between">
-                  <button type="button" onClick={() => { playClick(); setWizardStep(1); }} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
-                  <button type="button" onClick={() => { playClick(); setWizardStep(3); }} className="px-5 py-2 rounded-lg text-white font-semibold text-sm" style={GLOSS_BLACK}>I ran it, continue →</button>
+                  <button type="button" onClick={() => setWizardStep(1)} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
+                  <button type="button" onClick={() => setWizardStep(3)} className="px-5 py-2 rounded-lg text-white font-semibold text-sm" style={GLOSS_BLACK}>I ran it, continue →</button>
                 </div>
               </div>
             )}
@@ -314,11 +314,11 @@ export default function SocialConnectWizards() {
                   autoComplete="new-password"
                 />
                 <div className="flex justify-between">
-                  <button type="button" onClick={() => { playClick(); setWizardStep(2); }} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
+                  <button type="button" onClick={() => setWizardStep(2)} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
                   <button
                     type="button"
                     disabled={!pageIdInput.trim()}
-                    onClick={() => { playClick(); setWizardStep(4); }}
+                    onClick={() => setWizardStep(4)}
                     className="px-5 py-2 rounded-lg text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed"
                     style={GLOSS_BLACK}
                   >
@@ -337,11 +337,11 @@ export default function SocialConnectWizards() {
                   <div className="flex justify-between px-4 py-2.5 text-sm"><span className="text-gray-500">Access Token</span><span className="font-semibold text-gray-900">{pageTokenInput ? '•••• (will be saved)' : "Not provided — connect only, can't post yet"}</span></div>
                 </div>
                 <div className="flex justify-between">
-                  <button type="button" onClick={() => { playClick(); setWizardStep(3); }} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
+                  <button type="button" onClick={() => setWizardStep(3)} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
                   <button
                     type="button"
                     disabled={wizardSaving}
-                    onClick={() => { playClick(); handleWizardSave(); }}
+                    onClick={handleWizardSave}
                     className="px-5 py-2 rounded-lg text-white font-semibold text-sm disabled:opacity-60"
                     style={{ background: 'linear-gradient(135deg,#1877f2,#0f5fc8)' }}
                   >
@@ -401,10 +401,7 @@ export default function SocialConnectWizards() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mt-1" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>🎉 Connected!</h3>
                 <p className="text-sm text-gray-600 mt-1 mb-5">You can now post to <strong>{igUsernameInput ? '@' + igUsernameInput : 'Instagram'}</strong> from Broadcast.</p>
-                <div className="flex items-center justify-center gap-4">
-                  <button type="button" onClick={() => { playClick(); setIgConnected(false); }} className="text-xs font-semibold text-gray-500 hover:text-gray-800 underline">Edit connection</button>
-                  <button type="button" onClick={() => { playClick(); handleDisconnectInstagram(); }} className="text-xs font-semibold text-red-600 hover:text-red-700 underline">Disconnect</button>
-                </div>
+                <button type="button" onClick={() => setIgConnected(false)} className="text-xs font-semibold text-gray-500 hover:text-gray-800 underline">Edit connection</button>
               </div>
             ) : (
             <>
@@ -428,7 +425,7 @@ export default function SocialConnectWizards() {
                   <button
                     type="button"
                     disabled={!igUsernameInput.trim()}
-                    onClick={() => { playClick(); setIgWizardStep(2); }}
+                    onClick={() => setIgWizardStep(2)}
                     className="px-5 py-2 rounded-lg text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{ background: 'linear-gradient(135deg,#e1306c,#833ab4)' }}
                   >
@@ -450,7 +447,7 @@ export default function SocialConnectWizards() {
                   <code className="flex-1 px-3 py-2 rounded-lg bg-gray-100 border border-gray-200 text-xs font-mono text-gray-800 break-all">{IG_GRAPH_QUERY}</code>
                   <button
                     type="button"
-                    onClick={() => { playClick(); copyIgGraphQuery(); }}
+                    onClick={copyIgGraphQuery}
                     className="px-3 py-2 rounded-lg border border-gray-300 text-gray-600 hover:border-gray-400 flex items-center gap-1.5 text-xs font-semibold flex-shrink-0"
                   >
                     {copiedIgQuery ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -469,8 +466,8 @@ export default function SocialConnectWizards() {
                 <p className="text-xs text-gray-400 mb-1 mt-1">Meta doesn't allow Graph API Explorer to be embedded directly on other sites (it blocks that for login security), so this opens it in a new tab with the query already typed in.</p>
                 <p className="text-xs text-gray-400 mb-4">If the result has no <code className="bg-gray-100 px-1 rounded">instagram_business_account</code> field at all, your Page doesn't have an Instagram Business account linked yet — link one from the Instagram app first (Settings → Account type and tools → linked accounts).</p>
                 <div className="flex justify-between">
-                  <button type="button" onClick={() => { playClick(); setIgWizardStep(1); }} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
-                  <button type="button" onClick={() => { playClick(); setIgWizardStep(3); }} className="px-5 py-2 rounded-lg text-white font-semibold text-sm" style={GLOSS_BLACK}>I ran it, continue →</button>
+                  <button type="button" onClick={() => setIgWizardStep(1)} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
+                  <button type="button" onClick={() => setIgWizardStep(3)} className="px-5 py-2 rounded-lg text-white font-semibold text-sm" style={GLOSS_BLACK}>I ran it, continue →</button>
                 </div>
               </div>
             )}
@@ -489,11 +486,11 @@ export default function SocialConnectWizards() {
                   autoFocus
                 />
                 <div className="flex justify-between">
-                  <button type="button" onClick={() => { playClick(); setIgWizardStep(2); }} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
+                  <button type="button" onClick={() => setIgWizardStep(2)} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
                   <button
                     type="button"
                     disabled={!igIdInput.trim()}
-                    onClick={() => { playClick(); setIgWizardStep(4); }}
+                    onClick={() => setIgWizardStep(4)}
                     className="px-5 py-2 rounded-lg text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed"
                     style={GLOSS_BLACK}
                   >
@@ -512,11 +509,11 @@ export default function SocialConnectWizards() {
                 </div>
                 <p className="text-xs text-gray-400 mb-4">Posting uses the Facebook Page token you already saved above — no separate Instagram token needed.</p>
                 <div className="flex justify-between">
-                  <button type="button" onClick={() => { playClick(); setIgWizardStep(3); }} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
+                  <button type="button" onClick={() => setIgWizardStep(3)} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
                   <button
                     type="button"
                     disabled={igWizardSaving}
-                    onClick={() => { playClick(); handleIgWizardSave(); }}
+                    onClick={handleIgWizardSave}
                     className="px-5 py-2 rounded-lg text-white font-semibold text-sm disabled:opacity-60"
                     style={{ background: 'linear-gradient(135deg,#e1306c,#833ab4)' }}
                   >
@@ -569,7 +566,7 @@ export default function SocialConnectWizards() {
                 <div className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center text-white text-2xl font-extrabold" style={GLOSS_BLACK}>✓</div>
                 <h3 className="text-lg font-bold text-gray-900" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>They're set up</h3>
                 <p className="text-sm text-gray-600 mt-1 mb-5">{teammateContact || 'Your teammate'} can now open Graph API Explorer and follow the Facebook and Instagram wizards above themselves.</p>
-                <button type="button" onClick={() => { playClick(); setTeamDone(false); setTeamStep(1); }} className="text-xs font-semibold text-gray-500 hover:text-gray-800 underline">Add someone else</button>
+                <button type="button" onClick={() => { setTeamDone(false); setTeamStep(1); }} className="text-xs font-semibold text-gray-500 hover:text-gray-800 underline">Add someone else</button>
               </div>
             ) : (
             <>
@@ -587,7 +584,7 @@ export default function SocialConnectWizards() {
                   autoFocus
                 />
                 <div className="flex justify-end">
-                  <button type="button" onClick={() => { playClick(); setTeamStep(2); }} className="px-5 py-2 rounded-lg text-white font-semibold text-sm" style={GLOSS_BLACK}>Next →</button>
+                  <button type="button" onClick={() => setTeamStep(2)} className="px-5 py-2 rounded-lg text-white font-semibold text-sm" style={GLOSS_BLACK}>Next →</button>
                 </div>
               </div>
             )}
@@ -611,8 +608,8 @@ export default function SocialConnectWizards() {
                 </a>
                 <p className="text-xs text-gray-400 mb-4">Tester is enough for Graph Explorer + connecting a Page; pick Developer only if they'll edit app settings too.</p>
                 <div className="flex justify-between">
-                  <button type="button" onClick={() => { playClick(); setTeamStep(1); }} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
-                  <button type="button" onClick={() => { playClick(); setTeamStep(3); }} className="px-5 py-2 rounded-lg text-white font-semibold text-sm" style={GLOSS_BLACK}>I added them, continue →</button>
+                  <button type="button" onClick={() => setTeamStep(1)} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
+                  <button type="button" onClick={() => setTeamStep(3)} className="px-5 py-2 rounded-lg text-white font-semibold text-sm" style={GLOSS_BLACK}>I added them, continue →</button>
                 </div>
               </div>
             )}
@@ -622,8 +619,8 @@ export default function SocialConnectWizards() {
                 <h3 className="font-semibold text-gray-900 text-base mb-1" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>They accept the invite</h3>
                 <p className="text-sm text-gray-600 mb-4">Facebook sends {teammateContact || 'them'} a notification to accept the Role — nothing works for {teammateContact ? 'them' : 'them'} until they click Accept. If they don't see it right away, they can check it directly at <code className="bg-gray-100 px-1 rounded text-xs">facebook.com/notifications</code>.</p>
                 <div className="flex justify-between">
-                  <button type="button" onClick={() => { playClick(); setTeamStep(2); }} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
-                  <button type="button" onClick={() => { playClick(); setTeamStep(4); }} className="px-5 py-2 rounded-lg text-white font-semibold text-sm" style={GLOSS_BLACK}>They accepted, continue →</button>
+                  <button type="button" onClick={() => setTeamStep(2)} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
+                  <button type="button" onClick={() => setTeamStep(4)} className="px-5 py-2 rounded-lg text-white font-semibold text-sm" style={GLOSS_BLACK}>They accepted, continue →</button>
                 </div>
               </div>
             )}
@@ -637,8 +634,8 @@ export default function SocialConnectWizards() {
                 </div>
                 <p className="text-xs text-gray-400 mb-4">Both are required — being in App Roles alone doesn't grant Page access, and being a Page admin alone doesn't let them use Graph Explorer while the app is in Development Mode.</p>
                 <div className="flex justify-between">
-                  <button type="button" onClick={() => { playClick(); setTeamStep(3); }} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
-                  <button type="button" onClick={() => { playClick(); setTeamDone(true); }} className="px-5 py-2 rounded-lg text-white font-semibold text-sm" style={GLOSS_BLACK}>✓ Confirm &amp; done</button>
+                  <button type="button" onClick={() => setTeamStep(3)} className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm">← Back</button>
+                  <button type="button" onClick={() => setTeamDone(true)} className="px-5 py-2 rounded-lg text-white font-semibold text-sm" style={GLOSS_BLACK}>✓ Confirm &amp; done</button>
                 </div>
               </div>
             )}
@@ -646,6 +643,8 @@ export default function SocialConnectWizards() {
             )}
           </div>
         </div>
+
+      </div>
     </div>
   );
 }

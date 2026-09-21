@@ -62,9 +62,6 @@
 
 const express = require('express');
 const fetch = require('node-fetch');
-const jwt = require('jsonwebtoken');
-const { v4: uuidv4 } = require('uuid');
-const { JWT_SECRET } = require('../utils/jwtSecret');
 const { authenticateToken } = require('./auth');
 const { getOrganization, updateOrganization, redactSocialAccounts } = require('../organizations');
 const { sendServerError } = require('../utils/errors');
@@ -73,59 +70,13 @@ const router = express.Router();
 
 const GRAPH_VERSION = 'v20.0';
 
-// Permissions requested for the combined Facebook + Instagram connect flow.
-// pages_manage_posts / instagram_content_publish / business_management need
-// Meta App Review before they work for anyone other than the app's own
-// admins/developers/testers (added under Meta App Dashboard → Roles) — see
-// the setup notes. Until App Review is approved, "Connect with Facebook"
-// only works for temples whose Facebook account has been added as a tester
-// on the Meta App itself.
-const FACEBOOK_SCOPES = [
-  'pages_show_list',
-  'pages_read_engagement',
-  'pages_manage_posts',
-  'instagram_basic',
-  'instagram_content_publish',
-  'business_management',
-].join(',');
-
-// Holds Facebook Pages fetched mid-connect, for the rare admin who manages
-// more than one Page, between the OAuth callback and them picking which one
-// in the UI. In-memory rather than a DynamoDB table: the data is only ever
-// needed for the next couple of minutes and never outlives this process on
-// purpose. The one real cost of that: if App Runner is ever scaled to more
-// than one instance, the picker's follow-up requests could land on a
-// different instance than the one holding the entry and see "expired" even
-// though it isn't — acceptable today at single-instance scale, worth
-// revisiting (e.g. a short-TTL DynamoDB item) if that changes.
-const pendingConnections = new Map();
-const PENDING_TTL_MS = 10 * 60 * 1000;
-setInterval(() => {
-  const cutoff = Date.now() - PENDING_TTL_MS;
-  for (const [id, entry] of pendingConnections) {
-    if (entry.createdAt < cutoff) pendingConnections.delete(id);
-  }
-}, 60 * 1000).unref();
-
-// Paths this callback is allowed to send the browser back to after OAuth
-// completes. Kept as a small allowlist (rather than trusting an arbitrary
-// query param) so this can't be abused as an open redirect. '/social-media'
-// is the standalone test page for the OAuth connect flow -- kept separate
-// from '/settings' so testing it can never touch the working manual-entry
-// flow there.
-const ALLOWED_RETURN_PATHS = ['/settings', '/social-media'];
-function settingsRedirectBase(returnTo) {
-  const base = process.env.FRONTEND_URL || process.env.VITE_APP_URL || 'https://calendarflyapp.com';
-  const path = ALLOWED_RETURN_PATHS.includes(returnTo) ? returnTo : '/settings';
-  return `${base.replace(/\/$/, '')}${path}`;
-}
-
-// Whether Facebook/Instagram OAuth (and, by extension, WhatsApp Embedded
-// Signup, which reuses the same Meta App) is configured yet. Read by
-// GET /status so the frontend can show "not connected yet" instead of a
-// button that 400s.
+// Whether this app's shared Meta App credentials are set -- WhatsApp
+// Embedded Signup (below) is the only thing left in this file that needs
+// them; the Facebook/Instagram OAuth-dialog flow that used to live here
+// was retired in favor of routes/facebookAuth.js + routes/instagramAuth.js,
+// which are configured independently (see utils/socialConfig.js).
 function facebookConfigured() {
-  return !!(process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET && process.env.FACEBOOK_OAUTH_REDIRECT_URI);
+  return !!(process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET);
 }
 function whatsappSignupConfigured() {
   return !!(process.env.FACEBOOK_APP_ID && process.env.WHATSAPP_EMBEDDED_SIGNUP_CONFIG_ID);
@@ -138,191 +89,13 @@ router.get('/status', authenticateToken, (req, res) => {
   });
 });
 
-// ── Facebook / Instagram — step 1: get the dialog URL ──────────────────────
-
-function buildFacebookOAuthUrl(org_id, purpose, returnTo) {
-  if (!facebookConfigured()) {
-    throw new Error('Facebook connection isn\'t set up on the server yet — FACEBOOK_APP_ID, FACEBOOK_APP_SECRET and FACEBOOK_OAUTH_REDIRECT_URI all need to be set in server/.env first.');
-  }
-  // Short-lived signed state carries the org_id (and which page to send the
-  // browser back to) across the redirect (the callback is a plain browser
-  // navigation, so it can't send an Authorization header) and doubles as
-  // CSRF protection — the callback refuses anything whose state doesn't
-  // verify against JWT_SECRET.
-  const state = jwt.sign({ org_id, purpose, returnTo, nonce: uuidv4() }, JWT_SECRET, { expiresIn: '10m' });
-  const params = new URLSearchParams({
-    client_id: process.env.FACEBOOK_APP_ID,
-    redirect_uri: process.env.FACEBOOK_OAUTH_REDIRECT_URI,
-    state,
-    scope: FACEBOOK_SCOPES,
-    response_type: 'code',
-  });
-  return `https://www.facebook.com/${GRAPH_VERSION}/dialog/oauth?${params.toString()}`;
-}
-
-router.get('/facebook/oauth-url', authenticateToken, (req, res) => {
-  try {
-    res.json({ url: buildFacebookOAuthUrl(req.user.org_id, 'facebook', req.query.return_to) });
-  } catch (err) {
-    // Deliberate user-facing config text from buildFacebookOAuthUrl above
-    // (e.g. "FACEBOOK_APP_ID ... need to be set in server/.env first") —
-    // the org admin needs to see this even in production, so it isn't
-    // gated behind NODE_ENV like utils/errors.js's sendServerError.
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// Instagram Business accounts are always attached to a Facebook Page, so
-// "Connect Instagram" is the identical dialog — only `purpose` differs, and
-// that's used purely to pick the right success message after the callback.
-router.get('/instagram/oauth-url', authenticateToken, (req, res) => {
-  try {
-    res.json({ url: buildFacebookOAuthUrl(req.user.org_id, 'instagram', req.query.return_to) });
-  } catch (err) {
-    // Same reasoning as /facebook/oauth-url above.
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// ── Facebook / Instagram — step 2: Meta redirects back here ────────────────
-
-async function savePageToOrg(org_id, page) {
-  const existingOrg = await getOrganization(org_id);
-  const social = { ...((existingOrg && existingOrg.social_accounts) || {}) };
-
-  social.facebook = {
-    page_token: page.access_token,
-    page_id: page.id,
-    page_name: page.name || '',
-    connected_at: new Date().toISOString(),
-    connected_via: 'oauth',
-  };
-
-  if (page.instagram_business_account && page.instagram_business_account.id) {
-    social.instagram = {
-      account_id: page.instagram_business_account.id,
-      username: page.instagram_business_account.username || '',
-      connected_at: new Date().toISOString(),
-      connected_via: 'oauth',
-    };
-  }
-
-  await updateOrganization(org_id, { social_accounts: social });
-}
-
-router.get('/facebook/callback', async (req, res) => {
-  // Default until the signed state is decoded below (early failures --
-  // missing code, bad state -- have no returnTo to trust yet, so they fall
-  // back to Settings same as always).
-  let redirectUrl = settingsRedirectBase();
-  const fail = (message) => res.redirect(`${redirectUrl}?social_error=${encodeURIComponent(message)}`);
-
-  try {
-    const { code, state, error, error_description } = req.query;
-    if (error) return fail(error_description || error);
-    if (!code || !state) return fail('Facebook did not return an authorization code — please try connecting again.');
-
-    let decoded;
-    try {
-      decoded = jwt.verify(state, JWT_SECRET);
-    } catch (e) {
-      return fail('This connection link expired — please click Connect again.');
-    }
-    const { org_id, purpose, returnTo } = decoded;
-    redirectUrl = settingsRedirectBase(returnTo);
-    if (!org_id) return fail('This connection link is invalid — please click Connect again.');
-
-    // Step 1: authorization code → short-lived user access token.
-    const tokenParams = new URLSearchParams({
-      client_id: process.env.FACEBOOK_APP_ID,
-      client_secret: process.env.FACEBOOK_APP_SECRET,
-      redirect_uri: process.env.FACEBOOK_OAUTH_REDIRECT_URI,
-      code,
-    });
-    const tokenRes = await fetch(`https://graph.facebook.com/${GRAPH_VERSION}/oauth/access_token?${tokenParams.toString()}`);
-    const tokenData = await tokenRes.json();
-    if (!tokenRes.ok || tokenData.error) throw new Error(tokenData.error?.message || 'Facebook rejected the authorization code.');
-
-    // Step 2: exchange for a long-lived user token (~60 days) — Page tokens
-    // minted from a long-lived user token in step 3 inherit its long life
-    // (Facebook Pages actually never expire a Page token derived this way,
-    // in practice). Not fatal if this step fails; fall back to the
-    // short-lived token rather than aborting the whole connection.
-    let userToken = tokenData.access_token;
-    const exchangeParams = new URLSearchParams({
-      grant_type: 'fb_exchange_token',
-      client_id: process.env.FACEBOOK_APP_ID,
-      client_secret: process.env.FACEBOOK_APP_SECRET,
-      fb_exchange_token: userToken,
-    });
-    const longRes = await fetch(`https://graph.facebook.com/${GRAPH_VERSION}/oauth/access_token?${exchangeParams.toString()}`);
-    const longData = await longRes.json();
-    if (longRes.ok && longData.access_token) userToken = longData.access_token;
-
-    // Step 3: list every Page this admin manages, with each Page's own
-    // access token and linked Instagram Business account (if any) already
-    // attached — no separate ID lookup needed.
-    const fields = 'id,name,access_token,instagram_business_account{id,username}';
-    const pagesRes = await fetch(`https://graph.facebook.com/${GRAPH_VERSION}/me/accounts?fields=${fields}&access_token=${encodeURIComponent(userToken)}`);
-    const pagesData = await pagesRes.json();
-    if (!pagesRes.ok || pagesData.error) throw new Error(pagesData.error?.message || 'Could not list your Facebook Pages.');
-    const pages = pagesData.data || [];
-
-    if (pages.length === 0) {
-      return fail('No Facebook Pages found on that account — you need to be an admin of a Facebook Page to connect it.');
-    }
-
-    if (pages.length === 1) {
-      await savePageToOrg(org_id, pages[0]);
-      return res.redirect(`${redirectUrl}?connected=${purpose === 'instagram' ? 'instagram' : 'facebook'}`);
-    }
-
-    // More than one Page — stash them and let the admin pick in Settings.
-    const connect_id = uuidv4();
-    pendingConnections.set(connect_id, { org_id, purpose, pages, createdAt: Date.now() });
-    return res.redirect(`${redirectUrl}?select_page=${connect_id}&platform=${purpose}`);
-  } catch (err) {
-    console.error('[SOCIAL CONNECT] Facebook callback failed:', err.message);
-    return fail(err.message);
-  }
-});
-
-// ── Facebook / Instagram — step 3 (multi-Page admins only) ─────────────────
-
-router.get('/facebook/pending/:connect_id', authenticateToken, (req, res) => {
-  const pending = pendingConnections.get(req.params.connect_id);
-  if (!pending) return res.status(404).json({ error: 'This connection has expired — please click Connect again.' });
-  if (pending.org_id !== req.user.org_id) return res.status(403).json({ error: 'Not authorized for this connection.' });
-  res.json({
-    platform: pending.purpose,
-    pages: pending.pages.map(p => ({
-      id: p.id,
-      name: p.name,
-      has_instagram: !!(p.instagram_business_account && p.instagram_business_account.id),
-    })),
-  });
-});
-
-router.post('/facebook/finish', authenticateToken, async (req, res) => {
-  try {
-    const { connect_id, page_id } = req.body;
-    const pending = pendingConnections.get(connect_id);
-    if (!pending) return res.status(400).json({ error: 'This connection has expired — please click Connect again.' });
-    if (pending.org_id !== req.user.org_id) return res.status(403).json({ error: 'Not authorized for this connection.' });
-
-    const page = pending.pages.find(p => p.id === page_id);
-    if (!page) return res.status(400).json({ error: 'That Page was not part of this connection — please click Connect again.' });
-
-    await savePageToOrg(pending.org_id, page);
-    pendingConnections.delete(connect_id);
-
-    const updated = await getOrganization(pending.org_id);
-    res.json({ success: true, social_accounts: redactSocialAccounts(updated) });
-  } catch (err) {
-    console.error('[SOCIAL CONNECT] Facebook finish failed:', err.message);
-    sendServerError(res, err);
-  }
-});
+// Facebook/Instagram OAuth-dialog connect flow (oauth-url/callback/pending/
+// finish) that used to live here was retired — routes/facebookAuth.js and
+// routes/instagramAuth.js are the live implementation now (see
+// SocialConnectButtons.jsx). It shared FACEBOOK_APP_ID/SECRET with
+// WhatsApp Embedded Signup below but owned its own FACEBOOK_OAUTH_REDIRECT_URI,
+// which is why removing it also means that var is no longer read anywhere
+// and can come out of server/.env.
 
 // ── WhatsApp — Embedded Signup ──────────────────────────────────────────────
 // See the file header. The frontend drives the popup itself (FB.login with

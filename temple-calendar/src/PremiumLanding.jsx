@@ -122,7 +122,11 @@ export default function PremiumLanding() {
     const result = await startGuestSandbox('temple');
     setSandboxLoading(false);
     if (result.success) {
-      navigate('/select-mode');
+      // A guest sandbox owner can manage their sandbox org, so this always
+      // goes straight to the admin dashboard (see AuthContext.jsx --
+      // startGuestSandbox's account is seeded with a real, manageable role,
+      // never 'viewer').
+      navigate('/dashboard');
     } else {
       setSandboxError(result.error || 'Could not start a sandbox session — please try again.');
     }

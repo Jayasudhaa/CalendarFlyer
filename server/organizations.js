@@ -6,6 +6,9 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand, UpdateCommand, DeleteCommand, ScanCommand } = require('@aws-sdk/lib-dynamodb');
 const { v4: uuidv4 } = require('uuid');
+// Used by changePlan() below to actually cancel a live Stripe subscription
+// when an org downgrades to Free — see that function for why.
+const { getStripe } = require('./utils/stripeClient');
 
 const client = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-2' });
 const dynamodb = DynamoDBDocumentClient.from(client);
@@ -362,13 +365,44 @@ async function updateOrganization(org_id, updates) {
 }
 
 /**
- * Change organization plan
+ * Change organization plan.
+ *
+ * Downgrading away from a paid plan used to only flip plan/features/limits
+ * in our own database — it never told Stripe anything, so the org's live
+ * subscription kept billing every month even though this app had already
+ * cut off their paid features. Now, moving to 'free' from a paid plan also
+ * cancels the actual Stripe subscription first; the local downgrade only
+ * happens once we know Stripe has actually stopped billing them (either we
+ * canceled it just now, or it was already gone — e.g. a webhook beat us to
+ * it, or it was canceled manually in the Dashboard). If Stripe can't be
+ * reached or refuses for some other reason, this throws instead of silently
+ * downgrading locally, so the org is never shown as "Free" while Stripe is
+ * still charging their card.
  */
 async function changePlan(org_id, newPlan) {
+  const org = await getOrganization(org_id);
+  const wasOnPaidPlan = !!(org && org.plan && org.plan !== 'free');
+
+  let billing = (org && org.billing) || {};
+  if (newPlan === 'free' && wasOnPaidPlan && org.stripe_subscription_id) {
+    try {
+      await getStripe().subscriptions.cancel(org.stripe_subscription_id);
+    } catch (err) {
+      const alreadyGone = err.code === 'resource_missing' || /already been canceled/i.test(err.message || '');
+      if (!alreadyGone) {
+        console.error(`[ORG] Failed to cancel Stripe subscription ${org.stripe_subscription_id} for org ${org_id}:`, err.message);
+        throw new Error('Could not cancel your subscription with Stripe — please try again in a moment or contact support.');
+      }
+      // else: nothing left to cancel, fall through to the local downgrade below.
+    }
+    billing = { ...billing, subscription_status: 'canceled' };
+  }
+
   return updateOrganization(org_id, {
     plan: newPlan,
     features: PLAN_FEATURES[newPlan],
-    limits: PLAN_LIMITS[newPlan]
+    limits: PLAN_LIMITS[newPlan],
+    ...(newPlan === 'free' && wasOnPaidPlan ? { billing } : {}),
   });
 }
 

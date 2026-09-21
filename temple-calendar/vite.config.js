@@ -14,6 +14,23 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true,
       },
+      // Same reason as /api above -- the Facebook/Instagram "Continue
+      // with..." buttons (SocialConnectButtons.jsx) call /auth/facebook/
+      // start and /auth/instagram/start on the backend. Without this,
+      // those calls hit Vite instead and get index.html back, which is
+      // the "Unexpected token '<'... is not valid JSON" error.
+      '/auth': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      // The standalone old test page itself, served as a static file by
+      // the backend (server/public/connect-social.html) -- proxied too so
+      // the "Old test page" link works the same way in dev as it will in
+      // production (same origin, no separate port to remember).
+      '/connect-social.html': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
     },
   },
 });

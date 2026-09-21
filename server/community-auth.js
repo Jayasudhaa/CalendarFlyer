@@ -235,6 +235,27 @@ function authenticateCommunityToken(req, res, next) {
   });
 }
 
+/**
+ * Same as authenticateCommunityToken, but never rejects the request --
+ * a missing or invalid token just leaves req.communityUser unset instead
+ * of a 401/403. For public routes (see routes/publicMedia.js) that show
+ * MORE to a verified community member (verified_attendees/members_only
+ * visibility) but still work for a fully anonymous visitor otherwise --
+ * the same "public event page open to anyone" shape as routes/events.js's
+ * own optionalAuth for req.user.
+ */
+function optionalCommunityAuth(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return next();
+  jwt.verify(token, COMMUNITY_JWT_SECRET, (err, decoded) => {
+    if (!err && decoded && decoded.role === 'community') {
+      req.communityUser = decoded;
+    }
+    next();
+  });
+}
+
 module.exports = {
   sendOtp,
   verifyOtp,
@@ -243,6 +264,7 @@ module.exports = {
   followOrg,
   unfollowOrg,
   listFollowersForOrg,
+  optionalCommunityAuth,
   countFollowersForOrg,
   issueCommunityToken,
   authenticateCommunityToken,

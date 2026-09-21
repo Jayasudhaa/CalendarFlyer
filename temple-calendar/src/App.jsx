@@ -14,6 +14,11 @@ import AdminToolbar from './components/AdminToolbar';
 import RSVPPage from './pages/RSVPPage';
 import RSVPAdmin from './pages/RSVPAdmin';
 import PhotoSharePage from './pages/PhotoSharePage';
+import PublicNav from './components/PublicNav';
+import PublicLive from './pages/PublicLive';
+import PublicPhotosPage from './pages/PublicPhotosPage';
+import PublicAlbumPage from './pages/PublicAlbumPage';
+import PublicAnnouncementsPage from './pages/PublicAnnouncementsPage';
 import PhotoModerationPage from './pages/PhotoModerationPage';
 import SignupPage from './pages/SignupPage';
 import SignupsAdminPage from './pages/SignupsAdminPage';
@@ -46,7 +51,10 @@ import PublicCalendar from './PublicCalendar';
 import WebChatWidget from './components/WebChatWidget';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import SyncChatbotModal from './SyncChatbotModal';
-import ModeSelection from './ModeSelection';
+import AdminHome from './pages/AdminHome';
+import MediaOverview from './pages/MediaOverview';
+import CreateLivestream from './pages/CreateLivestream';
+import CreatePhotoAlbum from './pages/CreatePhotoAlbum';
 function EyeIcon({ open }) {
   return open ? (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -311,6 +319,7 @@ function PublicOrgLayout() {
   const { events } = useEvents();
   return (
     <>
+      <PublicNav />
       <Outlet />
       <WebChatWidget events={events} organization={templeConfig} />
     </>
@@ -333,8 +342,8 @@ function PublicOrgLayout() {
 // these pages. Deliberately NOT wrapped around /admin itself (AdminCalendar
 // already mounts its own AdminAssistant there, wired directly to its local
 // handleAction — adding this layout too would show two bubbles) or
-// /onboarding / /select-mode (first-run flows that don't carry AdminToolbar
-// either, so they're not part of the established "admin pages" set).
+// /onboarding (a first-run flow that doesn't carry AdminToolbar either, so
+// it's not part of the established "admin pages" set).
 function AdminLayout() {
   const { events } = useEvents();
   const navigate = useNavigate();
@@ -371,13 +380,16 @@ function App() {
           <Route element={<PublicOrgLayout />}>
             <Route path="/calendar" element={<PublicCalendar />} />
             <Route path="/public" element={<PublicCalendar />} />
+            <Route path="/live" element={<PublicLive />} />
+            <Route path="/photos" element={<PublicPhotosPage />} />
+            <Route path="/photos/album/:albumId" element={<PublicAlbumPage />} />
+            <Route path="/announcements" element={<PublicAnnouncementsPage />} />
             <Route path="/rsvp/:eventId" element={<RSVPPage />} />
             <Route path="/photos/:eventId" element={<PhotoSharePage />} />
             <Route path="/signups/:eventId" element={<SignupPage />} />
           </Route>
 
           <Route path="/admin" element={<AdminCalendar />} />
-          <Route path="/select-mode" element={<ModeSelection />} />
           <Route path="/onboarding" element={<OnboardingWizard />} />
 
           {/* Other admin-dashboard pages — share the AdminAssistant widget
@@ -386,7 +398,13 @@ function App() {
             <Route path="/settings" element={<PremiumSettings />} />
             <Route path="/profile" element={<MyProfile />} />
             <Route path="/analytics" element={<RSVPAdmin />} />
+            <Route path="/dashboard" element={<AdminHome />} />
             <Route path="/photos-admin" element={<PhotoModerationPage />} />
+            <Route path="/media" element={<MediaOverview />} />
+            <Route path="/media/livestreams/new" element={<CreateLivestream />} />
+            <Route path="/media/livestreams/:id" element={<CreateLivestream />} />
+            <Route path="/media/albums/new" element={<CreatePhotoAlbum />} />
+            <Route path="/media/albums/:id" element={<CreatePhotoAlbum />} />
             <Route path="/signups-admin" element={<SignupsAdminPage />} />
           </Route>
 

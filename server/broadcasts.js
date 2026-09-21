@@ -32,6 +32,15 @@ const BROADCASTS_TABLE = 'calendarfly_broadcasts';
 async function createBroadcast({
   org_id, created_by, kind, platforms, caption, media_url,
   auto_rsvp, rsvp_url, wa_template, scheduled_for,
+  // Event-reminder series (see routes/broadcast.js POST /schedule): several
+  // rows created together from one "event date" + a set of offsets ("7
+  // days before", "1 day before", ...). Each row is otherwise an ordinary
+  // independent scheduled broadcast — scheduler.js doesn't know or care
+  // that it's part of a group — these two fields just let the client
+  // (history list) group and bulk-cancel them. Both optional/undefined for
+  // a plain one-off schedule, same undefined-means-omit rule as
+  // scheduled_for below (DynamoDB rejects undefined attribute values).
+  broadcast_group_id, reminder_label,
 }) {
   const broadcast_id = `bc-${uuidv4()}`;
   const now = Date.now();
@@ -53,6 +62,8 @@ async function createBroadcast({
     updated_at: now,
   };
   if (scheduled_for) item.scheduled_for = scheduled_for;
+  if (broadcast_group_id) item.broadcast_group_id = broadcast_group_id;
+  if (reminder_label) item.reminder_label = reminder_label;
 
   await dynamodb.send(new PutCommand({ TableName: BROADCASTS_TABLE, Item: item }));
   return item;

@@ -4,12 +4,22 @@
  * definitions). Used by routes/photos.js.
  *
  * `status` on a row is one of:
- *   'live'            — passed moderation (or moderation was inconclusive
- *                        in a non-blocking way), visible in the public album.
- *   'pending_review'   — Rekognition flagged something; hidden from the
- *                        public album until an admin approves or rejects it.
- *   'rejected'         — an admin rejected it (or, in principle, a future
- *                        automated hard-block); hidden permanently, and
+ *   'live'            — an admin approved it (or it was admin-uploaded
+ *                        directly to an album that doesn't require
+ *                        approval); visible in the public album.
+ *   'pending_review'   — awaiting an admin's approve/reject/flag. EVERY
+ *                        attendee upload lands here first, unconditionally
+ *                        (see routes/photos.js's register handler) --
+ *                        Rekognition's result only decides whether it's
+ *                        also marked auto_flagged for the admin's benefit,
+ *                        never whether it publishes automatically.
+ *   'flagged'          — an admin looked at a pending_review photo and
+ *                        escalated it rather than approving or rejecting
+ *                        outright (e.g. needs a second opinion). Hidden
+ *                        from the public album, like 'rejected', and same
+ *                        as 'rejected' doesn't count against the
+ *                        uploader's per-event cap.
+ *   'rejected'         — an admin rejected it; hidden permanently, and
  *                        doesn't count against the uploader's per-event cap
  *                        (see countCappablePhotos below) so a rejected
  *                        photo doesn't cost them one of their slots.
@@ -44,9 +54,9 @@ async function countCappablePhotosForMember(event_id, member_id) {
     TableName: PHOTOS_TABLE,
     IndexName: 'event-index',
     KeyConditionExpression: 'event_id = :event_id',
-    FilterExpression: 'member_id = :member_id AND #status <> :rejected',
+    FilterExpression: 'member_id = :member_id AND #status <> :rejected AND #status <> :flagged',
     ExpressionAttributeNames: { '#status': 'status' },
-    ExpressionAttributeValues: { ':event_id': event_id, ':member_id': member_id, ':rejected': 'rejected' },
+    ExpressionAttributeValues: { ':event_id': event_id, ':member_id': member_id, ':rejected': 'rejected', ':flagged': 'flagged' },
     Select: 'COUNT',
   }));
   return result.Count || 0;
@@ -58,9 +68,9 @@ async function countCappablePhotosForEvent(event_id) {
     TableName: PHOTOS_TABLE,
     IndexName: 'event-index',
     KeyConditionExpression: 'event_id = :event_id',
-    FilterExpression: '#status <> :rejected',
+    FilterExpression: '#status <> :rejected AND #status <> :flagged',
     ExpressionAttributeNames: { '#status': 'status' },
-    ExpressionAttributeValues: { ':event_id': event_id, ':rejected': 'rejected' },
+    ExpressionAttributeValues: { ':event_id': event_id, ':rejected': 'rejected', ':flagged': 'flagged' },
     Select: 'COUNT',
   }));
   return result.Count || 0;
@@ -81,6 +91,22 @@ async function listLivePhotosForEvent(event_id, { limit = 100 } = {}) {
   return result.Items || [];
 }
 
+/** Total 'live' photos for a group (real or quick/synthetic event_id) --
+ *  backs the admin quick-upload flow's "N/20 used" indicator and its cap
+ *  check (see routes/photos.js's admin/* routes). */
+async function countLivePhotosForEvent(event_id) {
+  const result = await dynamodb.send(new QueryCommand({
+    TableName: PHOTOS_TABLE,
+    IndexName: 'event-index',
+    KeyConditionExpression: 'event_id = :event_id',
+    FilterExpression: '#status = :live',
+    ExpressionAttributeNames: { '#status': 'status' },
+    ExpressionAttributeValues: { ':event_id': event_id, ':live': 'live' },
+    Select: 'COUNT',
+  }));
+  return result.Count || 0;
+}
+
 /** Admin moderation queue — one org's pending_review photos, oldest first (first flagged, first reviewed). */
 async function listPendingReviewForOrg(org_id, { limit = 50 } = {}) {
   const result = await dynamodb.send(new QueryCommand({
@@ -90,6 +116,21 @@ async function listPendingReviewForOrg(org_id, { limit = 50 } = {}) {
     FilterExpression: '#status = :pending',
     ExpressionAttributeNames: { '#status': 'status' },
     ExpressionAttributeValues: { ':org_id': org_id, ':pending': 'pending_review' },
+    ScanIndexForward: true,
+    Limit: limit,
+  }));
+  return result.Items || [];
+}
+
+/** Escalated photos an admin flagged instead of approving/rejecting outright. */
+async function listFlaggedForOrg(org_id, { limit = 50 } = {}) {
+  const result = await dynamodb.send(new QueryCommand({
+    TableName: PHOTOS_TABLE,
+    IndexName: 'org-index',
+    KeyConditionExpression: 'org_id = :org_id',
+    FilterExpression: '#status = :flagged',
+    ExpressionAttributeNames: { '#status': 'status' },
+    ExpressionAttributeValues: { ':org_id': org_id, ':flagged': 'flagged' },
     ScanIndexForward: true,
     Limit: limit,
   }));
@@ -120,7 +161,9 @@ module.exports = {
   countCappablePhotosForMember,
   countCappablePhotosForEvent,
   listLivePhotosForEvent,
+  countLivePhotosForEvent,
   listPendingReviewForOrg,
+  listFlaggedForOrg,
   setPhotoStatus,
   PHOTOS_TABLE,
 };

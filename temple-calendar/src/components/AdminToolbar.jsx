@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTempleConfig } from '../hooks/useTempleConfig';
 import { playClick } from '../utils/sound';
-import { Calendar, Megaphone, Image, TrendingUp, Bot, Users, Settings, HelpCircle, Globe, LogOut, User, CreditCard, ChevronDown, Timer } from 'lucide-react';
+import { Calendar, Megaphone, Image, TrendingUp, Bot, Users, Settings, HelpCircle, Globe, LogOut, User, CreditCard, ChevronDown, Timer, Video } from 'lucide-react';
 
 // "Xh Ym left" / "Xm left" for the sandbox banner below — recomputed every
 // 30s from organization.sandbox_expires_at (a plain timestamp, see
@@ -114,12 +114,13 @@ export default function AdminToolbar({
   const goSyncChatbot = onSyncChatbot || (() => navigate('/admin', { state: { pendingAction: 'syncChatbot' } }));
   const goHelp        = onHelp        || (() => navigate('/admin', { state: { pendingAction: 'help' } }));
 
-  // "View Site" used to open bare '/calendar' -- the admin dashboard is
-  // always on the bare domain (staff log in with email/password, not via
-  // a per-org subdomain), so that resolved NO organization at all and
-  // 404'd (same bug just fixed in utils/rsvpUrl.js's share links; see
-  // "[TENANT] No organization found for this domain" in production logs).
-  // ?org= is the same override every public page already reads.
+  // "Public Calendar" (renamed from "View Site") used to open bare
+  // '/calendar' -- the admin dashboard is always on the bare domain (staff
+  // log in with email/password, not via a per-org subdomain), so that
+  // resolved NO organization at all and 404'd (same bug just fixed in
+  // utils/rsvpUrl.js's share links; see "[TENANT] No organization found
+  // for this domain" in production logs). ?org= is the same override every
+  // public page already reads.
   const viewSiteUrl = organization?.subdomain
     ? `/calendar?org=${encodeURIComponent(organization.subdomain)}`
     : '/calendar';
@@ -136,10 +137,11 @@ export default function AdminToolbar({
     { label:'📅 Calendar',     fn:() => { goDashboard(); setShowMobileMenu(false); } },
     ...(canManage ? [{ label:'🪔 Flyer Studio', fn:() => { goFlyer(); setShowMobileMenu(false); } }] : []),
     ...(canManage ? [{ label:'📢 Announce',    fn:() => { goBroadcast(); setShowMobileMenu(false); } }] : []),
+    ...(canManage ? [{ label:'🎥 Media',       fn:() => { navigate('/media'); setShowMobileMenu(false); } }] : []),
     { label:'📈 Analytics',    fn:() => { navigate('/analytics'); setShowMobileMenu(false); } },
     { label:'👥 Connect',      fn:() => { navigate('/signups-admin'); setShowMobileMenu(false); } },
     ...(canManage ? [{ label:'⚙️ Settings',     fn:() => { navigate('/settings'); setShowMobileMenu(false); } }] : []),
-    { label:'🌐 View Site',    fn:() => { window.open(viewSiteUrl,'_blank','noopener'); setShowMobileMenu(false); } },
+    { label:'🌐 Public Calendar', fn:() => { window.open(viewSiteUrl,'_blank','noopener'); setShowMobileMenu(false); } },
     { label:'⎋ Logout',       fn:() => { logout(); setShowMobileMenu(false); }, danger:true },
   ];
 
@@ -178,6 +180,9 @@ export default function AdminToolbar({
           {canManage && (
             <button onClick={()=>{ playClick(); goBroadcast(); }} className="cf-nav-btn" title="Announce"><Megaphone size={16} /><span className="cf-nav-btn-text">Announce</span></button>
           )}
+          {canManage && (
+            <button onClick={()=>{ playClick(); navigate('/media'); }} className={`cf-nav-btn${activePage === 'media' ? ' cf-nav-active' : ''}`} title="Media — livestreams and photo albums"><Video size={16} /><span className="cf-nav-btn-text">Media</span></button>
+          )}
           <button onClick={()=>{ playClick(); navigate('/analytics'); }} className={`cf-nav-btn${activePage === 'analytics' ? ' cf-nav-active' : ''}`} title="Analytics"><TrendingUp size={16} /><span className="cf-nav-btn-text">Analytics</span></button>
           <button onClick={()=>{ playClick(); navigate('/signups-admin'); }} className={`cf-nav-btn${activePage === 'signups' ? ' cf-nav-active' : ''}`} title="Connect — Google Forms, Drive files, and documents" style={{ color: '#ffffff' }}><Users size={16} color="#ffffff" /><span className="cf-nav-btn-text" style={{ color: '#ffffff' }}>Connect</span></button>
 
@@ -199,7 +204,7 @@ export default function AdminToolbar({
                   </div>
                   <div className="cf-acct-menu-group">
                     <button className="cf-acct-menu-item" onClick={()=>{ setShowAccountMenu(false); window.open(viewSiteUrl,'_blank','noopener'); }}>
-                      <Globe size={16} className="ic" /> View Site
+                      <Globe size={16} className="ic" /> Public Calendar
                     </button>
                   </div>
 

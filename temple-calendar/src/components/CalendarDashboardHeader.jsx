@@ -6,7 +6,8 @@
  * right, then a row of stat tiles with icon badges.
  */
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, SlidersHorizontal, CalendarDays, List, Users, Check } from 'lucide-react';
+import { Search, SlidersHorizontal, CalendarDays, List, Users, Check, Link2 } from 'lucide-react';
+import { getPublicCalendarUrl } from '../utils/rsvpUrl';
 
 function StatCard({ icon, iconBg, value, label, delay }) {
   return (
@@ -49,7 +50,19 @@ export default function CalendarDashboardHeader({
   allTypes, filterTypes, onToggleFilterType, onClearFilterTypes,
 }) {
   const [showFilter, setShowFilter] = useState(false);
+  const [copied, setCopied] = useState(false);
   const filterRef = useRef(null);
+
+  // Same absolute-URL/?org= convention as AdminToolbar.jsx's "Public
+  // Calendar" link and BroadcastPage.jsx's rsvpUrl -- just copied to the
+  // clipboard instead of navigated to, since this is meant to be pasted
+  // somewhere else (WhatsApp, email).
+  function copyCalendarLink() {
+    navigator.clipboard.writeText(getPublicCalendarUrl()).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
 
   useEffect(() => {
     function onDocClick(e) {
@@ -171,6 +184,20 @@ export default function CalendarDashboardHeader({
               </div>
             )}
           </div>
+
+          {/* Copy calendar link */}
+          <button
+            onClick={copyCalendarLink}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px',
+              borderRadius: 9, border: `1px solid ${copied ? '#4ade80' : 'var(--cf-border)'}`,
+              background: copied ? 'rgba(74,222,128,0.1)' : 'var(--cf-bg-surface)',
+              color: copied ? '#16a34a' : 'var(--cf-text-muted)',
+              cursor: 'pointer', fontSize: '0.82rem', fontWeight: 700,
+            }}
+          >
+            {copied ? <Check size={14} /> : <Link2 size={14} />} {copied ? 'Copied!' : 'Copy calendar link'}
+          </button>
         </div>
       </div>
 

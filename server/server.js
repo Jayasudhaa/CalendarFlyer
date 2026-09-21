@@ -9,15 +9,24 @@ const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 const { tenantMiddleware } = require('./middleware/tenant');
-const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
-// Fails loudly at startup if ADMIN_USERNAME/ADMIN_PASSWORD are unset or
-// empty — see the file header for why this can't have a "safe" dev
-// fallback the way utils/jwtSecret.js does.
-const { ADMIN_USERNAME, ADMIN_PASSWORD } = require('./utils/adminCredentials');
-
+const { SESSION_SECRET } = require('./utils/sessionSecret');
 
 const app = express();
+// This app runs behind AWS App Runner's own reverse proxy in production —
+// without this, req.ip resolves to the proxy's internal address for every
+// request instead of the real visitor IP, which silently breaks any
+// IP-keyed rate limiter (e.g. routes/auth.js's guestSandboxLimiter, which
+// has no per-user key of its own) into one shared limit across all
+// visitors combined, rather than one limit per visitor. Value of 1 trusts
+// exactly one hop (App Runner's own edge), which matches this app's actual
+// network topology.
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
+
+app.get('/connect-social.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'connect-social.html'));
+});
+
 
 // Global safety net -- an error anywhere in the app must never be allowed
 // to take down the whole server for every user in flight. Confirmed root
@@ -56,6 +65,10 @@ const allowedOrigins = [
   'https://www.calendarflyapp.com',
   'http://localhost:5173',
   'http://localhost:3000',
+  // Static ngrok tunnel address used for local Facebook/Instagram OAuth
+  // testing (Instagram/Facebook login dialogs need an https:// redirect,
+  // which plain localhost can't provide) -- see connect-social.html testing.
+  'https://edie-chronological-lovie.ngrok-free.dev',
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
@@ -88,8 +101,19 @@ const corsOptions = {
 };
 
 // ✅ FIX: apply SAME config to OPTIONS (preflight)
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+// Scoped to /api only -- this middleware used to run on EVERY request,
+// including plain page loads/redirects/form-posts like the Facebook/
+// Instagram OAuth flow (routes/facebookAuth.js, routes/instagramAuth.js)
+// and connect-social.html. Those are real browser navigations, not
+// cross-origin fetch()/XHR calls, so CORS enforcement doesn't apply to them
+// at all -- but the strict origin-checking function above throws on any
+// unrecognized Origin (including the literal string "null", which browsers
+// sometimes send for a top-level form POST after an OAuth redirect chain),
+// and that error was surfacing as a raw "CORS blocked: null" JSON response
+// on the Facebook "choose a Page" step. CORS only needs to guard the actual
+// API surface the frontend calls with fetch/XHR, so it's scoped down here.
+app.use('/api', cors(corsOptions));
+app.options('/api/*', cors(corsOptions));
 
 // Stripe webhook — MUST be mounted with the raw (unparsed) body, and MUST
 // come before the global express.json() below. Stripe's signature check
@@ -102,7 +126,7 @@ app.post('/api/billing/webhook', express.raw({ type: 'application/json' }), requ
 app.use(express.json({ limit: '25mb' }));
 
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -112,6 +136,16 @@ app.use(session({
     sameSite: 'lax'
   }
 }));
+
+// "Continue with Facebook" / "Continue with Instagram" -- Settings' real
+// connect flow (temple-calendar/src/components/SocialConnectButtons.jsx).
+// No longer session-dependent: the Settings page calls GET /auth/*/start
+// with its normal JWT to get a login URL whose `state` is itself a signed
+// JWT carrying the organization id, so these routes work regardless of
+// where they're mounted relative to app.use(session(...)) -- left here
+// rather than moved, since there's no reason to disturb it now.
+app.use(require('./routes/facebookAuth'));
+app.use(require('./routes/instagramAuth'));
 
 // ── MULTI-TENANT ─────────────────────────────────────────
 app.use(tenantMiddleware);
@@ -126,45 +160,10 @@ app.use((req, res, next) => {
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
-// Same rate-limiting pattern/library as routes/auth.js's loginLimiter —
-// this is the site-wide super-admin login, an even higher-value
-// brute-force target than a per-org login. Keyed by username+IP (rather
-// than IP alone) so a distributed attempt against this one account still
-// gets throttled, matching loginLimiter's per-account keying in auth.js.
-const adminLoginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => {
-    const username = req.body && req.body.username ? String(req.body.username).toLowerCase().trim() : '';
-    return `${username}:${ipKeyGenerator(req.ip)}`;
-  },
-  message: { success: false, error: 'Too many login attempts — please wait a few minutes and try again.' },
-});
-
-app.post('/api/admin/login', adminLoginLimiter, (req, res) => {
-  const { username, password } = req.body;
-
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    req.session.isAuthenticated = true;
-    req.session.user = { username, displayName: 'Site Admin' };
-    return res.json({ success: true, user: req.session.user });
-  }
-
-  return res.status(401).json({ success: false, error: 'Invalid credentials' });
-});
-
-app.post('/api/admin/logout', (req, res) => {
-  req.session.destroy(() => res.json({ success: true }));
-});
-
-app.get('/api/admin/status', (req, res) => {
-  if (req.session?.isAuthenticated) {
-    return res.json({ authenticated: true, user: req.session.user });
-  }
-  return res.json({ authenticated: false });
-});
+// Site-wide super-admin login/logout/status — see routes/adminAuth.js
+// (extracted out of this file so it follows the same "one feature, one
+// routes file" pattern as everything else mounted below).
+app.use('/api/admin', require('./routes/adminAuth'));
 
 // ── ROUTES ───────────────────────────────────────────────
 app.use('/api/organizations', require('./routes/organizations'));
@@ -189,6 +188,9 @@ app.use('/api/social', require('./routes/social-connect'));
 // moderation routes — see routes/photos.js's file header).
 app.use('/api/community', require('./routes/community'));
 app.use('/api/photos', require('./routes/photos'));
+app.use('/api/photo-albums', require('./routes/photoAlbums'));
+app.use('/api/livestreams', require('./routes/livestreams'));
+app.use('/api/public-media', require('./routes/publicMedia'));
 app.use('/api/signups', require('./routes/signups'));
 // "Connect" -> Documents library: create/link a Google Form, link a Drive
 // file, upload an Excel/Word doc, and AI semantic search + summaries over

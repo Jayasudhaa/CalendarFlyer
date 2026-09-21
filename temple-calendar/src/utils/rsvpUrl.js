@@ -46,6 +46,17 @@ const slugify = (text) =>
  * Generate consistent eventId from event data
  * Uses slugified title to match what's saved in DynamoDB
  */
+/**
+ * Returns the public calendar URL for this org -- same relative path/
+ * ?org= convention as viewSiteUrl in AdminToolbar.jsx and ModeSelection's
+ * viewerUrl, just as an ABSOLUTE url (via BASE_URL) since this one is
+ * meant to be copied and pasted somewhere else (WhatsApp, email), not
+ * just navigated to in-app.
+ */
+export const getPublicCalendarUrl = () => {
+  return `${BASE_URL}/calendar${orgQuerySuffix()}`;
+};
+
 export const getEventKey = (event) => {
   const date = event.date || '';
   const title = slugify(event.title || 'event');

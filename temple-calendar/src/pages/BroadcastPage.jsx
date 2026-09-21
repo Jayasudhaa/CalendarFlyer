@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Copy, Check, ArrowLeft, Save, Facebook, Instagram, Mail, Megaphone, Trash2 } from 'lucide-react';
 import AdminToolbar from '../components/AdminToolbar';
+import CalendarTimePicker from '../components/CalendarTimePicker';
+import ScheduleReminders from '../components/ScheduleReminders';
+import BroadcastHistory from '../components/BroadcastHistory';
 import { useAuth } from '../contexts/AuthContext';
 import { playSend } from '../utils/sound';
 
@@ -140,14 +143,6 @@ export default function BroadcastPage({ onClose, initialCaption }) {
   const [historyError, setHistoryError] = useState('');
   const [cancellingId, setCancellingId] = useState('');
 
-  // "Schedule for later" (server/scheduler.js fires these — see that file
-  // and routes/broadcast.js's POST /schedule for the backend half).
-  const [scheduleMode, setScheduleMode] = useState(false);
-  const [scheduleAt, setScheduleAt] = useState('');
-  const [scheduling, setScheduling] = useState(false);
-  const [scheduleError, setScheduleError] = useState('');
-  const [scheduledOk, setScheduledOk] = useState(false);
-
   // ── Announcements (routes/announcements.js) — shown on the public
   // calendar's "Announcements" panel (PublicCalendar.jsx NewsFeedPanel).
   // Moved here from Settings so posting one lives alongside the rest of
@@ -198,65 +193,44 @@ export default function BroadcastPage({ onClose, initialCaption }) {
     }
   }
 
-  // Minimum lead time mirrors MIN_SCHEDULE_LEAD_MS in routes/broadcast.js —
-  // kept as a plain literal here rather than fetched from the server, since
-  // it only needs to roughly match for the datetime picker's min attribute
-  // to feel right; the server is what actually enforces it.
-  const MIN_SCHEDULE_LEAD_MINUTES = 2;
-  function minScheduleLocal() {
-    const d = new Date(Date.now() + MIN_SCHEDULE_LEAD_MINUTES * 60 * 1000);
-    d.setSeconds(0, 0);
-    // datetime-local wants "YYYY-MM-DDTHH:mm" in the browser's local time —
-    // toISOString() would convert to UTC first, off by the visitor's
-    // timezone offset, so build it from the local getters instead.
-    const pad = n => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
-
-  const handleSchedule = async () => {
-    setScheduleError('');
-    setScheduledOk(false);
-    const platforms = Object.keys(selected).filter(k => selected[k]);
-    if (!platforms.length) { setScheduleError('Select at least one channel first.'); return; }
-    if (!caption.trim()) { setScheduleError('Write a message first.'); return; }
-    if (!scheduleAt) { setScheduleError('Pick a date and time.'); return; }
-    const when = new Date(scheduleAt).getTime();
-    if (!when || when < Date.now() + MIN_SCHEDULE_LEAD_MINUTES * 60 * 1000) {
-      setScheduleError(`Pick a time at least ${MIN_SCHEDULE_LEAD_MINUTES} minutes from now.`);
-      return;
-    }
-    if (platforms.includes('instagram') && !uploadedMedia) {
-      setScheduleError('Instagram requires an image — add one under "Add Creative" first.');
-      return;
-    }
-
-    setScheduling(true);
+  // Cancel every still-pending row of a reminder series at once (see
+  // routes/broadcast.js's POST /schedule/cancel-batch) — used by the
+  // "Cancel all N reminders" link that shows up next to any history row
+  // that's part of a still-active series.
+  async function handleCancelGroup(broadcast_group_id) {
+    const ids = historyItems.filter(it => it.broadcast_group_id === broadcast_group_id && it.status === 'scheduled').map(it => it.broadcast_id);
+    if (!ids.length) return;
+    setCancellingId(broadcast_group_id);
     try {
       const token = localStorage.getItem('cf_token');
-      const body = {
-        platforms, caption, auto_rsvp: autoRSVP, rsvp_url: rsvpUrl,
-        scheduled_for: when,
-      };
-      if (uploadedMedia) body.imageBase64 = uploadedMedia;
-      if (platforms.includes('whatsapp') && showWATemplate) {
-        body.wa_template = { template_name: selectedWATemplate.id, variables: waVars };
-      }
-      const res = await fetch('/api/broadcast/schedule', {
+      const res = await fetch('/api/broadcast/schedule/cancel-batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ ids }),
       });
       const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || 'Could not schedule this broadcast');
-      setScheduledOk(true);
-      setScheduleMode(false);
-      setScheduleAt('');
+      if (!res.ok || data.error) throw new Error(data.error || 'Could not cancel this reminder series');
+      const cancelledIds = new Set((data.results || []).filter(r => r.success).map(r => r.broadcast_id));
+      setHistoryItems(items => items.map(it => cancelledIds.has(it.broadcast_id) ? { ...it, status: 'cancelled' } : it));
     } catch (err) {
-      setScheduleError(err.message);
+      setHistoryError(err.message);
     } finally {
-      setScheduling(false);
+      setCancellingId('');
     }
-  };
+  }
+
+  // How many still-'scheduled' rows share each broadcast_group_id — drives
+  // whether the "Cancel all N reminders" link shows up at all (no point
+  // offering it for a series that's already down to its last one).
+  const scheduledGroupCounts = React.useMemo(() => {
+    const counts = {};
+    for (const it of historyItems) {
+      if (it.broadcast_group_id && it.status === 'scheduled') {
+        counts[it.broadcast_group_id] = (counts[it.broadcast_group_id] || 0) + 1;
+      }
+    }
+    return counts;
+  }, [historyItems]);
 
   // Toolbar nav buttons that open an AdminCalendar overlay (Flyer, Sync
   // Chatbot, Add Event, Help) need to close this page first, then hand off
@@ -577,27 +551,11 @@ export default function BroadcastPage({ onClose, initialCaption }) {
   const card  = { background:P.card, border:'1px solid rgba(0,0,0,0.05)', borderRadius:12, padding:'14px 16px', marginBottom:12, boxShadow:'0 6px 18px rgba(0,0,0,0.06)' };
   const lbl   = { fontSize:'0.88rem', color:P.muted, fontWeight:800, letterSpacing:'0.12em', textTransform:'uppercase', fontFamily:"'DM Sans', sans-serif" };
   const headRow = { display:'flex', alignItems:'center', gap:8, marginBottom:10 };
-
   function spill(type) {
     const m = { sending:{color:'#f59e0b',bg:'rgba(245,158,11,0.1)',label:'⏳ Sending'}, done:{color:'#4ade80',bg:'rgba(74,222,128,0.1)',label:'✓ Sent'}, error:{color:'#f87171',bg:'rgba(248,113,113,0.1)',label:'✗ Failed'} };
     const t = m[type]; if (!t) return null;
     return { color:t.color, background:t.bg, padding:'3px 10px', borderRadius:20, fontSize:'0.913rem', fontWeight:700, label:t.label };
   };
-
-  // Status badge for one History row — mirrors broadcasts.js's computeStatus
-  // outcomes ('sent' | 'partial' | 'failed') plus the two states that live
-  // outside a send attempt entirely ('scheduled' | 'cancelled').
-  function historyStatusPill(status) {
-    const m = {
-      sent:      { color:'#16a34a', bg:'rgba(22,163,74,0.1)',  label:'✓ Sent' },
-      partial:   { color:'#d97706', bg:'rgba(217,119,6,0.1)',  label:'◐ Partial' },
-      failed:    { color:'#dc2626', bg:'rgba(220,38,38,0.1)',  label:'✗ Failed' },
-      scheduled: { color:'#2563eb', bg:'rgba(37,99,235,0.1)',  label:'📅 Scheduled' },
-      cancelled: { color:'#71717a', bg:'rgba(113,113,122,0.1)', label:'Cancelled' },
-      sending:   { color:'#d97706', bg:'rgba(217,119,6,0.1)',  label:'⏳ Sending' },
-    };
-    return m[status] || { color:'#71717a', bg:'rgba(113,113,122,0.1)', label:status };
-  }
 
   // ── Quick Send column styles — WhatsApp/Facebook/Instagram render as three
   // matching columns (colStyle/colHeadStyle/colBodyStyle), each built from
@@ -740,61 +698,17 @@ export default function BroadcastPage({ onClose, initialCaption }) {
         }
       `}</style>
       {view === 'history' ? (
-        <div style={{ width:'100%', boxSizing:'border-box', maxWidth:900, margin:'0 auto', padding:'22px 28px' }}>
-          <div style={card}>
-            <div style={headRow}><IconBadge icon="🕓" /><span style={lbl}>Send History</span></div>
-
-            {historyError && (
-              <div style={{ padding:'9px 12px', borderRadius:8, background:'rgba(239,68,68,0.08)', border:'1px solid #f8717140', color:'#dc2626', fontSize:'0.913rem', marginBottom:10 }}>{historyError}</div>
-            )}
-            {historyLoading && (
-              <div style={{ padding:'20px 0', textAlign:'center', color:P.faint, fontSize:'0.99rem' }}>Loading…</div>
-            )}
-            {!historyLoading && !historyItems.length && !historyError && (
-              <div style={{ padding:'28px 0', textAlign:'center', color:P.faint, fontSize:'0.99rem' }}>Nothing sent or scheduled yet — broadcasts you send or schedule will show up here.</div>
-            )}
-
-            <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-              {historyItems.map(item => {
-                const st = historyStatusPill(item.status);
-                const when = item.status === 'scheduled' ? item.scheduled_for : (item.sent_at || item.created_at);
-                const whenLabel = when ? new Date(when).toLocaleString([], { dateStyle:'medium', timeStyle:'short' }) : '';
-                return (
-                  <div key={item.broadcast_id} style={{ border:`1px solid ${P.border}`, borderRadius:10, padding:'11px 13px', background:P.bg }}>
-                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:10, flexWrap:'wrap' }}>
-                      <div style={{ minWidth:0, flex:1 }}>
-                        <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:4 }}>
-                          <span style={{ padding:'2px 9px', borderRadius:20, fontSize:'0.792rem', fontWeight:800, background:st.bg, color:st.color }}>{st.label}</span>
-                          <span style={{ fontSize:'0.858rem', color:P.faint, fontWeight:600 }}>{(item.platforms || []).map(p => PLATFORMS.find(pl => pl.id === p)?.label || p).join(' · ')}</span>
-                        </div>
-                        <div style={{ color:P.text, fontSize:'0.99rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.caption || '(no message)'}</div>
-                        <div style={{ color:P.faint, fontSize:'0.836rem', marginTop:3 }}>{item.status === 'scheduled' ? 'Scheduled for ' : item.status === 'cancelled' ? 'Was scheduled for ' : 'Sent '}{whenLabel}</div>
-                        {item.results && Object.keys(item.results).length > 0 && (
-                          <div style={{ display:'flex', gap:8, marginTop:6, flexWrap:'wrap' }}>
-                            {Object.entries(item.results).map(([platform, r]) => (
-                              <span key={platform} style={{ fontSize:'0.792rem', fontWeight:700, color: r.success ? '#16a34a' : '#dc2626' }} title={r.error || ''}>
-                                {r.success ? '✓' : '✗'} {PLATFORMS.find(pl => pl.id === platform)?.label || platform}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      {item.status === 'scheduled' && (
-                        <button
-                          onClick={() => handleCancelScheduled(item.broadcast_id)}
-                          disabled={cancellingId === item.broadcast_id}
-                          style={{ padding:'6px 11px', borderRadius:7, border:'1px solid #f8717166', background:'#fff', color:'#dc2626', fontSize:'0.858rem', fontWeight:700, cursor:'pointer', flexShrink:0 }}
-                        >
-                          {cancellingId === item.broadcast_id ? 'Cancelling…' : 'Cancel'}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        <BroadcastHistory
+          P={P}
+          PLATFORMS={PLATFORMS}
+          historyItems={historyItems}
+          historyLoading={historyLoading}
+          historyError={historyError}
+          cancellingId={cancellingId}
+          scheduledGroupCounts={scheduledGroupCounts}
+          onCancelScheduled={handleCancelScheduled}
+          onCancelGroup={handleCancelGroup}
+        />
       ) : (
       <div className="cf-broadcast-grid" style={{ width:'100%', boxSizing:'border-box', margin:'0 auto', padding:'22px 28px', display:'grid', gridTemplateColumns:'1fr 380px', gap:22 }}>
         <div>
@@ -1105,49 +1019,21 @@ export default function BroadcastPage({ onClose, initialCaption }) {
           {/* Schedule for later — server/scheduler.js actually fires these
               (a ~60s poll, since this app has no queue/cron infra; see that
               file's header). Collapsed by default so it stays out of the
-              way of the normal send-now flow. */}
+              way of the normal send-now flow. Extracted into its own
+              component (components/ScheduleReminders.jsx) — see that file
+              for the state/handlers this card used to own inline here. */}
           {!allSuccess && (
-            <div style={{ ...card, background:P.bg2, marginBottom:0 }}>
-              <div
-                onClick={() => { setScheduleMode(v => !v); setScheduleError(''); setScheduledOk(false); if (!scheduleAt) setScheduleAt(minScheduleLocal()); }}
-                style={{ display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer' }}
-              >
-                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                  <IconBadge icon="🕐" size={22} />
-                  <span style={lbl}>Schedule for later</span>
-                </div>
-                <span style={{ color:P.faint, fontSize:'0.913rem', fontWeight:700 }}>{scheduleMode ? '▲ Hide' : '▼ Set a time'}</span>
-              </div>
-              {scheduleMode && (
-                <div style={{ marginTop:10, display:'flex', gap:10, flexWrap:'wrap', alignItems:'flex-end' }}>
-                  <div style={{ flex:'1 1 220px' }}>
-                    <label style={{ display:'block', color:P.muted, fontSize:'0.858rem', fontWeight:700, marginBottom:4 }}>Send at</label>
-                    <input
-                      type="datetime-local"
-                      value={scheduleAt}
-                      min={minScheduleLocal()}
-                      onChange={e => setScheduleAt(e.target.value)}
-                      style={{ width:'100%', boxSizing:'border-box', padding:'8px 10px', border:`1px solid ${P.border}`, borderRadius:8, color:P.text, fontSize:'0.99rem', fontFamily:"'DM Sans', sans-serif" }}
-                    />
-                  </div>
-                  <button
-                    onClick={handleSchedule}
-                    disabled={scheduling || !anySelected}
-                    style={{ padding:'9px 16px', border:'none', borderRadius:8, background: (scheduling||!anySelected) ? P.border : 'linear-gradient(135deg,#2563eb,#1d4ed8)', color:'#fff', fontWeight:800, fontSize:'0.99rem', cursor:(scheduling||!anySelected)?'not-allowed':'pointer', fontFamily:"'DM Sans', sans-serif" }}
-                  >
-                    {scheduling ? 'Scheduling…' : '📅 Schedule Broadcast'}
-                  </button>
-                </div>
-              )}
-              {scheduleError && (
-                <div style={{ marginTop:8, padding:'7px 10px', borderRadius:7, background:'rgba(239,68,68,0.08)', border:'1px solid #f8717140', color:'#dc2626', fontSize:'0.88rem', fontWeight:600 }}>{scheduleError}</div>
-              )}
-              {scheduledOk && (
-                <div style={{ marginTop:8, padding:'7px 10px', borderRadius:7, background:'rgba(74,222,128,0.1)', border:'1px solid #4ade8040', color:'#16a34a', fontSize:'0.88rem', fontWeight:700 }}>
-                  ✓ Scheduled! Find it under 🕓 History, where you can cancel it anytime before it sends.
-                </div>
-              )}
-            </div>
+            <ScheduleReminders
+              P={P}
+              selected={selected}
+              caption={caption}
+              autoRSVP={autoRSVP}
+              rsvpUrl={rsvpUrl}
+              uploadedMedia={uploadedMedia}
+              showWATemplate={showWATemplate}
+              selectedWATemplate={selectedWATemplate}
+              waVars={waVars}
+            />
           )}
 
           {/* Buttons */}

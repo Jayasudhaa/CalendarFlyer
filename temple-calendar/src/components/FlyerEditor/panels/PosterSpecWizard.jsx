@@ -1,7 +1,8 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {
   INTENT_OPTIONS, AUDIENCE_OPTIONS, REGION_OPTIONS, STYLE_OPTIONS,
-  PALETTE_OPTIONS, IMAGE_ROLE_OPTIONS, NEGATIVE_SPACE_OPTIONS,
+  IMAGE_ROLE_OPTIONS, NEGATIVE_SPACE_OPTIONS,
+  getPaletteOptions, searchFestivals, getStoryOptionsForIntent,
 } from '../posterSpec';
 import { RUNWAY_FONT } from './runwayUI';
 
@@ -163,19 +164,13 @@ function Bubble({ mine, highlight, children, onClick }) {
   );
 }
 
-// Actual suggested colors for each named palette option — direct request
-// ("provide suggestions for color palette") since the plain text names
-// ("Saffron & Gold", "Blue & White", …) didn't show what they'd actually
-// look like on the poster. A small two-dot swatch (or three for Pastel,
-// which isn't a two-color name) renders in front of each pill's label.
-const PALETTE_SWATCHES = {
-  'Saffron & Gold': ['#FF9933', '#D4AF37'],
-  'Red & Gold':     ['#B3202B', '#D4AF37'],
-  'Blue & White':   ['#1E3A8A', '#FFFFFF'],
-  'Green & Gold':   ['#15803D', '#D4AF37'],
-  'Maroon & Cream': ['#7B1E3A', '#F3E5C8'],
-  Pastel:           ['#F6C9DA', '#BEE3F8', '#FDE9C8'],
-};
+// Real suggested colors for each palette option — a small two/three-dot
+// swatch renders in front of each pill's label instead of a plain text
+// name. Hex now comes straight from posterSpec.js's getPaletteOptions()
+// (real festival palettes from the Festival Intelligence dataset when a
+// festival is matched, the original 6 named generic palettes otherwise) —
+// see the 'multi'-type render block below, which reads `o.hex` directly
+// off each option rather than a separate label-keyed lookup table.
 function PaletteSwatch({ colors }) {
   if (!colors) return null;
   return (
@@ -209,6 +204,12 @@ const PosterSpecWizard = forwardRef(function PosterSpecWizard({
   posterFields, setPosterFields,
   referencePhotos,
   onReferenceStepActive,
+  // Which prompt library the org uses ('temple' vs 'community'/'other') —
+  // gates the Poster Intelligence Engine's festival picker + real cultural
+  // data below to temple orgs only, since the Festival Intelligence dataset
+  // is Hindu-festival-specific; community/other orgs keep the original
+  // freeform "tradition" text step.
+  promptCategory,
   // Reports { active, items } up to index.jsx (via AIVisualPanel.jsx)
   // whenever a step is answered or navigated to — the timeline strip
   // renders straight from this instead of duplicating step logic.
@@ -221,7 +222,13 @@ const PosterSpecWizard = forwardRef(function PosterSpecWizard({
   // single-select question advances to the next step right after.
   const [firing, setFiring] = useState(null);
   const [soundOn, setSoundOnState] = useState(isSoundEnabled());
+  // Live search text for the festival picker (temple orgs only) — kept
+  // separate from posterSpec.tradition so a user can search around without
+  // clobbering their current answer until they actually pick or type one.
+  const [festivalQuery, setFestivalQuery] = useState('');
   if (!posterSpec) return null;
+
+  const isTemple = promptCategory === 'temple';
 
   const toggleSound = () => {
     const next = !soundOn;
@@ -240,6 +247,29 @@ const PosterSpecWizard = forwardRef(function PosterSpecWizard({
   // inferPosterSpecDefaults) — "answering" a single/binary question both
   // sets it AND advances to the next step; text/multi-select steps get an
   // explicit "Continue" since there's no one click that means "done" there.
+  // Real palette choices for this spec — the matched festival's actual
+  // suggested palette (real hex from the Festival Intelligence dataset)
+  // first when one's been picked, then the generic named palettes. Each
+  // option carries its own `hex` now, read directly by the 'multi' render
+  // block below instead of a separate label-keyed lookup table.
+  const paletteOptions = getPaletteOptions(posterSpec.festivalId);
+  // Story options worth offering for the currently-chosen intent (Story
+  // Patterns dataset) — recomputed on every render so changing the intent
+  // answer earlier in the flow updates which stories are suggested here.
+  const storyOptions = getStoryOptionsForIntent(posterSpec.intent);
+  const selectedStory = storyOptions.find(s => s.id === posterSpec.storyId) || storyOptions[0];
+
+  const pickFestival = (fest) => {
+    setPosterSpecField('festivalId', fest.id);
+    setPosterSpecField('tradition', fest.name);
+    setPosterSpecField('region', fest.region);
+    setPosterSpecField('palette', [`${fest.name} Palette`]);
+  };
+  const clearFestivalPick = (text) => {
+    setPosterSpecField('tradition', text);
+    setPosterSpecField('festivalId', null);
+  };
+
   const steps = [
     {
       key: 'intent', type: 'single', label: "What's this poster for?",
@@ -254,6 +284,30 @@ const PosterSpecWizard = forwardRef(function PosterSpecWizard({
       value: posterSpec.audience, answerLabel: posterSpec.audience,
       onPick: v => setPosterSpecField('audience', v),
     },
+    // Festival picker (temple orgs) / freeform tradition (everyone else) —
+    // moved ahead of the region/story steps so picking a real festival can
+    // pre-fill both of those with grounded data before the user reaches
+    // them, instead of asking region first and festival after. Still keyed
+    // 'tradition' throughout (unchanged elsewhere in this component and in
+    // index.jsx's timeline strip, which addresses steps by index, not key).
+    isTemple ? {
+      key: 'tradition', type: 'festival', label: 'Which festival or occasion is this?',
+      hint: 'Search 100+ real Indian festivals — or type your own below if it\'s not listed.',
+      value: posterSpec.tradition, answerLabel: posterSpec.tradition || '—',
+    } : {
+      key: 'tradition', type: 'text', label: 'Any specific tradition or occasion?',
+      hint: 'e.g. Diwali potluck, spring gala, annual fundraiser',
+      value: posterSpec.tradition, answerLabel: posterSpec.tradition || '—',
+      onChange: v => setPosterSpecField('tradition', v),
+    },
+    {
+      key: 'story', type: 'single', label: 'What feeling should this poster capture?',
+      hint: selectedStory ? `${selectedStory.coreMessage} — ${selectedStory.visualMetaphor}` : undefined,
+      options: storyOptions.map(s => ({ value: s.id, label: s.emotion })),
+      value: posterSpec.storyId,
+      answerLabel: selectedStory ? `${selectedStory.emotion} — ${selectedStory.coreMessage}` : '—',
+      onPick: v => setPosterSpecField('storyId', v),
+    },
     {
       key: 'region', type: 'single', label: 'Which cultural region?',
       options: REGION_OPTIONS.map(o => ({ value: o, label: o })),
@@ -267,14 +321,8 @@ const PosterSpecWizard = forwardRef(function PosterSpecWizard({
       onPick: v => setPosterSpecField('style', v),
     },
     {
-      key: 'tradition', type: 'text', label: 'Any specific tradition or occasion?',
-      hint: 'e.g. Ganesh Chaturthi, South Indian temple tradition',
-      value: posterSpec.tradition, answerLabel: posterSpec.tradition || '—',
-      onChange: v => setPosterSpecField('tradition', v),
-    },
-    {
       key: 'palette', type: 'multi', label: 'Color palette?', hint: 'Pick one or more',
-      options: PALETTE_OPTIONS.map(o => ({ value: o, label: o })),
+      options: paletteOptions,
       value: posterSpec.palette, answerLabel: posterSpec.palette.join(', ') || '—',
       onToggle: togglePalette,
     },
@@ -567,13 +615,53 @@ const PosterSpecWizard = forwardRef(function PosterSpecWizard({
                         style={{ ...pillStyle(steps[active].value.includes(o.value)), position: 'relative', display: 'inline-flex', alignItems: 'center' }}
                         onClick={() => fireToggle(steps[active], o.value, pid)}
                       >
-                        <PaletteSwatch colors={PALETTE_SWATCHES[o.label]} />
+                        <PaletteSwatch colors={o.hex} />
                         {o.label}
                         <span className={`cf-check-burst${isFiring ? ' fire' : ''}`}>✓</span>
                       </button>
                     );
                   })}
                 </div>
+                <button onClick={fireContinue} style={{
+                  padding: '7px 16px', borderRadius: 9, border: 'none', cursor: 'pointer',
+                  background: `${GLOSS_OVERLAY}, linear-gradient(135deg, ${ACCENT}, ${ACCENT_DEEP})`, color: '#fff',
+                  fontWeight: '700', fontSize: '0.74rem', fontFamily: RUNWAY_FONT,
+                  boxShadow: GLOSS_SHADOW,
+                }}>Continue →</button>
+              </>
+            )}
+            {steps[active].type === 'festival' && (
+              <>
+                <input value={festivalQuery} onChange={e => setFestivalQuery(e.target.value)}
+                  placeholder="Search festivals — e.g. Diwali, Onam, Baisakhi, Ugadi"
+                  style={{ ...textFieldStyle, marginBottom: 10 }} />
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 10, maxHeight: 172, overflowY: 'auto' }}>
+                  {searchFestivals(festivalQuery, 8).map(fest => {
+                    const pid = `festival:${fest.id}`;
+                    const isFiring = firing === pid;
+                    const selected = isFiring || posterSpec.festivalId === fest.id;
+                    return (
+                      <button key={fest.id}
+                        className={isFiring ? 'cf-pill-flash' : ''}
+                        style={{ ...pillStyle(selected), position: 'relative' }}
+                        onClick={() => {
+                          if (firing) return;
+                          playConfirmChime();
+                          setFiring(pid);
+                          setTimeout(() => { pickFestival(fest); goNext(); setFiring(null); }, 380);
+                        }}
+                      >
+                        {fest.name} <span style={{ opacity: 0.62, fontWeight: 500 }}>· {fest.state}</span>
+                        <span className={`cf-check-burst${isFiring ? ' fire' : ''}`}>✓</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={{ color: INK_FAINT, fontSize: '0.64rem', marginBottom: 6, fontFamily: RUNWAY_FONT }}>
+                  Not listed? Type it here instead, then continue:
+                </div>
+                <input value={posterSpec.tradition} onChange={e => clearFestivalPick(e.target.value)}
+                  placeholder="e.g. Ganesh Chaturthi, South Indian temple tradition" style={{ ...textFieldStyle, marginBottom: 10 }} />
                 <button onClick={fireContinue} style={{
                   padding: '7px 16px', borderRadius: 9, border: 'none', cursor: 'pointer',
                   background: `${GLOSS_OVERLAY}, linear-gradient(135deg, ${ACCENT}, ${ACCENT_DEEP})`, color: '#fff',

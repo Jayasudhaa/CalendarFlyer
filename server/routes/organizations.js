@@ -357,7 +357,11 @@ router.post('/change-plan', authenticateToken, requireNonGuest, async (req, res)
     });
   } catch (error) {
     console.error('[ORG] Change plan error:', error);
-    res.status(500).json({ error: 'Failed to change plan' });
+    // changePlan() throws a specific, user-facing message when it can't
+    // confirm Stripe actually stopped billing (see its own comment) —
+    // surface that instead of a generic failure so the admin knows to
+    // retry rather than assuming the downgrade silently worked.
+    res.status(500).json({ error: error.message || 'Failed to change plan' });
   }
 });
 

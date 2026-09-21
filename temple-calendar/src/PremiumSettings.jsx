@@ -26,7 +26,7 @@ import GlassCard from './GlassCard';
 import PremiumButton from './PremiumButton';
 import AdminToolbar from './components/AdminToolbar';
 import { playClick } from './utils/sound';
-import SocialConnectWizards from './components/SocialConnectWizards';
+import SocialConnectButtons from './components/SocialConnectButtons';
 import SyncChatbotModal from './SyncChatbotModal';
 import HelpPage from './components/HelpPage';
 
@@ -88,8 +88,9 @@ export default function PremiumSettings() {
     broadcast_email: '',
   });
   // Facebook/Instagram connect UI itself now lives in
-  // components/SocialConnectWizards.jsx (moved from the standalone
-  // /social-media test page) — these two are still shared with WhatsApp.
+  // components/SocialConnectButtons.jsx (real OAuth flow; the old manual
+  // Graph-API-Explorer-paste wizard, SocialConnectWizardsOld.jsx, is still
+  // reachable from a toggle inside it) — these two are still shared with WhatsApp.
   const [socialMessage, setSocialMessage] = useState('');
   const [socialError, setSocialError] = useState('');
 
@@ -101,7 +102,7 @@ export default function PremiumSettings() {
 
   // Load WhatsApp connect availability once on mount — independent of
   // `organization` below, this only needs to run once. (Facebook/Instagram's
-  // own status check now lives inside SocialConnectWizards.)
+  // own status check now lives inside SocialConnectButtons.)
   useEffect(() => {
     const token = localStorage.getItem('cf_token');
     const headers = { Authorization: `Bearer ${token}` };
@@ -1002,7 +1003,7 @@ export default function PremiumSettings() {
                 <p className="text-xs text-gray-400 mt-2">One address Broadcast's Email option sends to — point it at your mailing list (a Google Group, Mailchimp-forwarding address, etc.) and your list handles the rest. Leave blank to keep Email off in Broadcast — saved with the Save Settings button below, not per-channel.</p>
               </div>
 
-              <SocialConnectWizards />
+              <SocialConnectButtons />
 
               {/* WhatsApp — no manual-paste fallback: unlike Facebook/
                   Instagram, a WhatsApp number can't be identified by just an

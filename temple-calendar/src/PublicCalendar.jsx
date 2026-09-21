@@ -124,8 +124,19 @@ function PanchangBadge({ ev }) {
   );
 }
 
-function EventPill({ ev, onClick }) {
+// One compact glyph per pill -- priority order matches the Media spec's
+// own event-card indicator list (live beats everything else, a photo
+// count only shows once there's nothing more urgent to flag).
+function mediaGlyph(media) {
+  if (!media) return null;
+  if (media.glimpses && media.glimpses.length > 0) return '🎬';
+  if (media.photo_count > 0) return '📷';
+  return null;
+}
+
+function EventPill({ ev, onClick, media }) {
   const m = typeOf(ev.type);
+  const glyph = mediaGlyph(media);
   return (
     <div onClick={() => onClick(ev)}
       style={{ borderLeft:`2px solid ${m.color}`, background:m.bg, borderRadius:'0 4px 4px 0',
@@ -134,13 +145,15 @@ function EventPill({ ev, onClick }) {
       onMouseEnter={e => e.currentTarget.style.filter = 'brightness(0.95)'}
       onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}
     >
-      <div style={{ fontSize:13, fontWeight:700, color:'#000', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{ev.title}</div>
+      <div style={{ fontSize:13, fontWeight:700, color:'#000', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+        {glyph && <span style={{ marginRight:4 }}>{glyph}</span>}{ev.title}
+      </div>
       {ev.time && <div style={{ fontSize:12, color:'#000', marginTop:1 }}>🕐 {ev.time}</div>}
     </div>
   );
 }
 
-function CalendarCell({ day, isToday, isOther, events, viewMode = 'events', onSelect }) {
+function CalendarCell({ day, isToday, isOther, events, viewMode = 'events', onSelect, mediaByEvent = {} }) {
   // Panchang and regular events are now exclusive to their own tab (same
   // split the admin dashboard's CalendarCell uses) instead of always
   // showing panchang alongside whatever category pills were active.
@@ -183,7 +196,7 @@ function CalendarCell({ day, isToday, isOther, events, viewMode = 'events', onSe
           {viewMode === 'panchang' && !panchang && (
             <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:'#000', fontSize:12 }}>—</div>
           )}
-          {visible.map(ev => <EventPill key={ev.id || ev.title} ev={ev} onClick={onSelect} />)}
+          {visible.map(ev => <EventPill key={ev.event_id || ev.title} ev={ev} onClick={onSelect} media={mediaByEvent[ev.event_id]} />)}
           {extra > 0 && (
             <div onClick={() => onSelect(regular[MAX])}
               style={{ fontSize:13, color:'#000', fontWeight:700, cursor:'pointer', padding:'2px 6px',
@@ -197,7 +210,15 @@ function CalendarCell({ day, isToday, isOther, events, viewMode = 'events', onSe
   );
 }
 
-function EventDetailModal({ ev, onClose, config = {} }) {
+function IndicatorBadge({ color, text }) {
+  return (
+    <span style={{ fontSize:'0.72rem', fontWeight:800, padding:'3px 9px', borderRadius:20, background:`${color}18`, color }}>
+      {text}
+    </span>
+  );
+}
+
+function EventDetailModal({ ev, onClose, config = {}, media }) {
   if (!ev) return null;
   const m = typeOf(ev.type);
   return (
@@ -239,6 +260,27 @@ function EventDetailModal({ ev, onClose, config = {} }) {
               <div style={{ color:'#000', fontSize:'0.92rem', lineHeight:1.7 }}>{ev.description}</div>
             </div>
           )}
+          {media && ((media.glimpses && media.glimpses.length > 0) || media.photo_count > 0 || media.registration_required || media.members_only) && (
+            <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:16 }}>
+              {media.glimpses && media.glimpses.length > 0 && <IndicatorBadge color="#2563eb" text="🎬 Event glimpse" />}
+              {media.photo_count > 0 && <IndicatorBadge color="#7c3aed" text={`📷 ${media.photo_count} photos`} />}
+              {media.registration_required && <IndicatorBadge color="#d97706" text="🎟 Registration required" />}
+              {media.members_only && <IndicatorBadge color="#6b7280" text="🔒 Members only" />}
+            </div>
+          )}
+
+          {media && media.glimpses && media.glimpses.length > 0 && (
+            <div style={{ marginBottom:16, padding:'12px 14px', background:'#eff6ff', border:'1px solid #bfdbfe', borderRadius:10 }}>
+              <div style={{ fontSize:11, color:'#1e40af', fontWeight:800, textTransform:'uppercase', marginBottom:8 }}>Event glimpse</div>
+              <video
+                src={media.glimpses[0].video_url}
+                controls
+                playsInline
+                style={{ width:'100%', maxHeight:320, borderRadius:8, background:'#000', display:'block' }}
+              />
+            </div>
+          )}
+
           <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
             <a href={getRsvpUrl(ev)} target="_blank" rel="noopener noreferrer"
               style={{ flex:1, padding:'10px 14px', background:'linear-gradient(135deg,#065f46,#047857)', border:'none', borderRadius:8, color:'#6ee7b7', fontWeight:700, fontSize:'0.85rem', textAlign:'center', textDecoration:'none', fontFamily:"'DM Sans', sans-serif" }}>
@@ -585,6 +627,28 @@ function PublicCalendar() {
       .finally(() => setLoadingNews(false));
   }, []);
 
+  // Fetch each event's Live/Photos state (🔴 live now / 📺 livestream
+  // available / 📷 N photos badges on the calendar, plus the modal's Live
+  // and Photos sections) -- one batch call for the whole loaded month
+  // list rather than one request per event card. Re-runs whenever the
+  // event list itself changes (new month loaded, admin adds an event).
+  const [mediaByEvent, setMediaByEvent] = useState({});
+  useEffect(() => {
+    const eventIds = events.filter(e => e.type !== 'panchang' && e.event_id).map(e => e.event_id);
+    if (!eventIds.length) { setMediaByEvent({}); return undefined; }
+    let cancelled = false;
+    fetch('/api/public-media/events/batch' + orgQueryParam(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventIds }),
+    })
+      .then(r => (r.ok ? r.json() : { results: {} }))
+      .then(data => { if (!cancelled) setMediaByEvent(data.results || {}); })
+      .catch(() => { if (!cancelled) setMediaByEvent({}); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events.map(e => e.event_id).join(',')]);
+
   const year  = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
@@ -672,16 +736,38 @@ function PublicCalendar() {
   return (
     <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#fdf6e9 0%,#fef9f0 50%,#fdf3e3 100%)', fontFamily:"'DM Sans', sans-serif", color:'#000' }}>
 
-      {/* ── Banner (optional, set in Settings) ── */}
-      {templeConfig.banner_url && (
-        <img
-          src={templeConfig.banner_url}
-          alt={`${templeConfig.temple_name || TEMPLE_NAME} banner`}
-          style={{ width:'100%', maxHeight:220, objectFit:'cover', display:'block' }}
-        />
-      )}
-
-      {/* ── Hero Header ── */}
+      {/* ── Hero: banner image with logo/name overlaid directly on it when a
+           banner is set (no separate gold bar); falls back to the plain
+           gold gradient hero when there's no banner. ── */}
+      {templeConfig.banner_url ? (
+        <div style={{ position:'relative', width:'100%', overflow:'hidden' }}>
+          <img
+            src={templeConfig.banner_url}
+            alt={`${templeConfig.temple_name || TEMPLE_NAME} banner`}
+            style={{ width:'100%', height:280, objectFit:'cover', display:'block' }}
+          />
+          {/* Scrim so white text/logo stay legible over any photo */}
+          <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.55) 100%)' }} />
+          <div style={{ position:'absolute', left:0, right:0, bottom:0, padding:'20px 20px 22px', textAlign:'center' }}>
+            {templeConfig.logo_url ? (
+              <img
+                src={templeConfig.logo_url}
+                alt={templeConfig.temple_name || TEMPLE_NAME}
+                style={{ width:68, height:68, borderRadius:'50%', objectFit:'cover', border:'2px solid rgba(255,255,255,0.9)', margin:'0 auto 14px', display:'block', boxShadow:'0 0 0 4px rgba(255,215,0,0.3), 0 0 0 8px rgba(255,215,0,0.1), 0 0 40px rgba(255,180,0,0.4), 0 10px 30px rgba(0,0,0,0.3)' }}
+              />
+            ) : (
+            <div style={{ width:68, height:68, borderRadius:'50%', background:'linear-gradient(135deg,#ffd700,#e6a600,#ffb700)', border:'2px solid rgba(255,255,255,0.9)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 14px', boxShadow:'0 0 0 4px rgba(255,215,0,0.3), 0 0 0 8px rgba(255,215,0,0.1), 0 0 40px rgba(255,180,0,0.4), 0 10px 30px rgba(0,0,0,0.3)', fontSize:'1.8rem' }}>{heroIcon}</div>
+            )}
+            <h1 style={{ fontSize:'clamp(1.5rem,4vw,2.6rem)', fontWeight:700, color:'#fff', margin:'0 0 8px', letterSpacing:'0.03em', textShadow:'0 2px 10px rgba(0,0,0,0.5)' }}>
+              {(templeConfig.temple_name || TEMPLE_NAME).toUpperCase()}
+            </h1>
+            <div style={{ display:'flex', justifyContent:'center', gap:'1.2rem', flexWrap:'wrap', fontSize:'clamp(0.75rem,1.6vw,0.92rem)', color:'rgba(255,255,255,0.92)', textShadow:'0 1px 6px rgba(0,0,0,0.5)' }}>
+              {templeConfig.address && <span>📍 {templeConfig.address}</span>}
+              {templeConfig.phone && <span>📞 {templeConfig.phone}</span>}
+            </div>
+          </div>
+        </div>
+      ) : (
       <div style={{
         background: `linear-gradient(135deg, ${templeConfig.primary_color || '#b83a0a'} 0%, ${templeConfig.primary_color || '#8a2c08'} 35%, ${templeConfig.primary_color || '#6b210a'} 65%, ${templeConfig.primary_color || '#a34508'} 100%)`,
         borderBottom:'1px solid rgba(139,69,19,0.3)',
@@ -712,12 +798,12 @@ function PublicCalendar() {
           </div>
         </div>
       </div>
+      )}
 
       {/* ── Main layout ── */}
       <div className='pub-cal-main' style={{ maxWidth:2000, width:'100%', margin:'0 auto', padding:'20px 16px', display:'grid', gridTemplateColumns: isMobile ? '1fr' : '220px minmax(0,1fr)', gap:16, alignItems:'start' }}>
         {/* ── Sidebar: news feed ── */}
         <div>
-          <NewsFeedPanel announcements={announcements} loading={loadingNews} />
           {/* Upcoming events quick list */}
           <div style={{ background:'linear-gradient(135deg,#fffdf7,#fff8ee)', border:'1px solid #d4af37', borderRadius:14, overflow:'hidden', marginTop:14, boxShadow:'0 6px 24px rgba(180,120,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)' }}>
             <div style={{ background:'linear-gradient(135deg,#1a3a6a12,#0e294a12)', padding:'12px 14px', borderBottom:'1px solid #e8d5a3' }}>
@@ -826,6 +912,7 @@ function PublicCalendar() {
                       events={dayEvs}
                       viewMode={viewMode}
                       onSelect={setSelectedEvent}
+                      mediaByEvent={mediaByEvent}
                     />
                   );
                 })}
@@ -895,7 +982,7 @@ function PublicCalendar() {
       </div>
 
       {/* ── Event detail modal ── */}
-      {selectedEvent && <EventDetailModal ev={selectedEvent} onClose={() => setSelectedEvent(null)} config={templeConfig} />}
+      {selectedEvent && <EventDetailModal ev={selectedEvent} onClose={() => setSelectedEvent(null)} config={templeConfig} media={mediaByEvent[selectedEvent.event_id]} />}
 
       {/* Temple Assistant (WebChatWidget) now renders once from App.jsx's
           PublicOrgLayout, shared across every visitor-facing org page

@@ -58,6 +58,7 @@ const {
 } = require('../broadcasts');
 const { sendServerError } = require('../utils/errors');
 const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
+const { v4: uuidv4 } = require('uuid'); // for broadcast_group_id on reminder series (see POST /schedule)
 
 // A broadcast send fans out to real email/WhatsApp/Facebook/Instagram
 // channels — actual devotees' inboxes and social accounts — so this caps
@@ -871,17 +872,13 @@ const MIN_SCHEDULE_LEAD_MS = 60 * 1000;
 
 router.post('/schedule', authenticateToken, requireRole('owner', 'admin'), broadcastSendLimiter, async (req, res) => {
   try {
-    const { platforms, caption, imageBase64, auto_rsvp, rsvp_url, wa_template, scheduled_for } = req.body;
+    const { platforms, caption, imageBase64, auto_rsvp, rsvp_url, wa_template, scheduled_for, event_at, reminders } = req.body;
 
     if (!Array.isArray(platforms) || !platforms.length) {
       return res.status(400).json({ error: 'Select at least one platform to schedule.' });
     }
     if (!caption || !caption.trim()) {
       return res.status(400).json({ error: 'Write a message before scheduling.' });
-    }
-    const when = Number(scheduled_for);
-    if (!when || !Number.isFinite(when) || when < Date.now() + MIN_SCHEDULE_LEAD_MS) {
-      return res.status(400).json({ error: `Pick a time at least ${MIN_SCHEDULE_LEAD_MS / 1000} seconds from now.` });
     }
     if (platforms.includes('instagram') && !imageBase64) {
       return res.status(400).json({ error: 'Instagram requires an image — add one under "Add Creative" before scheduling.' });
@@ -893,6 +890,66 @@ router.post('/schedule', authenticateToken, requireRole('owner', 'admin'), broad
     let media_url = null;
     if (imageBase64) {
       media_url = await uploadScheduledImageToS3(imageBase64, org);
+    }
+
+    // ── Reminder series ──────────────────────────────────────────────────
+    // "Event reminders" mode from the Broadcast page: one anchor date/time
+    // (event_at) plus a set of lead times (reminders[].minutes_before,
+    // e.g. 7 days / 1 day / 3 hours before — see BroadcastPage.jsx), fired
+    // as several independent scheduled broadcasts sharing one
+    // broadcast_group_id so History can show/cancel them as a set. Each row
+    // is a completely ordinary row to scheduler.js — no changes needed
+    // there. A lead time that's already in the past for this event_at is
+    // skipped rather than failing the whole request (e.g. a "7 days
+    // before" reminder for an event only 2 days out just doesn't get
+    // created; the 1-day and day-of ones still do).
+    if (Array.isArray(reminders) && reminders.length) {
+      const when = Number(event_at);
+      if (!when || !Number.isFinite(when)) {
+        return res.status(400).json({ error: 'Pick the date and time of the event these reminders count down to.' });
+      }
+      // Capped the same defensive way as /schedule/cancel-batch's ids list
+      // below -- the UI only ever offers up to 4, but nothing server-side
+      // enforced that on this authenticated endpoint, so a raw API call
+      // could otherwise request an unbounded number of DynamoDB writes in
+      // one request.
+      const cappedReminders = reminders.slice(0, 10);
+      const broadcast_group_id = `bg-${uuidv4()}`;
+      const created = [];
+      const skipped = [];
+      for (const r of cappedReminders) {
+        const minutesBefore = Number(r && r.minutes_before);
+        if (!Number.isFinite(minutesBefore) || minutesBefore < 0) continue;
+        const fireAt = when - minutesBefore * 60 * 1000;
+        const label = (r.label || `${minutesBefore} min before`).toString().slice(0, 60);
+        if (fireAt < Date.now() + MIN_SCHEDULE_LEAD_MS) { skipped.push(label); continue; }
+        const row = await createBroadcast({
+          org_id: org.org_id,
+          created_by: req.user.user_id,
+          kind: 'scheduled',
+          platforms,
+          caption,
+          media_url,
+          auto_rsvp,
+          rsvp_url,
+          wa_template: wa_template || null,
+          scheduled_for: fireAt,
+          broadcast_group_id,
+          reminder_label: label,
+        });
+        created.push({ broadcast_id: row.broadcast_id, scheduled_for: fireAt, label });
+      }
+      if (!created.length) {
+        return res.status(400).json({ error: 'Every reminder in this series falls in the past for that event date — pick a later event date or shorter lead times.' });
+      }
+      console.log(`[BROADCAST] ${org.name} | ${created.length}-reminder series for event ${new Date(when).toISOString()} | ${platforms.join(', ')}`);
+      return res.json({ success: true, broadcast_group_id, created, skipped });
+    }
+
+    // ── Plain one-off schedule (unchanged behavior) ─────────────────────
+    const when = Number(scheduled_for);
+    if (!when || !Number.isFinite(when) || when < Date.now() + MIN_SCHEDULE_LEAD_MS) {
+      return res.status(400).json({ error: `Pick a time at least ${MIN_SCHEDULE_LEAD_MS / 1000} seconds from now.` });
     }
 
     const row = await createBroadcast({
@@ -937,6 +994,26 @@ router.delete('/schedule/:id', authenticateToken, requireRole('owner', 'admin'),
     res.json({ success: true });
   } catch (err) {
     console.error('[BROADCAST] Failed to cancel schedule:', err.message);
+    sendServerError(res, err);
+  }
+});
+
+// Cancel every still-pending row of a reminder series in one call (History
+// page's "Cancel remaining reminders"). There's no DynamoDB index on
+// broadcast_group_id — the client already has every id in the group from
+// its own history list, so it just posts them here rather than us adding a
+// new GSI for what's a rare, small (≤4 rows), client-known batch.
+router.post('/schedule/cancel-batch', authenticateToken, requireRole('owner', 'admin'), async (req, res) => {
+  try {
+    const ids = Array.isArray(req.body.ids) ? req.body.ids.slice(0, 20) : [];
+    if (!ids.length) return res.status(400).json({ error: 'No broadcast ids given.' });
+    const results = await Promise.all(ids.map(async (id) => {
+      const result = await cancelScheduledBroadcast(id, req.user.org_id);
+      return { broadcast_id: id, success: !result.error, error: result.error || null };
+    }));
+    res.json({ results });
+  } catch (err) {
+    console.error('[BROADCAST] Failed to cancel batch:', err.message);
     sendServerError(res, err);
   }
 });

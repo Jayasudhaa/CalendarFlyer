@@ -4,6 +4,7 @@
 $frontend = "C:\My_Projects\temple-calendar-complete\temple-calendar"
 $server   = "C:\My_Projects\temple-calendar-complete\server"
 $ecr      = "011820201589.dkr.ecr.us-east-2.amazonaws.com/temple-calendar:latest"
+$region   = "us-east-2"
 
 Write-Host "`n=== STEP 1: Delete old dist ===" -ForegroundColor Cyan
 if (Test-Path "$frontend\dist") { Remove-Item -Recurse -Force "$frontend\dist" }
@@ -51,14 +52,40 @@ Write-Host "`n=== STEP 5: Docker build ===" -ForegroundColor Cyan
 # package.json + source + the dist-frontend folder Step 4 just filled),
 # matching the working manual steps this script was meant to replace.
 Set-Location $server
-docker build -t temple-calendar .
+docker build --platform linux/amd64 -t temple-calendar .
 if ($LASTEXITCODE -ne 0) { Write-Host "❌ Docker build failed!" -ForegroundColor Red; exit 1 }
 Write-Host "✅ Docker image built" -ForegroundColor Green
 
 Write-Host "`n=== STEP 6: ECR login + push ===" -ForegroundColor Cyan
 docker tag temple-calendar $ecr
-aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 011820201589.dkr.ecr.us-east-2.amazonaws.com
+aws ecr get-login-password --region $region | docker login --username AWS --password-stdin 011820201589.dkr.ecr.us-east-2.amazonaws.com
 docker push $ecr
 if ($LASTEXITCODE -ne 0) { Write-Host "❌ Push failed!" -ForegroundColor Red; exit 1 }
+Write-Host "✅ Image pushed to ECR" -ForegroundColor Green
 
-Write-Host "`n🎉 DONE! Now go to App Runner → calendarfly → Deploy" -ForegroundColor Green
+Write-Host "`n=== STEP 7: Trigger App Runner deployment ===" -ForegroundColor Cyan
+# Merged in from the older "# Step 1 Build frontend.txt" manual steps —
+# this script previously stopped after the ECR push and left the actual
+# redeploy as a manual click in the App Runner console. Grabs whichever
+# service this account has (matches the earlier script's own assumption
+# that there's exactly one) rather than hardcoding a service ARN, since
+# the ARN embeds a generated service ID this script has no other way to
+# know ahead of time.
+$serviceArn = aws apprunner list-services --region $region --query "ServiceSummaryList[0].ServiceArn" --output text
+if (-not $serviceArn -or $serviceArn -eq "None") {
+    Write-Host "❌ Could not find an App Runner service in $region — check the AWS CLI is logged in to the right account." -ForegroundColor Red
+    exit 1
+}
+Write-Host "Service: $serviceArn"
+aws apprunner start-deployment --service-arn $serviceArn --region $region | Out-Null
+if ($LASTEXITCODE -ne 0) { Write-Host "❌ Could not start the App Runner deployment!" -ForegroundColor Red; exit 1 }
+
+Write-Host "`n=== STEP 8: Wait for deployment to finish ===" -ForegroundColor Cyan
+while ($true) {
+    $status = aws apprunner describe-service --service-arn $serviceArn --region $region --query "Service.Status" --output text
+    $time = Get-Date -Format "HH:mm:ss"
+    Write-Host "[$time] Status: $status"
+    if ($status -eq "RUNNING") { Write-Host "`n🎉 Deployed and running!" -ForegroundColor Green; break }
+    if ($status -eq "CREATE_FAILED" -or $status -eq "DELETE_FAILED") { Write-Host "`n❌ Deployment failed! Check the App Runner console for the failure event/logs." -ForegroundColor Red; exit 1 }
+    Start-Sleep -Seconds 15
+}

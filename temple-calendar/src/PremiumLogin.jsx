@@ -2,7 +2,8 @@
  * PremiumLogin.jsx
  * - Eye icon toggle on password field
  * - Mobile responsive
- * - Redirects to /select-mode after login
+ * - Redirects straight to /dashboard (canManage) or the public calendar
+ *   (viewer-only) after login -- no more intermediate "choose mode" step.
  * Black & white — white background, black text — see PremiumLanding.jsx.
  */
 import React, { useState } from 'react';
@@ -11,6 +12,25 @@ import { useAuth } from './contexts/AuthContext';
 import GlassCard from './GlassCard';
 import PremiumButton from './PremiumButton';
 import GoogleLoginButton from './components/GoogleLoginButton';
+
+
+// login()/loginWithGoogle() write the fresh user+org to localStorage
+// synchronously before resolving (see AuthContext.jsx), so reading it right
+// back out here -- rather than destructuring canManage/organization from
+// useAuth() at the top of this component -- avoids a stale-closure read:
+// this component's own render hasn't picked up the just-completed login
+// yet at the point this function runs.
+function postLoginDestination() {
+  try {
+    const user = JSON.parse(localStorage.getItem('cf_user') || 'null');
+    const org = JSON.parse(localStorage.getItem('cf_org') || 'null');
+    const canManage = !!user && ['owner', 'admin'].includes(user.role);
+    if (canManage) return '/dashboard';
+    return org?.subdomain ? `/calendar?org=${encodeURIComponent(org.subdomain)}` : '/calendar';
+  } catch {
+    return '/dashboard';
+  }
+}
 
 export default function PremiumLogin() {
   const navigate = useNavigate();
@@ -35,7 +55,7 @@ export default function PremiumLogin() {
     const result = await login(formData.email, formData.password);
 
     if (result.success) {
-      navigate('/select-mode');
+      navigate(postLoginDestination());
     } else {
       setError(result.error);
       setNeedsVerification(!!result.needsVerification);
@@ -58,7 +78,7 @@ export default function PremiumLogin() {
     const result = await loginWithGoogle(credential);
     setGoogleLoading(false);
     if (result.success) {
-      navigate('/select-mode');
+      navigate(postLoginDestination());
     } else {
       setError(result.error || 'Google sign-in failed. Please try again.');
     }
