@@ -1,0 +1,274 @@
+/**
+ * server/server.js
+ * Express backend for Temple Calendar
+ */
+require('dotenv').config();
+console.log('FB App ID:', process.env.FACEBOOK_APP_ID);
+console.log('IG App ID:', process.env.INSTAGRAM_APP_ID);
+const express = require('express');
+const session = require('express-session');
+const cors = require('cors');
+const helmet = require('helmet');
+const path = require('path');
+const { tenantMiddleware } = require('./middleware/tenant');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
+// Fails loudly at startup if ADMIN_USERNAME/ADMIN_PASSWORD are unset or
+// empty — see the file header for why this can't have a "safe" dev
+// fallback the way utils/jwtSecret.js does.
+const { ADMIN_USERNAME, ADMIN_PASSWORD } = require('./utils/adminCredentials');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.get('/connect-social.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'connect-social.html'));
+});
+
+
+// Global safety net -- an error anywhere in the app must never be allowed
+// to take down the whole server for every user in flight. Confirmed root
+// cause of a real production incident: a Stripe webhook arrived while
+// STRIPE_SECRET_KEY wasn't set, threw inside routes/billing.js's
+// handleStripeWebhook (which had no try/catch around that particular
+// call), and the resulting unhandled rejection killed the entire Node
+// process -- ~90 seconds of downtime for every visitor, not just billing,
+// until App Runner restarted it. That specific call is now caught at the
+// source (see billing.js), but this backstop exists so any OTHER spot
+// that's missing a try/catch logs and drops just that one request instead
+// of crashing everyone else's. Fix the specific handler when one shows up
+// here -- this is a safety net, not a substitute for that.
+process.on('unhandledRejection', (reason) => {
+  console.error('[FATAL-CAUGHT] Unhandled promise rejection (server kept running):', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL-CAUGHT] Uncaught exception (server kept running):', err);
+});
+
+// Baseline security headers (X-Content-Type-Options, X-Frame-Options,
+// Strict-Transport-Security, etc.) — there were none before this. CSP and
+// Cross-Origin-Resource-Policy are turned off explicitly rather than left
+// at helmet's strict defaults: this same server serves the built React
+// frontend in production (see the PRODUCTION BUILD block below), which
+// loads Google Fonts, S3-hosted images/flyers, and proxies external
+// images through /api/image-proxy with explicit permissive CORS headers —
+// helmet's default CSP would likely block some of that, and getting a
+// correct CSP allowlist for every asset source this app uses is a
+// separate, more careful pass rather than something to guess at here.
+app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: false, crossOriginEmbedderPolicy: false }));
+
+// ✅ Keep only required frontend domains
+const allowedOrigins = [
+  'https://calendarflyapp.com',
+  'https://www.calendarflyapp.com',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  // Static ngrok tunnel address used for local Facebook/Instagram OAuth
+  // testing (Instagram/Facebook login dialogs need an https:// redirect,
+  // which plain localhost can't provide) -- see connect-social.html testing.
+  'https://edie-chronological-lovie.ngrok-free.dev',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
+// ✅ CENTRAL CORS CONFIG (used for BOTH normal + preflight)
+const isProdEnv = process.env.NODE_ENV === 'production';
+const localhostOriginPattern = /^http:\/\/localhost:\d+$/;
+
+const corsOptions = {
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+
+    if (origin.endsWith('.calendarflyapp.com')) return cb(null, true);
+
+    // Vite picks the next free port (5174, 5175, ...) whenever 5173 is
+    // already taken, so a hardcoded single dev port keeps breaking local
+    // login with a CORS error every time that happens. Accept any
+    // localhost port here — but ONLY outside production — so this never
+    // widens what the deployed API (which runs with NODE_ENV=production)
+    // accepts from an untrusted origin.
+    if (!isProdEnv && localhostOriginPattern.test(origin)) return cb(null, true);
+
+    console.warn(`[CORS] Blocked: ${origin}`);
+    return cb(new Error(`CORS blocked: ${origin}`));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-secret'],
+  credentials: true,
+};
+
+// ✅ FIX: apply SAME config to OPTIONS (preflight)
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+// Stripe webhook — MUST be mounted with the raw (unparsed) body, and MUST
+// come before the global express.json() below. Stripe's signature check
+// (see handleStripeWebhook in routes/billing.js) hashes the exact raw
+// bytes of the request; once express.json() has parsed and re-serialized
+// the body, the signature no longer matches and every webhook call fails
+// verification.
+app.post('/api/billing/webhook', express.raw({ type: 'application/json' }), require('./routes/billing').handleStripeWebhook);
+
+app.use(express.json({ limit: '25mb' }));
+
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    sameSite: 'lax'
+  }
+}));
+
+// "Continue with Facebook" / "Continue with Instagram" standalone connect
+// page routes -- must be mounted AFTER app.use(session(...)) above, since
+// they read/write req.session for CSRF-state tracking across the OAuth
+// redirect round trip. Mounting them earlier silently breaks that (the
+// session middleware hasn't attached req.session yet for these routes),
+// which caused "Invalid or expired login attempt" during testing.
+app.use(require('./routes/facebookAuth'));
+app.use(require('./routes/instagramAuth'));
+
+// ── MULTI-TENANT ─────────────────────────────────────────
+app.use(tenantMiddleware);
+app.use((req, res, next) => {
+  if (req.org) {
+    console.log(`[TENANT] ${req.method} ${req.path} → ${req.org.name}`);
+  }
+  next();
+});
+
+// ── AUTH ─────────────────────────────────────────────────
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+
+// Same rate-limiting pattern/library as routes/auth.js's loginLimiter —
+// this is the site-wide super-admin login, an even higher-value
+// brute-force target than a per-org login. Keyed by username+IP (rather
+// than IP alone) so a distributed attempt against this one account still
+// gets throttled, matching loginLimiter's per-account keying in auth.js.
+const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const username = req.body && req.body.username ? String(req.body.username).toLowerCase().trim() : '';
+    return `${username}:${ipKeyGenerator(req.ip)}`;
+  },
+  message: { success: false, error: 'Too many login attempts — please wait a few minutes and try again.' },
+});
+
+app.post('/api/admin/login', adminLoginLimiter, (req, res) => {
+  const { username, password } = req.body;
+
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    req.session.isAuthenticated = true;
+    req.session.user = { username, displayName: 'Site Admin' };
+    return res.json({ success: true, user: req.session.user });
+  }
+
+  return res.status(401).json({ success: false, error: 'Invalid credentials' });
+});
+
+app.post('/api/admin/logout', (req, res) => {
+  req.session.destroy(() => res.json({ success: true }));
+});
+
+app.get('/api/admin/status', (req, res) => {
+  if (req.session?.isAuthenticated) {
+    return res.json({ authenticated: true, user: req.session.user });
+  }
+  return res.json({ authenticated: false });
+});
+
+// ── ROUTES ───────────────────────────────────────────────
+app.use('/api/organizations', require('./routes/organizations'));
+app.use('/api/billing', require('./routes/billing'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/events', require('./routes/events'));
+app.use('/api', require('./routes/generate-image'));
+app.use('/api', require('./routes/rsvp'));
+app.use('/api', require('./routes/pixabay'));
+app.use('/api', require('./routes/translate'));
+app.use('/api', require('./routes/imageLibrary'));
+app.use('/api', require('./routes/image-proxy'));
+app.use('/api/flyers', require('./routes/flyerRoutes'));
+app.use('/api/broadcast', require('./routes/broadcast'));
+// "Connect with Facebook / Instagram / WhatsApp" OAuth flows for
+// Organization Settings — see routes/social-connect.js's file header.
+app.use('/api/social', require('./routes/social-connect'));
+// Live community photo album for events: phone-OTP devotee identity
+// (public, unauthenticated on purpose — see routes/community.js's file
+// header) and the photo upload/moderation/album routes that ride on top
+// of it (community-member-authenticated, plus a couple of admin-only
+// moderation routes — see routes/photos.js's file header).
+app.use('/api/community', require('./routes/community'));
+app.use('/api/photos', require('./routes/photos'));
+app.use('/api/signups', require('./routes/signups'));
+// "Connect" -> Documents library: create/link a Google Form, link a Drive
+// file, upload an Excel/Word doc, and AI semantic search + summaries over
+// them plus this org's own events/sign-ups — see routes/documents.js's
+// file header for exactly what's real vs. what needs setup first.
+app.use('/api/documents', require('./routes/documents'));
+app.use('/api/remove-bg', require('./routes/remove-bg'));
+app.use('/api/contact', require('./routes/contact'));
+app.use('/api/image-feedback', require('./routes/image-feedback'));
+// Dedicated top-level mount (not nested under /api/organizations) — the
+// public frontend calls the bare path '/api/announcements'.
+app.use('/api/announcements', require('./routes/announcements'));
+// Conversational chatbot (admin assistant + public temple/org bot).
+app.use('/api/chat', require('./routes/chat'));
+// WhatsApp-Lambda event sync routes (DynamoDB + S3) — split out of chat.js,
+// now scoped per-org via requireAuth(); see server/routes/eventSync.js header.
+app.use('/api/chat', require('./routes/eventSync'));
+
+
+// ── HEALTH ───────────────────────────────────────────────
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    org: req.org ? req.org.name : 'none'
+  });
+});
+
+// ── PRODUCTION BUILD ─────────────────────────────────────
+if (process.env.NODE_ENV === 'production') {
+  const buildPath = path.join(__dirname, 'dist-frontend');
+  app.use(express.static(buildPath));
+  app.get('*', (req, res) =>
+    res.sendFile(path.join(buildPath, 'index.html'))
+  );
+}
+
+// ── GLOBAL ERROR HANDLER ─────────────────────────────────
+// Must be mounted last (after every route/middleware above) — Express only
+// routes to a 4-arg middleware like this one for errors passed to next(err)
+// or thrown synchronously inside a route; it does NOT retroactively catch
+// an error a route's own try/catch already responded to (most routes do,
+// via utils/errors.js's sendServerError — see that file's header). This is
+// the backstop for whatever isn't wrapped in a try/catch: logs the full
+// error server-side always, and only echoes err.message to the client
+// outside production, same gating as sendServerError.
+app.use((err, req, res, next) => {
+  console.error('[UNHANDLED ERROR]', err);
+  if (res.headersSent) return next(err);
+  const isProd = process.env.NODE_ENV === 'production';
+  res.status(err.status || err.statusCode || 500).json({
+    error: isProd ? 'Something went wrong' : ((err && err.message) || 'Something went wrong'),
+  });
+});
+
+// ── START ────────────────────────────────────────────────
+app.listen(PORT, () => {
+  console.log(`✓ Server running on ${PORT}`);
+  // Broadcast page "Schedule for later" — see scheduler.js's file header
+  // for why this is an in-process poll rather than a real queue. Started
+  // only once the server is actually listening, not at module load, so a
+  // crash during startup doesn't leave an orphaned interval behind.
+  require('./scheduler').start();
+});

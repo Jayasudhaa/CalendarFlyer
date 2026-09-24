@@ -14,30 +14,39 @@ import PremiumButton from './PremiumButton';
 import MarketingNav from './components/MarketingNav';
 import MarketingFooter from './components/MarketingFooter';
 
+// Individuals: free consumer plan for anyone browsing Explore -- not an
+// org tier, so it's shown as its own callout rather than a grid card (see
+// render below), with its own CTA into the Explore feed instead of /signup.
+const INDIVIDUAL_PLAN = {
+  name: 'Individuals',
+  price: 'Free',
+  description: 'Event and organization search, follow organizations, save events, and add events to a personal calendar.',
+};
+
+// Enterprise is no longer a self-serve card (pricing update, Sept 2026) --
+// its distinguishing features either moved down into Free/Pro below, or
+// live on behind the "Need something custom?" Contact Sales banner instead
+// of a fixed $149 price tag. The 'enterprise' plan itself still exists
+// server-side (PLAN_FEATURES/PLAN_LIMITS in organizations.js) for whenever
+// a custom deal actually gets negotiated -- see SubscriptionPage.jsx.
 const PLANS = [
   {
-    name: 'Free',
+    name: 'Organization Free',
     price: '$0',
     popular: false,
-    features: ['Calendar', 'Instagram + Facebook broadcast', '30 events/month — create & broadcast'],
+    features: ['Public organization page & calendar', 'Instagram + Facebook broadcast', 'WhatsApp broadcast (requires a WhatsApp Business number)', 'Event creation — 30 events/month', 'Basic announcements'],
   },
   {
-    name: 'Starter',
+    name: 'Organization Plus',
     price: '$49',
     popular: false,
-    features: ['Everything in Free', 'AI Flyer Studio (30 AI images/mo)', '50 events/month'],
+    features: ['Everything in Organization Free', 'AI Flyer Studio — 30 AI image generations/month', 'Flyer templates', 'Scheduled announcements', '50 events/month'],
   },
   {
-    name: 'Pro',
-    price: '$99',
+    name: 'Organization Pro',
+    price: '$79',
     popular: true,
-    features: ['Everything in Starter', 'Unlimited events', 'Advanced analytics', 'AI Chatbot (2000 msg/mo)', 'Priority support'],
-  },
-  {
-    name: 'Enterprise',
-    price: '$149',
-    popular: false,
-    features: ['Everything in Pro', 'WhatsApp broadcast (requires a WhatsApp Business number)', 'Unlimited everything', 'Custom domain', 'AI document search — upload files, get summaries & action items', 'Public chatbot for your community', 'Live photo sharing (public)', 'Public messages (multi-channel)', 'Dedicated support'],
+    features: ['Everything in Organization Plus', 'Unlimited events', 'AI-powered analytics', 'AI-powered search and summary — upload files, get summaries & action items', 'Searchable media gallery', 'AI Chatbot (2000 msg/mo)', 'More team & admin tools', 'Priority support', '75 AI image generations/month'],
   },
 ];
 
@@ -65,8 +74,23 @@ export default function PricingMarketingPage() {
         </div>
       </section>
 
+      <section className="pb-4 px-6">
+        <div className="max-w-4xl mx-auto">
+          <GlassCard light className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <div className="font-bold text-lg">{INDIVIDUAL_PLAN.name} — {INDIVIDUAL_PLAN.price}, always</div>
+              <div className="text-gray-500 text-sm mt-1">{INDIVIDUAL_PLAN.description}</div>
+            </div>
+            <PremiumButton variant="darkOutline" onClick={() => navigate('/explore')}>Start exploring</PremiumButton>
+          </GlassCard>
+        </div>
+      </section>
+
       <section className="pb-24 px-6">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-6">
+        <div className="max-w-7xl mx-auto mb-6 text-center">
+          <h2 className="text-2xl font-bold">For organizations</h2>
+        </div>
+        <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-6">
           {PLANS.map((plan, idx) => (
             <GlassCard key={idx} light hover className={`p-8 ${plan.popular ? 'ring-2 ring-black' : ''}`}>
               {plan.popular && (
@@ -88,7 +112,7 @@ export default function PricingMarketingPage() {
                 ))}
               </ul>
               <PremiumButton fullWidth variant={plan.popular ? 'dark' : 'darkOutline'} onClick={() => navigate('/signup')}>
-                {plan.name === 'Free' ? 'Get Started' : 'Start Free Trial'}
+                {plan.name === 'Organization Free' ? 'Get Started' : 'Start Free Trial'}
               </PremiumButton>
             </GlassCard>
           ))}
@@ -97,7 +121,7 @@ export default function PricingMarketingPage() {
           <GlassCard light className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <div className="font-bold text-lg">Need something custom?</div>
-              <div className="text-gray-500 text-sm">On-premise deployment, SLAs, dedicated infrastructure, training and onboarding.</div>
+              <div className="text-gray-500 text-sm">Custom domain, API access, white-label, unlimited storage, dedicated support, on-premise deployment, SLAs, dedicated infrastructure, training and onboarding.</div>
               <div className="text-gray-500 text-sm mt-1">Or email us directly: <a href="mailto:support@calendarflyapp.com" className="text-black underline">support@calendarflyapp.com</a></div>
             </div>
             <PremiumButton variant="darkOutline" onClick={() => navigate('/contact')}>Contact Sales</PremiumButton>

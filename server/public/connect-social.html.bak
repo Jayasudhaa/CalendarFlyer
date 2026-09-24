@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Connect Social Accounts — CalendarFly</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 40px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    h1 {
+      font-size: 18px;
+      margin: 0 0 8px;
+    }
+    p.sub {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 0 0 28px;
+    }
+    .btn-row {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      color: #fff;
+    }
+    .btn svg { width: 20px; height: 20px; fill: #fff; }
+    .fb { background: #1877F2; }
+    .ig { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+    .status {
+      margin-top: 24px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      text-align: left;
+    }
+    .status.connected { background: #eaf7ee; color: #1a7a34; }
+    .status.error { background: #fdecea; color: #a3231a; }
+    .status.denied { background: #fff6e5; color: #8a5a00; }
+    .note {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Connect your accounts</h1>
+    <p class="sub">
+      Connect Facebook and/or Instagram so CalendarFly can publish your event
+      flyers on your behalf. You choose what to connect — nothing is posted
+      until you click Broadcast on an event.
+    </p>
+
+    <div class="btn-row">
+      <a class="btn fb" href="/auth/facebook">
+        <svg viewBox="0 0 24 24"><path d="M22 12.06C22 6.53 17.52 2.04 12 2.04S2 6.53 2 12.06c0 5 3.66 9.13 8.44 9.88v-6.99h-2.54v-2.89h2.54V9.85c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.89h-2.34V21.94C18.34 21.19 22 17.06 22 12.06z"/></svg>
+        Continue with Facebook
+      </a>
+      <a class="btn ig" href="/auth/instagram">
+        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        Continue with Instagram
+      </a>
+    </div>
+
+    <!-- Simple status banner, filled in from the ?connected=...&handle=... query
+         params your callback routes redirect back with. No tokens, no raw API
+         responses — just a plain-language confirmation. -->
+    <div id="status" class="status" style="display:none;"></div>
+
+    <div class="note">
+      Disconnect anytime from Settings → Social Media Connections.
+    </div>
+  </div>
+
+  <script>
+    // Reads simple, non-sensitive query params this page's own callback routes
+    // redirect back with (e.g. ?fb=connected&page=My+Temple, or ?ig=connected&handle=mytemple)
+    // and shows a plain-language status line. Never reads or displays tokens.
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const el = document.getElementById('status');
+
+      if (params.get('fb') === 'connected') {
+        el.textContent = `Connected to Facebook Page: ${params.get('page') || ''}`;
+        el.className = 'status connected';
+        el.style.display = 'block';
+      } else if (params.get('fb') === 'denied' || params.get('ig') === 'denied') {
+        el.textContent = 'Connection cancelled — you did not approve access.';
+        el.className = 'status denied';
+        el.style.display = 'block';
+      } else if (params.get('fb') === 'error' || params.get('ig') === 'error') {
+        el.textContent = 'Something went wrong connecting that account. Please try again.';
+        el.className = 'status error';
+        el.style.display = 'block';
+      } else if (params.get('ig') === 'connected') {
+        el.textContent = `Connected to Instagram: @${params.get('handle') || ''}`;
+        el.className = 'status connected';
+        el.style.display = 'block';
+      }
+
+      // Clean the URL so a page refresh doesn't re-show the banner or re-expose params.
+      if (params.toString()) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    })();
+  </script>
+</body>
+</html>

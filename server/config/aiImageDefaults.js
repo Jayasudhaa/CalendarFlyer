@@ -53,6 +53,37 @@ const DEFAULT_BLOCKED_TERMS = [
   'horror', 'halloween', 'demon', 'devil', 'satan', 'skull', 'occult',
 ];
 
+const DANCE_REQUIRED_CONTEXT = [
+  'dance', 'dancer', 'dancers', 'recital', 'arangetram', 'bharatanatyam', 'kathak',
+  'odissi', 'kuchipudi', 'kathakali', 'mohiniyattam', 'manipuri', 'bhangra', 'garba',
+  'dandiya', 'folk dance', 'performance', 'choreography', 'stage', 'costume', 'ghungroo',
+  'anklets', 'recital', 'showcase', 'annual day',
+];
+
+const MUSIC_REQUIRED_CONTEXT = [
+  'music', 'concert', 'recital', 'carnatic', 'hindustani', 'raga', 'tabla', 'veena',
+  'violin', 'sitar', 'mridangam', 'flute', 'harmonium', 'vocal', 'singer', 'singing',
+  'instrument', 'instrumental', 'orchestra', 'performance', 'stage', 'guru purnima',
+];
+
+const YOGA_REQUIRED_CONTEXT = [
+  'yoga', 'yogi', 'meditation', 'wellness', 'asana', 'pranayama', 'mindfulness',
+  'retreat', 'studio', 'breathwork', 'mat', 'pose', 'stretch', 'relaxation',
+  'international yoga day', 'wellbeing', 'holistic',
+];
+
+const RESTAURANT_REQUIRED_CONTEXT = [
+  'restaurant', 'food', 'menu', 'cuisine', 'dining', 'catering', 'thali', 'buffet',
+  'dish', 'dishes', 'chef', 'kitchen', 'sweets', 'snacks', 'meal', 'dinner', 'lunch',
+  'biryani', 'curry', 'dosa', 'tiffin',
+];
+
+const GROCERY_REQUIRED_CONTEXT = [
+  'grocery', 'store', 'sale', 'produce', 'spices', 'snacks', 'sweets', 'shopping',
+  'aisle', 'market', 'discount', 'specials', 'groceries', 'supermarket', 'vegetables',
+  'fruits', 'imported foods',
+];
+
 const DEFAULT_AI_SETTINGS = {
   systemPrompt: DEFAULT_SYSTEM_PROMPT,
   blockedTerms: DEFAULT_BLOCKED_TERMS,
@@ -87,6 +118,46 @@ const DEFAULT_AI_SETTINGS = {
       // selected, so the result stays a photographic match instead of
       // being repainted into generic stock-illustration style.
       referenceStyleSuffix: `. This should look like an enhanced, professional PHOTOGRAPH based on the attached reference photo(s) — the same real venue, people, or decor, NOT a generic stock illustration or painted artwork. Keep the real-world setting, colors, and lighting close to the reference; only enhance clarity, framing, and lighting for a premium print-quality flyer. NO text, NO words, NO letters in the image (unless this is poster mode, in which case only the specified title/date/time/venue text). NO violence, NO weapons, NO alcohol, NO suggestive clothing or poses. Professional quality, suitable for all ages and public display.`,
+    },
+    dance_school: {
+      label: 'Indian classical or folk dance school event',
+      examples: 'a Bharatanatyam recital, a dance school Diwali showcase, an Arangetram',
+      requiredContext: DANCE_REQUIRED_CONTEXT,
+      styleSuffix: `. Strictly for an Indian dance school event flyer background image (no text will be added by the AI). Vibrant, festive performance-stage atmosphere -- warm stage lighting, tasteful decorative border and floral corner accents, dancers in modest traditional attire only, premium print-quality poster composition. NO text, NO words, NO letters in the image. NO people in inappropriate or revealing clothing, NO violence, NO weapons, NO alcohol. Professional quality, suitable for all ages and public display.`,
+      posterStyleSuffix: `. Design this as a complete, elegant Indian dance school event invitation poster in a premium print-ready layout -- festive decorative border and corner accents, warm stage-lit background, professional invitation-card composition, modest traditional attire only if dancers are shown. NO violence, NO weapons, NO alcohol, NO revealing clothing or suggestive poses. Suitable for all ages and public display.`,
+      referenceStyleSuffix: `. This should look like an enhanced, professionally lit, poster-quality PHOTOGRAPH of what is shown in the attached reference photo(s) -- the same performers, stage, or decor, NOT a painted illustration. Keep the real-world setting, attire, colors, and lighting close to the reference; only enhance clarity, framing, and lighting for a premium print-quality flyer. NO text, NO words, NO letters in the image (unless this is poster mode, in which case only the specified title/date/time/venue text). NO revealing clothing or suggestive poses, NO violence, NO weapons, NO alcohol. Professional quality, suitable for all ages and public display.`,
+    },
+    music_school: {
+      label: 'Indian classical or contemporary music school event',
+      examples: 'a Carnatic vocal recital, a music school concert, a tabla or violin performance',
+      requiredContext: MUSIC_REQUIRED_CONTEXT,
+      styleSuffix: `. Strictly for an Indian music school event flyer background image (no text will be added by the AI). Warm concert-hall atmosphere -- soft stage lighting, musical instruments (veena, tabla, violin, mridangam) as tasteful decorative elements, elegant premium print-quality poster composition, modest professional attire only if performers are shown. NO text, NO words, NO letters in the image. NO violence, NO weapons, NO alcohol, NO inappropriate clothing. Professional quality, suitable for all ages and public display.`,
+      posterStyleSuffix: `. Design this as a complete, elegant Indian music school event invitation poster in a premium print-ready layout -- refined decorative border and corner accents, warm concert-lit background, professional invitation-card composition, modest professional attire only if performers are shown. NO violence, NO weapons, NO alcohol, NO inappropriate clothing. Suitable for all ages and public display.`,
+      referenceStyleSuffix: `. This should look like an enhanced, professionally lit, poster-quality PHOTOGRAPH of what is shown in the attached reference photo(s) -- the same performers, instruments, or venue, NOT a painted illustration. Keep the real-world setting, colors, and lighting close to the reference; only enhance clarity, framing, and lighting for a premium print-quality flyer. NO text, NO words, NO letters in the image (unless this is poster mode, in which case only the specified title/date/time/venue text). NO violence, NO weapons, NO alcohol, NO inappropriate clothing. Professional quality, suitable for all ages and public display.`,
+    },
+    yoga_school: {
+      label: 'yoga, meditation, or wellness studio event',
+      examples: 'a yoga class, a meditation retreat, an International Yoga Day celebration',
+      requiredContext: YOGA_REQUIRED_CONTEXT,
+      styleSuffix: `. Strictly for a yoga/wellness studio event flyer background image (no text will be added by the AI). Calm, serene atmosphere -- soft natural light, greenery or a peaceful studio setting, muted earthy or pastel tones, minimalist premium print-quality poster composition, modest athletic or yoga attire only if people are shown. NO text, NO words, NO letters in the image. NO violence, NO weapons, NO alcohol, NO suggestive clothing or poses. Professional quality, suitable for all ages and public display.`,
+      posterStyleSuffix: `. Design this as a complete, elegant yoga/wellness studio event invitation poster in a premium print-ready layout -- calm minimalist border and corner accents, soft natural-light background, professional invitation-card composition, modest athletic or yoga attire only if people are shown. NO violence, NO weapons, NO alcohol, NO suggestive clothing or poses. Suitable for all ages and public display.`,
+      referenceStyleSuffix: `. This should look like an enhanced, professionally lit, poster-quality PHOTOGRAPH of what is shown in the attached reference photo(s) -- the same studio, setting, or instructor, NOT a painted illustration. Keep the real-world setting, colors, and lighting close to the reference; only enhance clarity, framing, and lighting for a premium print-quality flyer. NO text, NO words, NO letters in the image (unless this is poster mode, in which case only the specified title/date/time/venue text). NO suggestive clothing or poses, NO violence, NO weapons, NO alcohol. Professional quality, suitable for all ages and public display.`,
+    },
+    restaurant: {
+      label: 'Indian restaurant or catering event',
+      examples: 'a festival food special, a new menu launch, a catering showcase',
+      requiredContext: RESTAURANT_REQUIRED_CONTEXT,
+      styleSuffix: `. Strictly for an Indian restaurant/catering event flyer background image (no text will be added by the AI). Professional food-photography style -- warm inviting lighting, appetizing plated dishes or a festive dining spread, rich natural colors, premium print-quality poster composition. NO text, NO words, NO letters in the image. NO violence, NO weapons, NO alcohol, NO inappropriate content. Professional quality, suitable for all ages and public display.`,
+      posterStyleSuffix: `. Design this as a complete, elegant restaurant/catering event invitation poster in a premium print-ready layout -- warm decorative border and corner accents, appetizing food-forward background, professional invitation-card composition. NO violence, NO weapons, NO alcohol, NO inappropriate content. Suitable for all ages and public display.`,
+      referenceStyleSuffix: `. This should look like an enhanced, professional food-photography PHOTOGRAPH of what is shown in the attached reference photo(s) -- the same dishes, restaurant, or spread, NOT a generic stock illustration. Keep the real-world setting, colors, and lighting close to the reference; only enhance clarity, framing, and lighting for a premium print-quality flyer. NO text, NO words, NO letters in the image (unless this is poster mode, in which case only the specified title/date/time/venue text). NO violence, NO weapons, NO alcohol. Professional quality, suitable for all ages and public display.`,
+    },
+    grocery: {
+      label: 'Indian or South Asian grocery store event',
+      examples: 'a festival sale, a new store opening, a weekly specials flyer',
+      requiredContext: GROCERY_REQUIRED_CONTEXT,
+      styleSuffix: `. Strictly for an Indian/South Asian grocery store event flyer background image (no text will be added by the AI). Bright, clean retail-photography style -- fresh produce, spices, or packaged goods arranged appealingly, vivid natural colors, premium print-quality poster composition. NO text, NO words, NO letters in the image. NO violence, NO weapons, NO alcohol, NO inappropriate content. Professional quality, suitable for all ages and public display.`,
+      posterStyleSuffix: `. Design this as a complete, eye-catching grocery store sale/event invitation poster in a premium print-ready layout -- bright decorative border and corner accents, fresh product-forward background, professional retail-flyer composition. NO violence, NO weapons, NO alcohol, NO inappropriate content. Suitable for all ages and public display.`,
+      referenceStyleSuffix: `. This should look like an enhanced, professional retail-photography PHOTOGRAPH of what is shown in the attached reference photo(s) -- the same products, store, or display, NOT a generic stock illustration. Keep the real-world setting, colors, and lighting close to the reference; only enhance clarity, framing, and lighting for a premium print-quality flyer. NO text, NO words, NO letters in the image (unless this is poster mode, in which case only the specified title/date/time/venue text). NO violence, NO weapons, NO alcohol. Professional quality, suitable for all ages and public display.`,
     },
   },
   updatedAt: null,

@@ -12,13 +12,7 @@ import { useAuth } from './contexts/AuthContext';
 import { useEvents } from './hooks/useEvents';
 import GlassCard from './GlassCard';
 import PremiumButton from './PremiumButton';
-
-const CATEGORIES = [
-  { key: 'temple', icon: '🕉️', label: 'Temple', desc: 'A Hindu temple or place of worship' },
-  { key: 'nonprofit', icon: '💛', label: 'Nonprofit', desc: 'A registered nonprofit or charity' },
-  { key: 'community', icon: '🏘️', label: 'Community Org', desc: 'A cultural center, club, or community group' },
-  { key: 'other', icon: '✨', label: 'Other', desc: 'Something else entirely' },
-];
+import { ORG_CATEGORY_GROUPS, ORG_CATEGORY_INFO } from './utils/organizationCategories';
 
 const STEPS = ['Org Type', 'Details', 'Events'];
 
@@ -167,18 +161,28 @@ export default function OnboardingWizard() {
             <GlassCard gradient className="p-6 sm:p-8 mb-6">
               <h2 className="text-xl font-bold mb-1">What kind of organization is this?</h2>
               <p className="text-gray-400 text-sm mb-6">This helps us tailor the chatbot, flyer suggestions, and defaults for you.</p>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {CATEGORIES.map(c => (
-                  <button
-                    key={c.key}
-                    type="button"
-                    onClick={() => setCategory(c.key)}
-                    className={`text-left p-5 rounded-xl border transition-colors ${category === c.key ? 'border-purple-500 bg-purple-500/10' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
-                  >
-                    <div className="text-2xl mb-2">{c.icon}</div>
-                    <div className="font-bold mb-1">{c.label}</div>
-                    <div className="text-sm text-gray-400">{c.desc}</div>
-                  </button>
+              <div className="space-y-6">
+                {ORG_CATEGORY_GROUPS.map((group) => (
+                  <div key={group.title}>
+                    <div className="text-xs font-semibold tracking-wide text-gray-500 uppercase mb-2">{group.title}</div>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {group.keys.map((key) => {
+                        const c = ORG_CATEGORY_INFO[key];
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => setCategory(key)}
+                            className={`text-left p-4 rounded-xl border transition-colors ${category === key ? 'border-purple-500 bg-purple-500/10' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
+                          >
+                            <div className="text-xl mb-1">{c.icon}</div>
+                            <div className="font-bold text-sm mb-0.5">{c.label}</div>
+                            <div className="text-xs text-gray-400">{c.desc}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 ))}
               </div>
             </GlassCard>

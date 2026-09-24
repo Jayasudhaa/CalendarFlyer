@@ -43,11 +43,19 @@ async function tenantMiddleware(req, res, next) {
     const subdomain = extractSubdomain(hostname);
     
     let organization = null;
+    // True only when the hostname itself (real subdomain or custom domain)
+    // identified the org -- NOT the ?org= testing override and NOT the
+    // localhost dev fallback below. Used by server.js's catch-all SPA
+    // route to know when a visitor is on an organization's own site
+    // (as opposed to the bare marketing domain), so it can send them to
+    // /calendar instead of the generic PremiumLanding marketing page.
+    let orgFromHost = false;
     
     // Try to find org by subdomain
     if (subdomain) {
       console.log(`[TENANT] Looking up subdomain: ${subdomain}`);
       organization = await getOrganizationBySubdomain(subdomain);
+      if (organization) orgFromHost = true;
     }
     if (!organization && req.query.org) {
       console.log(`[TENANT] Looking up ?org= param: ${req.query.org}`);
@@ -58,6 +66,7 @@ async function tenantMiddleware(req, res, next) {
     if (!organization && hostname) {
       console.log(`[TENANT] Looking up custom domain: ${hostname}`);
       organization = await getOrganizationByDomain(hostname);
+      if (organization) orgFromHost = true;
     }
     
     // If still not found, check for localhost/development
@@ -75,6 +84,7 @@ async function tenantMiddleware(req, res, next) {
       console.log('[TENANT] No organization found for this domain');
       req.org = null;
     }
+    req.orgFromHost = orgFromHost;
     
     next();
   } catch (error) {

@@ -47,7 +47,7 @@ const { rateLimit } = require('express-rate-limit');
 
 const { authenticateToken } = require('./auth');
 const { requireRole } = require('../middleware/roles');
-const { getOrganization, updateOrganization } = require('../organizations');
+const { getOrganization, updateOrganization, canUseFeature } = require('../organizations');
 const { getEventsByOrg } = require('../events');
 const { listSheetsForOrg } = require('../signups');
 const { sendServerError } = require('../utils/errors');
@@ -526,6 +526,15 @@ router.post('/search', authenticateToken, searchLimiter, async (req, res) => {
 
   try {
     const org_id = req.user.org_id;
+    // AI-powered search & summary moved to Organization Pro and up (pricing
+    // update, Sept 2026) -- Free/Plus orgs can still add/list documents
+    // (see the routes below), just not run them through Claude. Checked
+    // here rather than as route middleware so the friendlier 400/501
+    // validation above still fires first for a genuinely bad request.
+    const gateOrg = await getOrganization(org_id);
+    if (!gateOrg || !canUseFeature(gateOrg, 'ai_document_search')) {
+      return res.status(403).json({ error: 'AI-powered search and summary is available on the Organization Pro plan — upgrade to unlock it.' });
+    }
     const [queryEmbedding] = await voyageEmbed([query.trim()], 'query');
 
     const docsResult = await getDynamo().send(new QueryCommand({

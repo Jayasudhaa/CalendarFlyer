@@ -13,7 +13,8 @@
  * needs a bit more top padding on its first section — see the `md:pt-*`
  * bump alongside each page's base `pt-*` class.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import PremiumButton from '../PremiumButton';
 import BrandMark from './BrandMark';
@@ -27,6 +28,40 @@ export default function MarketingNav() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // "About" carries Features and Blog as a dropdown (Uber's own nav does the
+  // same thing with its "About" menu) -- click-to-open so it works on touch,
+  // closes on an outside click or on Escape.
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [aboutMenuPos, setAboutMenuPos] = useState(null);
+  const aboutRef = useRef(null);
+  const aboutMenuRef = useRef(null);
+
+  useEffect(() => {
+    if (!aboutOpen) return;
+    const rect = aboutRef.current?.getBoundingClientRect();
+    if (rect) setAboutMenuPos({ top: rect.bottom + 12, left: rect.left });
+
+    // The menu itself is portaled to document.body (see below) to escape
+    // page-level overflow-hidden ancestors, so it's no longer a DOM
+    // descendant of aboutRef -- contains() on aboutRef alone treats every
+    // click on a menu item as "outside" and closes the menu on mousedown,
+    // one tick before the item's own onClick (navigate) would have fired.
+    // Checking aboutMenuRef too was the missing half of that fix.
+    const handleOutside = (e) => {
+      if (
+        aboutRef.current && !aboutRef.current.contains(e.target) &&
+        aboutMenuRef.current && !aboutMenuRef.current.contains(e.target)
+      ) setAboutOpen(false);
+    };
+    const handleEscape = (e) => { if (e.key === 'Escape') setAboutOpen(false); };
+    document.addEventListener('mousedown', handleOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [aboutOpen]);
 
   return (
     <div className="fixed top-0 w-full z-50">
@@ -75,15 +110,62 @@ export default function MarketingNav() {
                 treatment as the wordmark; staggered animationDelay values
                 (inline style beats the class's shorthand, same trick as the
                 sparkle dots above) make the shimmer cascade left to right
-                instead of all six links flashing in lockstep. */}
-            <button onClick={() => navigate('/features')} className="cf-shine-text text-base font-bold hover:opacity-80 transition-opacity" style={{ animationDelay: '0s' }}>Features</button>
-            <button onClick={() => navigate('/pricing')} className="cf-shine-text text-base font-bold hover:opacity-80 transition-opacity" style={{ animationDelay: '0.3s' }}>Pricing</button>
-            <button onClick={() => navigate('/blog')} className="cf-shine-text text-base font-bold hover:opacity-80 transition-opacity" style={{ animationDelay: '0.6s' }}>Blog</button>
-            <button onClick={() => navigate('/about')} className="cf-shine-text text-base font-bold hover:opacity-80 transition-opacity" style={{ animationDelay: '0.9s' }}>About</button>
-            <button onClick={() => navigate('/contact')} className="cf-shine-text text-base font-bold hover:opacity-80 transition-opacity" style={{ animationDelay: '1.2s' }}>Contact</button>
-            <button onClick={() => navigate('/login')} className="cf-shine-text text-base font-bold hover:opacity-80 transition-opacity" style={{ animationDelay: '1.5s' }}>
-              Login
+                instead of all four links flashing in lockstep. (About's dropdown items aren't part of that cascade -- they only exist once opened.) */}
+            <button onClick={() => navigate('/explore')} className="cf-shine-text text-base font-bold hover:opacity-80 transition-opacity" style={{ animationDelay: '0s' }}>
+              Explore
             </button>
+            {/* Anchors to the homepage's "For organizations" section (see
+                PremiumLanding.jsx's scroll-to-hash effect) rather than its
+                own page -- that page doesn't exist yet, this is the lighter
+                first step of the role-based nav split. */}
+            <button onClick={() => navigate('/#for-organizations')} className="cf-shine-text text-base font-bold hover:opacity-80 transition-opacity" style={{ animationDelay: '0.3s' }}>For Organizations</button>
+            <div ref={aboutRef} className="relative">
+              <button
+                onClick={() => setAboutOpen((v) => !v)}
+                aria-expanded={aboutOpen}
+                className="cf-shine-text text-base font-bold hover:opacity-80 transition-opacity flex items-center gap-1.5"
+                style={{ animationDelay: '0.6s' }}
+              >
+                About
+                <span style={{ fontSize: '0.7em', transform: aboutOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>▾</span>
+              </button>
+              {aboutOpen && aboutMenuPos && createPortal(
+                <div
+                  ref={aboutMenuRef}
+                  className="rounded-xl border border-white/10 overflow-hidden"
+                  style={{
+                    position: 'fixed',
+                    top: aboutMenuPos.top,
+                    left: aboutMenuPos.left,
+                    background: 'rgba(10,10,10,0.98)',
+                    backdropFilter: 'blur(20px)',
+                    minWidth: 180,
+                    zIndex: 100,
+                  }}
+                >
+                  <button
+                    onClick={() => { setAboutOpen(false); navigate('/about'); }}
+                    className="w-full text-left px-5 py-3 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
+                  >
+                    About CalendarFly
+                  </button>
+                  <button
+                    onClick={() => { setAboutOpen(false); navigate('/features'); }}
+                    className="w-full text-left px-5 py-3 text-sm font-semibold text-white/80 hover:bg-white/10 transition-colors border-t border-white/10"
+                  >
+                    Features
+                  </button>
+                  <button
+                    onClick={() => { setAboutOpen(false); navigate('/blog'); }}
+                    className="w-full text-left px-5 py-3 text-sm font-semibold text-white/80 hover:bg-white/10 transition-colors border-t border-white/10"
+                  >
+                    Blog
+                  </button>
+                </div>,
+                document.body
+              )}
+            </div>
+            <button onClick={() => navigate('/contact')} className="cf-shine-text text-base font-bold hover:opacity-80 transition-opacity" style={{ animationDelay: '0.9s' }}>Contact</button>
             <PremiumButton onClick={() => navigate('/signup')} size="sm" variant="mono">
               Start Free Today
             </PremiumButton>

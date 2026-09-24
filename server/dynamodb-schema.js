@@ -77,13 +77,30 @@ const eventsTableParams = {
   ],
   AttributeDefinitions: [
     { AttributeName: 'event_id', AttributeType: 'S' },
-    { AttributeName: 'org_id', AttributeType: 'S' }
+    { AttributeName: 'org_id', AttributeType: 'S' },
+    // Both added for radar-index (Community Radar: one discoverable feed
+    // across every org, instead of a separate submission pipeline -- see
+    // server/routes/radar.js). discoverability partitions the index down to
+    // just the events actually opted in ('radar'), date sorts that partition
+    // so a query can ask for "everything from today forward" directly,
+    // without pulling every radar-eligible event ever created.
+    { AttributeName: 'discoverability', AttributeType: 'S' },
+    { AttributeName: 'date', AttributeType: 'S' }
   ],
   GlobalSecondaryIndexes: [
     {
       IndexName: 'org-index',
       KeySchema: [
         { AttributeName: 'org_id', KeyType: 'HASH' }
+      ],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    },
+    {
+      IndexName: 'radar-index',
+      KeySchema: [
+        { AttributeName: 'discoverability', KeyType: 'HASH' },
+        { AttributeName: 'date', KeyType: 'RANGE' }
       ],
       Projection: { ProjectionType: 'ALL' },
       ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
@@ -188,7 +205,8 @@ const communityMembersTableParams = {
   AttributeDefinitions: [
     { AttributeName: 'member_id', AttributeType: 'S' },
     { AttributeName: 'org_id', AttributeType: 'S' },
-    { AttributeName: 'phone', AttributeType: 'S' }
+    { AttributeName: 'phone', AttributeType: 'S' },
+    { AttributeName: 'email', AttributeType: 'S' }
   ],
   GlobalSecondaryIndexes: [
     {
@@ -196,6 +214,68 @@ const communityMembersTableParams = {
       KeySchema: [
         { AttributeName: 'org_id', KeyType: 'HASH' },
         { AttributeName: 'phone', KeyType: 'RANGE' }
+      ],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    },
+    {
+      // Devotee verification switched from phone/SMS to email (see
+      // community-auth.js) -- org-phone-index is kept as-is above so any
+      // already-verified phone-based member rows stay queryable, but every
+      // new verification goes through this index instead.
+      IndexName: 'org-email-index',
+      KeySchema: [
+        { AttributeName: 'org_id', KeyType: 'HASH' },
+        { AttributeName: 'email', KeyType: 'RANGE' }
+      ],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    },
+    {
+      // Hash-only (no range) -- lets identity-auth.js's
+      // listFollowedOrgsForEmail(email) find every org-scoped member row
+      // for one email across ALL orgs in one Query, instead of the scan
+      // that would otherwise take. This is the reverse lookup direction
+      // from org-email-index above (which answers "does THIS org know
+      // this email"); this one answers "which orgs does this email know".
+      IndexName: 'email-index',
+      KeySchema: [
+        { AttributeName: 'email', KeyType: 'HASH' }
+      ],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    }
+  ],
+  ProvisionedThroughput: {
+    ReadCapacityUnits: 5,
+    WriteCapacityUnits: 5
+  }
+};
+
+// Identities Table — the cross-org "Community Passport" identity (server/
+// identity-auth.js), deliberately separate from calendarfly_community_members
+// (which stays a per-org row: one member_id per (org, email), used for
+// following/RSVP-adjacent features scoped to a single org's page). One
+// identity per email, globally -- holds the stuff that's inherently
+// cross-org: display name shown on the Radar passport, and interests used
+// to personalize its feed. "Which orgs does this identity follow" is NOT
+// duplicated here -- it's derived on read via community_members'
+// email-index above, so a follow made from an org's own page and a follow
+// made from the Radar passport are the exact same underlying row.
+const identitiesTableParams = {
+  TableName: 'calendarfly_identities',
+  KeySchema: [
+    { AttributeName: 'identity_id', KeyType: 'HASH' }
+  ],
+  AttributeDefinitions: [
+    { AttributeName: 'identity_id', AttributeType: 'S' },
+    { AttributeName: 'email', AttributeType: 'S' }
+  ],
+  GlobalSecondaryIndexes: [
+    {
+      IndexName: 'email-index',
+      KeySchema: [
+        { AttributeName: 'email', KeyType: 'HASH' }
       ],
       Projection: { ProjectionType: 'ALL' },
       ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
@@ -535,6 +615,38 @@ const photoAlbumsTableParams = {
   }
 };
 
+// Instagram Candidates — server/routes/instagramEvents.js. The review
+// queue for event candidates pulled from Instagram (a connected org's own
+// recent posts, or a one-off pasted public post link) -- see utils/
+// instagramCandidates.js. Queried the same "one item type, filter by org"
+// shape as calendarfly_documents above.
+const instagramCandidatesTableParams = {
+  TableName: 'calendarfly_instagram_candidates',
+  KeySchema: [
+    { AttributeName: 'candidate_id', KeyType: 'HASH' }
+  ],
+  AttributeDefinitions: [
+    { AttributeName: 'candidate_id', AttributeType: 'S' },
+    { AttributeName: 'org_id', AttributeType: 'S' },
+    { AttributeName: 'created_at', AttributeType: 'N' }
+  ],
+  GlobalSecondaryIndexes: [
+    {
+      IndexName: 'org-index',
+      KeySchema: [
+        { AttributeName: 'org_id', KeyType: 'HASH' },
+        { AttributeName: 'created_at', KeyType: 'RANGE' }
+      ],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    }
+  ],
+  ProvisionedThroughput: {
+    ReadCapacityUnits: 5,
+    WriteCapacityUnits: 5
+  }
+};
+
 // Creates one table, tolerating "already exists" so this script is safe to
 // re-run — important now that a new table (reservations) can be added after
 // the others were already provisioned; a single try/catch around the whole
@@ -564,6 +676,7 @@ async function createTables() {
     await createTableIfMissing('Reservations', reservationsTableParams);
     await createTableIfMissing('Broadcasts', broadcastsTableParams);
     await createTableIfMissing('Community Members', communityMembersTableParams);
+    await createTableIfMissing('Identities', identitiesTableParams);
     await createTableIfMissing('OTP Codes', otpCodesTableParams);
     await createTableIfMissing('Event Photos', eventPhotosTableParams);
     await createTableIfMissing('Sign-Up Sheets', signupSheetsTableParams);
@@ -572,6 +685,7 @@ async function createTables() {
     await createTableIfMissing('Documents', documentsTableParams);
     await createTableIfMissing('Livestreams', livestreamsTableParams);
     await createTableIfMissing('Photo Albums', photoAlbumsTableParams);
+    await createTableIfMissing('Instagram Candidates', instagramCandidatesTableParams);
 
     console.log('\nWaiting for tables to be active...');
 
@@ -582,6 +696,7 @@ async function createTables() {
     await waitForTable('calendarfly_reservations');
     await waitForTable('calendarfly_broadcasts');
     await waitForTable('calendarfly_community_members');
+    await waitForTable('calendarfly_identities');
     await waitForTable('calendarfly_otp_codes');
     await waitForTable('calendarfly_event_photos');
     await waitForTable('calendarfly_signup_sheets');
@@ -590,6 +705,7 @@ async function createTables() {
     await waitForTable('calendarfly_documents');
     await waitForTable('calendarfly_livestreams');
     await waitForTable('calendarfly_photo_albums');
+    await waitForTable('calendarfly_instagram_candidates');
 
     console.log('✓ All tables are now active!');
   } catch (error) {

@@ -1,18 +1,20 @@
 /**
- * server/community-auth.js — phone-verified "Community Member" identity for
+ * server/community-auth.js — email-verified "Community Member" identity for
  * devotees (as opposed to calendarfly_users, which is temple staff/admin
  * accounts — see utils/communityJwtSecret.js for why these are kept
  * structurally separate, right down to the signing secret).
  *
- * No password, ever — just a phone number and a 6-digit SMS code, valid for
+ * No password, ever — just an email address and a 6-digit code, valid for
  * 90 days once verified. Built for the live event photo album (routes/
  * photos.js) but deliberately not coupled to photos specifically, so it's
  * there if community RSVPs/features want real identity later.
  *
- * Requires @aws-sdk/client-sns (not yet a dependency — this sandbox can't
- * reach npm's registry or AWS to install/test it, so it's added to
- * package.json for the person running this to `npm install`, same as the
- * DynamoDB table creation).
+ * Switched from phone/SMS to email per product decision -- org-phone-index
+ * and any already-verified phone rows are left in place (harmless, just
+ * unused going forward) rather than migrated/deleted, so nothing existing
+ * breaks. New verifications go through org-email-index (see
+ * migrate-add-community-email-index.js) and server/utils/mailer.js (the
+ * same SES wrapper routes/auth.js already uses for signup email), not SNS.
  */
 
 const crypto = require('crypto');
@@ -32,58 +34,55 @@ const OTP_EXPIRY_MS = 5 * 60 * 1000;
 const OTP_MAX_ATTEMPTS = 5;
 const COMMUNITY_TOKEN_EXPIRY = '90d';
 
-function otpKey(org_id, phone) {
-  return `${org_id}#${phone}`;
+function otpKey(org_id, email) {
+  return `${org_id}#${email}`;
 }
 
 function hashCode(code) {
   return crypto.createHash('sha256').update(code).digest('hex');
 }
 
-// Accepts "+15551234567" as-is; a bare 10-digit US number gets "+1"
-// prepended (the common case for a devotee typing digits with no country
-// code); anything else that doesn't already look like E.164 is rejected
-// rather than guessed at, since SNS charges per send and a malformed
-// number is a wasted one.
-function normalizePhone(raw) {
-  const trimmed = (raw || '').replace(/[\s()-]/g, '');
-  if (/^\+[1-9]\d{7,14}$/.test(trimmed)) return trimmed;
-  if (/^\d{10}$/.test(trimmed)) return `+1${trimmed}`;
+// Lowercased + trimmed so "Person@Example.com " and "person@example.com"
+// resolve to the same member row. Deliberately simple validation (not a
+// full RFC 5322 parser) -- same reasoning as the old normalizePhone: good
+// enough to catch a typo, an SES send failure catches anything this misses.
+function normalizeEmail(raw) {
+  const trimmed = (raw || '').trim().toLowerCase();
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return trimmed;
   return null;
 }
 
 /**
- * Generates and SMS's a 6-digit code for (org, phone), overwriting any
- * still-pending code for that same phone. Throws on an invalid phone or an
- * SNS failure — the route layer turns that into a clean 400/500.
+ * Generates and emails a 6-digit code for (org, email), overwriting any
+ * still-pending code for that same email. Throws on an invalid email or an
+ * SES failure — the route layer turns that into a clean 400/500.
  */
-async function sendOtp(org, rawPhone) {
-  const phone = normalizePhone(rawPhone);
-  if (!phone) throw new Error('Enter a valid phone number, e.g. +1 555 123 4567.');
+async function sendOtp(org, rawEmail) {
+  const email = normalizeEmail(rawEmail);
+  if (!email) throw new Error('Enter a valid email address.');
 
   const code = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
 
   await dynamodb.send(new PutCommand({
     TableName: OTP_TABLE,
     Item: {
-      otp_key: otpKey(org.org_id, phone),
+      otp_key: otpKey(org.org_id, email),
       code_hash: hashCode(code),
       expires_at: Date.now() + OTP_EXPIRY_MS,
       attempts: 0,
     },
   }));
 
-  const { SNSClient, PublishCommand } = require('@aws-sdk/client-sns');
-  const sns = new SNSClient({ region: process.env.AWS_REGION || 'us-east-2' });
-  await sns.send(new PublishCommand({
-    PhoneNumber: phone,
-    Message: `${code} is your ${org.name || 'CalendarFly'} verification code. It expires in 5 minutes.`,
-    MessageAttributes: {
-      'AWS.SNS.SMS.SMSType': { DataType: 'String', StringValue: 'Transactional' },
-    },
-  }));
+  const { sendEmail } = require('./utils/mailer');
+  const orgName = org.name || 'CalendarFly';
+  await sendEmail({
+    to: email,
+    subject: `${code} is your ${orgName} verification code`,
+    text: `${code} is your ${orgName} verification code. It expires in 5 minutes. If you didn't request this, you can ignore this email.`,
+    html: `<p><strong>${code}</strong> is your ${orgName} verification code.</p><p>It expires in 5 minutes. If you didn't request this, you can ignore this email.</p>`,
+  });
 
-  return { phone };
+  return { email };
 }
 
 /**
@@ -93,15 +92,15 @@ async function sendOtp(org, rawPhone) {
  * Throws with a message safe to show the person directly (wrong/expired
  * code, too many attempts).
  */
-async function verifyOtp(org_id, rawPhone, submittedCode) {
-  const phone = normalizePhone(rawPhone);
-  if (!phone) throw new Error('Enter a valid phone number, e.g. +1 555 123 4567.');
+async function verifyOtp(org_id, rawEmail, submittedCode) {
+  const email = normalizeEmail(rawEmail);
+  if (!email) throw new Error('Enter a valid email address.');
 
-  const key = otpKey(org_id, phone);
+  const key = otpKey(org_id, email);
   const result = await dynamodb.send(new GetCommand({ TableName: OTP_TABLE, Key: { otp_key: key } }));
   const pending = result.Item;
 
-  if (!pending) throw new Error('Request a new code — none is pending for this number.');
+  if (!pending) throw new Error('Request a new code — none is pending for this email.');
   if (pending.expires_at < Date.now()) {
     await dynamodb.send(new DeleteCommand({ TableName: OTP_TABLE, Key: { otp_key: key } }));
     throw new Error('That code expired — request a new one.');
@@ -116,15 +115,15 @@ async function verifyOtp(org_id, rawPhone, submittedCode) {
   }
 
   await dynamodb.send(new DeleteCommand({ TableName: OTP_TABLE, Key: { otp_key: key } }));
-  return getOrCreateMember(org_id, phone);
+  return getOrCreateMember(org_id, email);
 }
 
-async function getOrCreateMember(org_id, phone) {
+async function getOrCreateMember(org_id, email) {
   const existing = await dynamodb.send(new QueryCommand({
     TableName: MEMBERS_TABLE,
-    IndexName: 'org-phone-index',
-    KeyConditionExpression: 'org_id = :org_id AND phone = :phone',
-    ExpressionAttributeValues: { ':org_id': org_id, ':phone': phone },
+    IndexName: 'org-email-index',
+    KeyConditionExpression: 'org_id = :org_id AND email = :email',
+    ExpressionAttributeValues: { ':org_id': org_id, ':email': email },
     Limit: 1,
   }));
   if (existing.Items && existing.Items.length) return existing.Items[0];
@@ -132,7 +131,7 @@ async function getOrCreateMember(org_id, phone) {
   const member = {
     member_id: `cm-${uuidv4()}`,
     org_id,
-    phone,
+    email,
     display_name: null,
     verified_at: Date.now(),
     created_at: Date.now(),
@@ -214,7 +213,7 @@ async function countFollowersForOrg(org_id) {
 
 function issueCommunityToken(member) {
   return jwt.sign(
-    { member_id: member.member_id, org_id: member.org_id, phone: member.phone, role: 'community' },
+    { member_id: member.member_id, org_id: member.org_id, email: member.email, role: 'community' },
     COMMUNITY_JWT_SECRET,
     { expiresIn: COMMUNITY_TOKEN_EXPIRY }
   );
@@ -224,11 +223,11 @@ function issueCommunityToken(member) {
 function authenticateCommunityToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Verify your phone number first.' });
+  if (!token) return res.status(401).json({ error: 'Verify your email first.' });
 
   jwt.verify(token, COMMUNITY_JWT_SECRET, (err, decoded) => {
     if (err || decoded.role !== 'community') {
-      return res.status(403).json({ error: 'Your session expired — verify your phone number again.' });
+      return res.status(403).json({ error: 'Your session expired — verify your email again.' });
     }
     req.communityUser = decoded;
     next();
@@ -259,6 +258,7 @@ function optionalCommunityAuth(req, res, next) {
 module.exports = {
   sendOtp,
   verifyOtp,
+  getOrCreateMember,
   getMember,
   updateMemberDisplayName,
   followOrg,
@@ -268,5 +268,5 @@ module.exports = {
   countFollowersForOrg,
   issueCommunityToken,
   authenticateCommunityToken,
-  normalizePhone,
+  normalizeEmail,
 };

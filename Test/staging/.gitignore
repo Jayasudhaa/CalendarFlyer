@@ -1,0 +1,4 @@
+private/
+build/
+state.json
+*.log

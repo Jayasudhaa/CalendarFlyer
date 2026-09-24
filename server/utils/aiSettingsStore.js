@@ -18,7 +18,12 @@ const { DEFAULT_AI_SETTINGS } = require('../config/aiImageDefaults');
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const SETTINGS_FILE = path.join(DATA_DIR, 'ai-image-settings.json');
 
-const KNOWN_CATEGORIES = ['temple', 'community'];
+// dance_school/music_school/yoga_school/restaurant/grocery get their own
+// prompt config (distinct visual needs from a generic community flyer);
+// every other org type (regional/language associations, mela/fair
+// organizer, nonprofit, plain community org, other) shares 'community'
+// -- see resolveCategory() in routes/generate-image.js.
+const KNOWN_CATEGORIES = ['temple', 'community', 'dance_school', 'music_school', 'yoga_school', 'restaurant', 'grocery'];
 
 function mergeWithDefaults(saved) {
   saved = saved && typeof saved === 'object' ? saved : {};

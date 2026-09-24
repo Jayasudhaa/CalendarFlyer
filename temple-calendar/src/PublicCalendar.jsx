@@ -12,8 +12,11 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Heart } from 'lucide-react';
 import { useTempleConfig } from './hooks/useTempleConfig';
 import { getRsvpUrl, getPhotoAlbumUrl } from './utils/rsvpUrl';
+import PublicPageBackdrop from './components/PublicPageBackdrop';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 // These are now fallback defaults only — actual values come from the org's
@@ -46,6 +49,20 @@ const TYPE_META = {
 };
 
 function typeOf(t = '') { return TYPE_META[(t || '').toLowerCase()] || TYPE_META.default; }
+
+// Local-only "saved events" -- same cf_saved_events localStorage key
+// PublicRadarPage.jsx's Explore feed already uses, so an event saved from
+// either page shows up saved on the other (both pages key events by the
+// same event_id, and share this browser's localStorage). No account or
+// server sync either way -- this is the same fail-open, nothing-to-break
+// pattern as Explore's heart toggle, not a new mechanism.
+const SAVED_EVENTS_KEY = 'cf_saved_events';
+function getSavedEventIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(SAVED_EVENTS_KEY) || '[]')); } catch { return new Set(); }
+}
+function persistSavedEventIds(set) {
+  try { localStorage.setItem(SAVED_EVENTS_KEY, JSON.stringify([...set])); } catch { /* private browsing etc */ }
+}
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS   = ['January','February','March','April','May','June',
@@ -219,8 +236,20 @@ function IndicatorBadge({ color, text }) {
 }
 
 function EventDetailModal({ ev, onClose, config = {}, media }) {
+  // Hooks run unconditionally (before the `if (!ev)` bailout below) so this
+  // stays a valid hook call even though ev is only ever null for a single
+  // render right as the modal is closing.
+  const [saved, setSaved] = useState(() => !!ev && getSavedEventIds().has(ev.event_id));
   if (!ev) return null;
   const m = typeOf(ev.type);
+  const toggleSaved = () => {
+    const key = ev.event_id;
+    if (!key) return; // nothing stable to key on -- e.g. a panchang-only entry
+    const ids = getSavedEventIds();
+    if (ids.has(key)) ids.delete(key); else ids.add(key);
+    persistSavedEventIds(ids);
+    setSaved(ids.has(key));
+  };
   return (
     <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.8)', zIndex:9999,
       display:'flex', alignItems:'center', justifyContent:'center', padding:16, backdropFilter:'blur(4px)' }}>
@@ -236,7 +265,16 @@ function EventDetailModal({ ev, onClose, config = {}, media }) {
               <div style={{ fontSize:10, fontWeight:800, color:m.color, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:6 }}>{m.label}</div>
               <h2 style={{ color:'#3d2008', fontWeight:800, fontSize:'1.15rem', margin:0, lineHeight:1.3 }}>{ev.title}</h2>
             </div>
-            <button onClick={onClose} style={{ background:'rgba(0,0,0,0.06)', border:'none', color:'#92400e', width:32, height:32, borderRadius:'50%', cursor:'pointer', fontSize:18, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginLeft:12 }}>×</button>
+            <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0, marginLeft:12 }}>
+              <button
+                onClick={toggleSaved}
+                aria-label={saved ? 'Unsave event' : 'Save event'}
+                style={{ background:'rgba(0,0,0,0.06)', border:'none', width:32, height:32, borderRadius:'50%', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}
+              >
+                <Heart size={15} color={saved ? '#dc2626' : '#92400e'} fill={saved ? '#dc2626' : 'none'} />
+              </button>
+              <button onClick={onClose} style={{ background:'rgba(0,0,0,0.06)', border:'none', color:'#92400e', width:32, height:32, borderRadius:'50%', cursor:'pointer', fontSize:18, display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+            </div>
           </div>
         </div>
         <div style={{ padding:'20px 24px' }}>
@@ -391,6 +429,10 @@ function NewsFeedPanel({ announcements, loading }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 const HERO_ICON_BY_CATEGORY = { temple: '🕉️', nonprofit: '💛', community: '🏘️', other: '📅' };
+// Small text label shown under the org name in the hero -- category only
+// used to pick the icon above (no visible text), per user request to
+// surface it.
+const HERO_CATEGORY_LABEL = { temple: 'Temple', nonprofit: 'Nonprofit', community: 'Community Org', other: 'Organization' };
 
 // Same convention as useEvents/useTempleConfig — respects a ?org= override
 // for local testing, since Vite's dev proxy doesn't carry real subdomain
@@ -482,18 +524,18 @@ function FollowButton() {
         disabled={busy}
         style={{
           padding: '10px 22px', borderRadius: 30,
-          border: following ? '2px solid #ffffff' : '2px solid rgba(255,255,255,0.7)',
-          background: following ? 'rgba(255,255,255,0.95)' : 'transparent',
-          color: following ? '#8a2c08' : '#ffffff',
+          border: following ? '2px solid #78350f' : '2px solid #b45309',
+          background: following ? 'linear-gradient(135deg,#b45309,#78350f)' : 'transparent',
+          color: following ? '#fff' : '#92400e',
           fontWeight: 800, fontSize: '0.88rem', cursor: busy ? 'default' : 'pointer',
           display: 'inline-flex', alignItems: 'center', gap: 7,
-          boxShadow: '0 4px 14px rgba(0,0,0,0.18)', marginTop: 4,
+          fontFamily: "'DM Sans', sans-serif",
         }}
       >
         {following ? '✓ Following' : '🔔 Follow'}
       </button>
       {following && (
-        <div style={{ marginTop: 10, fontSize: '0.76rem', color: 'rgba(255,255,255,0.85)', maxWidth: 320, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.5 }}>
+        <div style={{ width:'100%', marginTop: 8, fontSize: '0.76rem', color: '#92400e', maxWidth: 320, marginLeft: 'auto', marginRight: 'auto', textAlign:'center', lineHeight: 1.5 }}>
           You'll get one weekly update -- plus early access to sign-ups before they open to everyone.
         </div>
       )}
@@ -508,9 +550,9 @@ function FollowButton() {
 }
 
 function FollowVerifyModal({ onVerified, onClose }) {
-  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
-  const [step, setStep] = useState('phone');
+  const [step, setStep] = useState('email');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -527,10 +569,10 @@ function FollowVerifyModal({ onVerified, onClose }) {
   });
 
   const requestCode = async () => {
-    if (!phone.trim()) return setError('Enter your phone number.');
+    if (!email.trim()) return setError('Enter your email address.');
     setError(''); setBusy(true);
     try {
-      await communityFetch('/api/community/request-code', { method: 'POST', body: JSON.stringify({ phone: phone.trim() }) });
+      await communityFetch('/api/community/request-code', { method: 'POST', body: JSON.stringify({ email: email.trim() }) });
       setStep('code');
     } catch (err) {
       setError(err.message);
@@ -540,10 +582,10 @@ function FollowVerifyModal({ onVerified, onClose }) {
   };
 
   const verifyCode = async () => {
-    if (!code.trim()) return setError('Enter the code we texted you.');
+    if (!code.trim()) return setError('Enter the code we emailed you.');
     setError(''); setBusy(true);
     try {
-      const data = await communityFetch('/api/community/verify-code', { method: 'POST', body: JSON.stringify({ phone: phone.trim(), code: code.trim() }) });
+      const data = await communityFetch('/api/community/verify-code', { method: 'POST', body: JSON.stringify({ email: email.trim(), code: code.trim() }) });
       onVerified(data.token);
     } catch (err) {
       setError(err.message);
@@ -556,19 +598,19 @@ function FollowVerifyModal({ onVerified, onClose }) {
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }} onClick={onClose}>
       <div style={{ background: '#fffdf7', borderRadius: 16, border: '1px solid #e8d5b7', padding: 28, maxWidth: 380, width: '100%', textAlign: 'left' }} onClick={(e) => e.stopPropagation()}>
         <div style={{ color: '#92400e', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: 20 }}>
-          To follow, verify your phone number -- this keeps updates going to people who are actually part of this community.
+          To follow, verify your email address -- this keeps updates going to people who are actually part of this community.
         </div>
-        {step === 'phone' ? (
+        {step === 'email' ? (
           <>
-            <label style={{ color: '#92400e', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Phone Number</label>
-            <input type="tel" placeholder="+1 (719) 555-0000" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ ...input, marginBottom: 16 }} />
+            <label style={{ color: '#92400e', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Email address</label>
+            <input type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} style={{ ...input, marginBottom: 16 }} />
             {error && <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, color: '#dc2626', fontSize: '0.85rem' }}>{error}</div>}
-            <button onClick={requestCode} disabled={busy} style={button(busy)}>{busy ? 'Sending...' : 'Text me a code'}</button>
+            <button onClick={requestCode} disabled={busy} style={button(busy)}>{busy ? 'Sending...' : 'Email me a code'}</button>
             <button onClick={onClose} style={{ width: '100%', marginTop: 10, background: 'none', border: 'none', color: '#9a7a55', fontSize: '0.8rem', cursor: 'pointer', padding: 6 }}>Cancel</button>
           </>
         ) : (
           <>
-            <label style={{ color: '#92400e', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>6-digit code sent to {phone}</label>
+            <label style={{ color: '#92400e', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>6-digit code sent to {email}</label>
             <input type="text" inputMode="numeric" placeholder="123456" value={code} onChange={(e) => setCode(e.target.value)} style={{ ...input, marginBottom: 12, letterSpacing: '0.3em', textAlign: 'center', fontSize: '1.2rem' }} />
             {error && <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, color: '#dc2626', fontSize: '0.85rem' }}>{error}</div>}
             <button onClick={verifyCode} disabled={busy} style={button(busy)}>{busy ? 'Verifying...' : 'Verify & follow'}</button>
@@ -580,33 +622,64 @@ function FollowVerifyModal({ onVerified, onClose }) {
   );
 }
 
+// ── Merged-page section styles (Events / Announcements / Glimpses / Photos) ──
+const sectionHeading = { fontFamily: "'Playfair Display', Georgia, serif", fontSize: '1.25rem', fontWeight: 800, color: '#3d2008', margin: 0 };
+const sectionCount = { fontSize: '0.82rem', color: '#92400e' };
+const sectionEmpty = {
+  background: 'linear-gradient(135deg,#fffdf7,#fff8ee)', border: '1px solid #d4af37', borderRadius: 14,
+  padding: '28px 16px', textAlign: 'center', color: '#92400e', fontSize: '0.92rem',
+  boxShadow: '0 4px 20px rgba(180,120,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+};
+const eventRow = {
+  display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '12px 14px',
+  background: 'linear-gradient(135deg,#fffdf7,#fff8ee)', border: '1px solid #e8d5a3', borderRadius: 12,
+  boxShadow: '0 2px 10px rgba(180,120,0,0.06)',
+};
+const adminLoginLinkStyle = {
+  padding: '10px 20px', borderRadius: 30, border: '2px solid #e8d5a3',
+  background: 'transparent', color: '#92400e', fontWeight: 800, fontSize: '0.88rem',
+  textDecoration: 'none', display: 'inline-flex', alignItems: 'center',
+  fontFamily: "'DM Sans', sans-serif",
+};
+const rsvpBtn = {
+  padding: '7px 12px', background: 'linear-gradient(135deg,#065f46,#047857)', border: 'none', borderRadius: 7,
+  color: '#6ee7b7', fontWeight: 700, fontSize: '0.78rem', textAlign: 'center', textDecoration: 'none',
+  fontFamily: "'DM Sans', sans-serif", whiteSpace: 'nowrap',
+};
+const gcalBtn = {
+  padding: '7px 12px', background: 'linear-gradient(135deg,#1a3a6a,#1e4080)', border: 'none', borderRadius: 7,
+  color: '#93c5fd', fontWeight: 700, fontSize: '0.78rem', textAlign: 'center', textDecoration: 'none',
+  fontFamily: "'DM Sans', sans-serif", whiteSpace: 'nowrap',
+};
+const mediaCard = {
+  background: '#fff', border: '1px solid #e8d5a3', borderRadius: 14, padding: 10,
+  boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+};
+const albumCard = {
+  display: 'block', textDecoration: 'none', background: '#fff', border: '1px solid #e8d5a3', borderRadius: 14,
+  overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+};
+const albumCover = {
+  aspectRatio: '4/3', background: '#fff8ee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem',
+};
+
 function PublicCalendar() {
+  const location = useLocation();
   const { config: templeConfig } = useTempleConfig();
   const heroIcon = HERO_ICON_BY_CATEGORY[templeConfig.category] || HERO_ICON_BY_CATEGORY.other;
   const [events,        setEvents]        = useState([]);
   const [announcements, setAnnouncements] = useState([]);
+  const [glimpses,       setGlimpses]       = useState([]);
+  const [albums,         setAlbums]         = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [loadingNews,   setLoadingNews]   = useState(true);
-  const [currentDate,   setCurrentDate]   = useState(new Date());
+  const [loadingGlimpses, setLoadingGlimpses] = useState(true);
+  const [loadingAlbums,  setLoadingAlbums]    = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  // Replaces the old per-category filter pills (Pooja/Festival/Holiday/
-  // Kalyanam/Abhishekam) with the same Monthly Events / Monthly Panchang
-  // tab switcher the admin dashboard uses (CalendarGrid.jsx's ViewTabs) —
-  // see the comment further down at showPanchangTab for why.
-  const [viewMode, setViewMode] = useState('events'); // 'events' | 'panchang'
-  const [isMobile,      setIsMobile]      = useState(window.innerWidth < 900);
-
-  useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < 900);
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
+  const [showAllEvents, setShowAllEvents] = useState(false);
 
   // Fetch events — same org resolution as the admin dashboard (useEvents),
   // so this page always reflects whatever was just added/edited there.
-  // Panchang entries come back in this same list (type: 'panchang'); there's
-  // no separate panchang endpoint, so we derive it from `events` below
-  // instead of a second fetch.
   useEffect(() => {
     fetch('/api/events' + orgQueryParam())
       .then(r => {
@@ -627,11 +700,34 @@ function PublicCalendar() {
       .finally(() => setLoadingNews(false));
   }, []);
 
-  // Fetch each event's Live/Photos state (🔴 live now / 📺 livestream
-  // available / 📷 N photos badges on the calendar, plus the modal's Live
-  // and Photos sections) -- one batch call for the whole loaded month
-  // list rather than one request per event card. Re-runs whenever the
-  // event list itself changes (new month loaded, admin adds an event).
+  // Fetch glimpses — this section used to be its own route (/live,
+  // PublicLive.jsx). Same endpoint, same communityFetch helper this file
+  // already uses for Follow, just rendered as a section here (see
+  // PublicNav.jsx's header comment on the merge).
+  useEffect(() => {
+    let cancelled = false;
+    communityFetch('/api/public-media/glimpses-recent', { token: getCommunityToken() })
+      .then((d) => { if (!cancelled) setGlimpses(d.recent || []); })
+      .catch(() => { if (!cancelled) setGlimpses([]); })
+      .finally(() => { if (!cancelled) setLoadingGlimpses(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Fetch photo albums — this section used to be its own route (/photos,
+  // PublicPhotosPage.jsx). Same endpoint, same reasoning as glimpses above.
+  useEffect(() => {
+    let cancelled = false;
+    communityFetch('/api/public-media/albums', { token: getCommunityToken() })
+      .then((d) => { if (!cancelled) setAlbums(d.albums || []); })
+      .catch(() => { if (!cancelled) setAlbums([]); })
+      .finally(() => { if (!cancelled) setLoadingAlbums(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Fetch each event's Live/Photos state (🎬 glimpse / 📷 N photos badges,
+  // plus the detail modal's glimpse video and indicator badges) -- one
+  // batch call for the whole loaded event list rather than one request per
+  // event card.
   const [mediaByEvent, setMediaByEvent] = useState({});
   useEffect(() => {
     const eventIds = events.filter(e => e.type !== 'panchang' && e.event_id).map(e => e.event_id);
@@ -649,92 +745,42 @@ function PublicCalendar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [events.map(e => e.event_id).join(',')]);
 
-  const year  = currentDate.getFullYear();
-  const month = currentDate.getMonth();
+  // Jump to whichever section the URL names in its hash (a PublicNav tab,
+  // or an old /announcements, /live or /photos link that App.jsx's
+  // RedirectToSection forwarded here with one). Depends on location.hash
+  // so it re-fires on every nav click, not just on first mount, and on
+  // loadingEvents so it still finds the section once real content (not
+  // just the loading placeholder) has replaced it.
+  useEffect(() => {
+    const id = (location.hash || '').replace('#', '');
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [location.hash, loadingEvents]);
 
-  // Build calendar grid
-  const getDays = useCallback(() => {
-    const firstDay = new Date(year, month, 1).getDay();
-    const lastDay  = new Date(year, month + 1, 0).getDate();
-    const prevLast = new Date(year, month, 0).getDate();
-    const days = [];
-    for (let i = firstDay - 1; i >= 0; i--) days.push({ day: prevLast - i, current: false });
-    for (let d = 1; d <= lastDay; d++)       days.push({ day: d,           current: true  });
-    while (days.length < 42)                 days.push({ day: days.length - firstDay - lastDay + 1, current: false });
-    return days;
-  }, [year, month]);
+  const todayIso = new Date().toISOString().slice(0, 10);
+  // Two-week window, not "every event forever" -- a flat list has no month
+  // boundary to naturally stop at, so without a cap it would just keep
+  // growing as admins add events further out. 14 days matches what
+  // someone glancing at "what's coming up" actually wants to see. The
+  // "Full calendar" link (below) lifts this cap on demand rather than
+  // linking out to a separate page -- there's only the one merged page now.
+  const twoWeeksIso = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-  const getEventsForDay = useCallback((day, current) => {
-    if (!day || !current) return [];
-    const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    return events.filter(e => e.date === ds);
-  }, [events, year, month]);
-  const allEvents = events;
-
-  const monthEvents = allEvents.filter(e => {
-    if (!e.date) return false;
-    const [ey, em] = e.date.split('-').map(Number);
-    return ey === year && em === month + 1;
-  });
-
-  const filteredMonthEvents = viewMode === 'panchang'
-    ? monthEvents.filter(e => e.type === 'panchang')
-    : monthEvents.filter(e => e.type !== 'panchang');
-  const monthCountLabel = viewMode === 'panchang'
-    ? `${filteredMonthEvents.length} panchang ${filteredMonthEvents.length === 1 ? 'entry' : 'entries'} this month`
-    : `${filteredMonthEvents.length} event${filteredMonthEvents.length !== 1 ? 's' : ''} this month`;
-
-  const today    = new Date();
-  const isToday  = (day, current) => current && day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-
-  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
-
-  // Panchang (Hindu lunar calendar data) only makes sense for temple orgs —
-  // same org-category gate CalendarGrid.jsx's admin view already uses for
-  // its own Panchang tab (`orgCategory === 'temple'`). Non-temple orgs
-  // (nonprofit/community/other) just get the single Monthly Events tab,
-  // same as the admin dashboard.
-  const showPanchangTab = templeConfig.category === 'temple';
-
-  const days = getDays();
-
-  // ── Agenda view for mobile ────────────────────────────────────────────────
-  function AgendaView() {
-    const agendaDays = [];
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const showEvents = viewMode === 'events';
-    for (let d = 1; d <= daysInMonth; d++) {
-      const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const dayEvs = showEvents ? events.filter(e => e.date === ds && e.type !== 'panchang') : [];
-      const panchangRaw = events.find(e => e.date === ds && e.type === 'panchang');
-      const panchang = showEvents ? null : panchangRaw;
-      // Panchang tab: skip days with no panchang data (reference-only view,
-      // same as the admin dashboard's AgendaView). Events tab: skip empty
-      // days, same behavior as before.
-      if (showEvents ? !dayEvs.length : !panchang) continue;
-      const dt = new Date(ds + 'T12:00:00');
-      const isTod = dt.toDateString() === today.toDateString();
-      agendaDays.push(
-        <div key={d} style={{ display:'flex', gap:10, padding:'10px 12px', background: isTod ? 'linear-gradient(145deg,#fffde8,#fff9cc,#fffbe6)' : 'linear-gradient(145deg,#ffffff,#fffdf8)', border:`1px solid ${isTod ? '#c9943a':'#e8d5a3'}`, borderRadius:8, marginBottom:6 }}>
-          <div style={{ textAlign:'center', flexShrink:0, width:38 }}>
-            <div style={{ fontSize:21, fontWeight:800, color:'#000', lineHeight:1, fontFamily: "'Playfair Display', Georgia, serif" }}>{d}</div>
-            <div style={{ fontSize:10, color:'#000', textTransform:'uppercase' }}>{dt.toLocaleDateString('en-US',{weekday:'short'})}</div>
-          </div>
-          <div style={{ flex:1, minWidth:0 }}>
-            {panchang && <PanchangBadge ev={panchang} />}
-            {dayEvs.map(ev => <EventPill key={ev.id||ev.title} ev={ev} onClick={setSelectedEvent} />)}
-          </div>
-        </div>
-      );
-    }
-    return agendaDays.length > 0
-      ? <div>{agendaDays}</div>
-      : <div style={{ textAlign:'center', color:'#000', padding:'40px 0', fontSize:'0.95rem' }}>No events this month</div>;
-  };
+  // Real, RSVP-able events only, soonest first. Panchang rows (daily
+  // lunar-calendar reference entries some temple orgs keep, type:
+  // 'panchang') are deliberately left out here -- there's often one per
+  // day, which would bury actual events under a month of Tithi/Nakshatra
+  // trivia in a flat list. A panchang row still shows inside a real
+  // event's own PanchangBadge when that event carries tithi/nakshatra data.
+  const upcomingEvents = events
+    .filter(e => e.type !== 'panchang' && e.date && e.date >= todayIso && (showAllEvents || e.date <= twoWeeksIso))
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   return (
-    <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#fdf6e9 0%,#fef9f0 50%,#fdf3e3 100%)', fontFamily:"'DM Sans', sans-serif", color:'#000' }}>
+    <>
+    <PublicPageBackdrop />
+    <div style={{ minHeight:'100vh', position:'relative', fontFamily:"'DM Sans', sans-serif", color:'#000' }}>
 
       {/* ── Hero: banner image with logo/name overlaid directly on it when a
            banner is set (no separate gold bar); falls back to the plain
@@ -761,6 +807,9 @@ function PublicCalendar() {
             <h1 style={{ fontSize:'clamp(1.5rem,4vw,2.6rem)', fontWeight:700, color:'#fff', margin:'0 0 8px', letterSpacing:'0.03em', textShadow:'0 2px 10px rgba(0,0,0,0.5)' }}>
               {(templeConfig.temple_name || TEMPLE_NAME).toUpperCase()}
             </h1>
+            <div style={{ fontSize:11, letterSpacing:1.2, fontWeight:700, color:'rgba(255,255,255,0.85)', textTransform:'uppercase', marginBottom:8, textShadow:'0 1px 6px rgba(0,0,0,0.5)' }}>
+              {HERO_CATEGORY_LABEL[templeConfig.category] || HERO_CATEGORY_LABEL.other}
+            </div>
             <div style={{ display:'flex', justifyContent:'center', gap:'1.2rem', flexWrap:'wrap', fontSize:'clamp(0.75rem,1.6vw,0.92rem)', color:'rgba(255,255,255,0.92)', textShadow:'0 1px 6px rgba(0,0,0,0.5)' }}>
               {templeConfig.address && <span>📍 {templeConfig.address}</span>}
               {templeConfig.phone && <span>📞 {templeConfig.phone}</span>}
@@ -792,7 +841,10 @@ function PublicCalendar() {
           <h1 style={{ fontSize:'clamp(1.5rem,4vw,2.6rem)', fontWeight:700, color:'#fff', margin:'0 0 8px', letterSpacing:'0.03em' }}>
             {(templeConfig.temple_name || TEMPLE_NAME).toUpperCase()}
           </h1>
-          <div style={{ display:'flex', justifyContent:'center', gap:'1.2rem', flexWrap:'wrap', fontSize:'clamp(0.75rem,1.6vw,0.92rem)', color:'rgba(255,255,255,0.88)', marginBottom: 14 }}>
+          <div style={{ fontSize:11, letterSpacing:1.2, fontWeight:700, color:'rgba(255,255,255,0.8)', textTransform:'uppercase', marginBottom:8 }}>
+            {HERO_CATEGORY_LABEL[templeConfig.category] || HERO_CATEGORY_LABEL.other}
+          </div>
+          <div style={{ display:'flex', justifyContent:'center', gap:'1.2rem', flexWrap:'wrap', fontSize:'clamp(0.75rem,1.6vw,0.92rem)', color:'rgba(255,255,255,0.88)' }}>
             {templeConfig.address && <span>📍 {templeConfig.address}</span>}
             {templeConfig.phone && <span>📞 {templeConfig.phone}</span>}
           </div>
@@ -800,156 +852,179 @@ function PublicCalendar() {
       </div>
       )}
 
-      {/* ── Main layout ── */}
-      <div className='pub-cal-main' style={{ maxWidth:2000, width:'100%', margin:'0 auto', padding:'20px 16px', display:'grid', gridTemplateColumns: isMobile ? '1fr' : '220px minmax(0,1fr)', gap:16, alignItems:'start' }}>
-        {/* ── Sidebar: news feed ── */}
-        <div>
-          {/* Upcoming events quick list */}
-          <div style={{ background:'linear-gradient(135deg,#fffdf7,#fff8ee)', border:'1px solid #d4af37', borderRadius:14, overflow:'hidden', marginTop:14, boxShadow:'0 6px 24px rgba(180,120,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)' }}>
-            <div style={{ background:'linear-gradient(135deg,#1a3a6a12,#0e294a12)', padding:'12px 14px', borderBottom:'1px solid #e8d5a3' }}>
-              <div style={{ fontSize:'0.72rem', color:'#000', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase' }}>📅 Upcoming Events</div>
+      {/* ── Follow + Admin login: a separate solid card below the hero,
+           deliberately NOT overlaid on the banner image/gradient -- those
+           backgrounds (a photo, or busy glow accents) were swallowing
+           these two actions. A plain light card guarantees contrast no
+           matter what the org's banner looks like. ── */}
+      <div style={{ background:'#fffdf7', borderBottom:'1px solid #e8d5a3', padding:'14px 20px', display:'flex', justifyContent:'center', alignItems:'center', gap:10, flexWrap:'wrap', boxShadow:'0 2px 10px rgba(180,120,0,0.06)' }}>
+        <FollowButton />
+        <a href="/login" style={adminLoginLinkStyle}>Admin login</a>
+      </div>
+
+      {/* ── Main layout: events in the main column, Announcements/Glimpses/
+           Photos in a sidebar (see .pub-cal-layout below — it drops to a
+           single stacked column under 900px). Each section keeps its id so
+           PublicNav's tab and the old /announcements, /live, /photos
+           redirects can still scroll straight to it. ── */}
+      <div className='pub-cal-main' style={{ maxWidth:1400, width:'100%', margin:'0 auto', padding:'24px 24px 60px' }}>
+      <div className='pub-cal-layout'>
+
+      <div className='pub-cal-events-col'>
+        {/* ── Events ── */}
+        <section id="events">
+          <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:12, gap:8, flexWrap:'wrap' }}>
+            <div>
+              <h2 style={sectionHeading}>📅 {templeConfig.temple_name || TEMPLE_NAME} Events</h2>
+              <div style={{ fontSize:'0.78rem', color:'#92400e', marginTop:2 }}>Official {(HERO_CATEGORY_LABEL[templeConfig.category] || HERO_CATEGORY_LABEL.other).toLowerCase()} calendar</div>
             </div>
-            <div style={{ padding:'10px 12px', display:'flex', flexDirection:'column', gap:6 }}>
-              {events
-                .filter(e => e.type !== 'panchang' && e.date >= new Date().toISOString().slice(0,10))
-                .sort((a, b) => a.date.localeCompare(b.date))
-                .slice(0, 6)
-                .map((ev, i) => {
-                  return (
-                    <div key={i} onClick={() => setSelectedEvent(ev)} style={{ display:'flex', gap:8, cursor:'pointer', padding:'7px 8px', background:'#fffaf4', border:'1px solid #e8d5a3', borderRadius:7, transition:'border-color 0.12s' }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor='#c9943a'}
-                      onMouseLeave={e => e.currentTarget.style.borderColor='#e8d5a3'}>
-                      <div style={{ width:32, flexShrink:0, textAlign:'center' }}>
-                        <div style={{ fontSize:15, fontWeight:800, color:'#000', lineHeight:1 }}>
-                          {new Date(ev.date+'T12:00:00').getDate()}
-                        </div>
-                        <div style={{ fontSize:11, color:'#000', textTransform:'uppercase' }}>
-                          {new Date(ev.date+'T12:00:00').toLocaleDateString('en-US',{month:'short'})}
-                        </div>
-                      </div>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontSize:'0.9rem', fontWeight:700, color:'#000', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{ev.title}</div>
-                        {ev.time && <div style={{ fontSize:'0.8rem', color:'#000' }}>{ev.time}</div>}
-                      </div>
-                    </div>
-                  );
-                })}
-              {events.filter(e => e.type !== 'panchang' && e.date >= new Date().toISOString().slice(0,10)).length === 0 && !loadingEvents && (
-                <div style={{ color:'#000', fontSize:'0.85rem', textAlign:'center', padding:'16px 0' }}>No upcoming events</div>
-              )}
+            <div style={{ textAlign:'right' }}>
+              <div style={sectionCount}>{upcomingEvents.length}{showAllEvents ? ' upcoming' : ' in the next 2 weeks'}</div>
+              <button
+                onClick={() => setShowAllEvents(v => !v)}
+                style={{ background:'none', border:'none', padding:0, marginTop:4, color:'#c2410c', fontWeight:700, fontSize:'0.8rem', cursor:'pointer', fontFamily:"'DM Sans', sans-serif", textDecoration:'underline' }}
+              >
+                {showAllEvents ? 'Next 2 weeks' : 'Full calendar'}
+              </button>
             </div>
           </div>
-        </div>
-
-        {/* ── Calendar panel ── */}
-        <div>
-          {/* Nav + filters */}
-          <div style={{ background:'linear-gradient(135deg,#fffdf7,#fff8ee)', border:'1px solid #d4af37', borderRadius:14, padding:'14px 16px', marginBottom:14, boxShadow:'0 4px 20px rgba(180,120,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)' }}>
-            {/* Month navigation */}
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
-              <button onClick={prevMonth} style={{ background:'linear-gradient(135deg,#fff9f0,#fff8ee,#fff)', border:'1px solid #c9943a', color:'#000', borderRadius:8, padding:'7px 16px', cursor:'pointer', fontFamily:"'DM Sans', sans-serif", fontWeight:700, fontSize:'0.95rem', boxShadow:'0 2px 8px rgba(180,120,0,0.12), inset 0 1px 0 rgba(255,255,255,0.9)' }}>‹ Prev</button>
-              <div style={{ textAlign:'center' }}>
-                <div style={{ fontSize:'1.4rem', fontWeight:800, color:'#000' }}>{MONTHS[month]} {year}</div>
-                <div style={{ fontSize:'0.85rem', color:'#000' }}>{monthCountLabel}</div>
-              </div>
-              {/* Next stays on its own dark button background — needs light
-                  text for contrast, so it's excluded from the black-font pass
-                  (same reasoning as the hero header). */}
-              <button onClick={nextMonth} style={{ background:'#2a1a08', border:'1px solid #3a2008', color:'#c9943a', borderRadius:7, padding:'7px 14px', cursor:'pointer', fontFamily:"'DM Sans', sans-serif", fontWeight:700, fontSize:'0.95rem' }}>Next ›</button>
-            </div>
-            {/* View tabs — Monthly Events / Monthly Panchang, the same
-                switcher the admin dashboard uses (CalendarGrid.jsx's
-                ViewTabs), replacing the old Pooja/Festival/Holiday/Kalyanam/
-                Abhishekam filter pills. Panchang tab only for temple orgs. */}
-            <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
-              {[
-                { key:'events',   label:'📅 Monthly Events' },
-                ...(showPanchangTab ? [{ key:'panchang', label:'🪔 Monthly Panchang' }] : []),
-              ].map(t => {
-                const active = viewMode === t.key;
+          {loadingEvents ? (
+            <div style={sectionEmpty}>🕉️ Loading events...</div>
+          ) : upcomingEvents.length === 0 ? (
+            <div style={sectionEmpty}>No upcoming events right now — check back soon.</div>
+          ) : (
+            <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+              {upcomingEvents.map((ev) => {
+                const m = typeOf(ev.type);
+                const d = new Date(ev.date + 'T12:00:00');
+                // Media (image/glimpse/photos) already fetched per-event for the
+                // detail modal's badges -- reused here so the list itself shows
+                // what's available without opening each event.
+                const media = mediaByEvent[ev.event_id];
+                const thumbSrc = ev.image_url || (media && media.glimpses && media.glimpses[0] && media.glimpses[0].thumbnail_url);
+                const hasGlimpse = media && media.glimpses && media.glimpses.length > 0;
+                const photoCount = media && media.photo_count;
                 return (
-                  <button key={t.key} onClick={() => setViewMode(t.key)} style={{
-                    // Same font family/weight/size as the Prev/Next month-nav
-                    // buttons right above, so the tabs read as part of the
-                    // same page rather than a smaller, different typeface.
-                    padding:'7px 16px', borderRadius:18, cursor:'pointer', fontFamily:"'DM Sans', sans-serif", fontWeight:700, fontSize:'0.95rem',
-                    border:`1px solid ${active ? '#c9943a' : '#e8d5a3'}`,
-                    background: active ? 'linear-gradient(135deg,#c9943a,#e6a800)' : '#fff',
-                    color: '#000',
-                    transition:'all 0.12s',
-                  }}>{t.label}</button>
+                  <div key={ev.event_id || ev.title} onClick={() => setSelectedEvent(ev)} style={eventRow}>
+                    <div style={{ width:44, flexShrink:0, textAlign:'center' }}>
+                      <div style={{ fontSize:19, fontWeight:800, color:'#000', lineHeight:1 }}>{d.getDate()}</div>
+                      <div style={{ fontSize:11, color:'#000', textTransform:'uppercase' }}>{d.toLocaleDateString('en-US',{month:'short'})}</div>
+                    </div>
+                    {(thumbSrc || hasGlimpse || photoCount > 0) && (
+                      <div style={{ width:44, height:44, borderRadius:8, flexShrink:0, overflow:'hidden', position:'relative', background:'#e8d5a3' }}>
+                        {thumbSrc ? (
+                          <img src={thumbSrc} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+                        ) : (
+                          <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>
+                            {hasGlimpse ? '🎬' : '📷'}
+                          </div>
+                        )}
+                        {hasGlimpse && (
+                          <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.25)', fontSize:14 }}>▶</div>
+                        )}
+                      </div>
+                    )}
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                        <span style={{ fontWeight:800, color:'#000', fontSize:'0.98rem' }}>{ev.title}</span>
+                        <span style={{ fontSize:10, fontWeight:800, color:m.color, background:m.bg, padding:'2px 8px', borderRadius:20, textTransform:'uppercase', letterSpacing:'0.04em' }}>{m.label}</span>
+                      </div>
+                      {ev.time && <div style={{ fontSize:'0.82rem', color:'#000', marginTop:2 }}>{ev.time}</div>}
+                      {(hasGlimpse || photoCount > 0) && (
+                        <div style={{ display:'flex', gap:6, marginTop:4 }}>
+                          {hasGlimpse && <span style={{ fontSize:10, fontWeight:700, color:'#2563eb' }}>🎬 Glimpse</span>}
+                          {photoCount > 0 && <span style={{ fontSize:10, fontWeight:700, color:'#7c3aed' }}>📷 {photoCount} photos</span>}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ display:'flex', gap:6, flexShrink:0 }} onClick={(e) => e.stopPropagation()}>
+                      <a href={getRsvpUrl(ev)} target="_blank" rel="noopener noreferrer" style={rsvpBtn}>🙏 RSVP</a>
+                      <a href={buildGCalUrl(ev, templeConfig)} target="_blank" rel="noopener noreferrer" style={gcalBtn}>📅 Add to Cal</a>
+                    </div>
+                  </div>
                 );
               })}
             </div>
-          </div>
+          )}
+        </section>
+      </div>
 
-          {loadingEvents ? (
-            <div style={{ textAlign:'center', color:'#000', padding:'60px 0', fontSize:'0.95rem' }}>🕉️ Loading events...</div>
-          ) : isMobile ? (
-            <AgendaView />
+      <aside className='pub-cal-sidebar'>
+        {/* ── Announcements ── */}
+        <section id="announcements">
+          <h2 style={{ ...sectionHeading, marginBottom: 12, fontSize:'1.05rem' }}>📢 Announcements</h2>
+          <NewsFeedPanel announcements={announcements} loading={loadingNews} />
+        </section>
+
+        {/* ── Glimpses ── */}
+        <section id="glimpses">
+          <h2 style={{ ...sectionHeading, marginBottom: 12, fontSize:'1.05rem' }}>🎬 Glimpses</h2>
+          {loadingGlimpses ? (
+            <div style={sectionEmpty}>Loading…</div>
+          ) : glimpses.length === 0 ? (
+            <div style={sectionEmpty}>No glimpse videos yet.</div>
           ) : (
-            <div style={{ background:'linear-gradient(135deg,#fffdf7,#fff8ee)', border:'1px solid #d4af37', borderRadius:14, padding:'16px', overflow:'hidden', boxShadow:'0 8px 32px rgba(180,120,0,0.10), inset 0 1px 0 rgba(255,255,255,0.95)' }}>
-              {/* Weekday headers */}
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:3, marginBottom:4 }}>
-                {WEEKDAYS.map((d, i) => {
-                  return (
-                    <div key={d} style={{ textAlign:'center', fontSize:13, fontWeight:700, color:'#000', letterSpacing:'0.08em', padding:'4px 0' }}>
-                      {d.toUpperCase()}
-                    </div>
-                  );
-                })}
-              </div>
-              {/* Grid */}
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(7, minmax(0,1fr))', gap:3 }}>
-                {days.map(({ day, current }, idx) => {
-                  const dayEvs = getEventsForDay(day, current);
-                  return (
-                    <CalendarCell
-                      key={idx}
-                      day={current ? day : null}
-                      isToday={isToday(day, current)}
-                      isOther={!current}
-                      events={dayEvs}
-                      viewMode={viewMode}
-                      onSelect={setSelectedEvent}
-                      mediaByEvent={mediaByEvent}
-                    />
-                  );
-                })}
-              </div>
-              {/* Legend — same temple-only gate as the filter pills above;
-                  non-temple orgs get the generic categories only. */}
-              <div style={{ display:'flex', flexWrap:'wrap', gap:10, marginTop:12, paddingTop:10, borderTop:'1px solid #e8d5a3' }}>
-                {(templeConfig.category === 'temple' ? [
-                  { label:'Abhishekam', color:'#f97316' },
-                  { label:'Kalyanam',   color:'#eab308' },
-                  { label:'Festival',   color:'#dc2626' },
-                  { label:'Class',      color:'#0d9488' },
-                  { label:'Panchang',   color:'#c9943a' },
-                ] : [
-                  { label:'Festival',   color:'#dc2626' },
-                  { label:'Holiday',    color:'#dc2626' },
-                  { label:'Class',      color:'#0d9488' },
-                  { label:'Community',  color:'#8b5cf6' },
-                ]).map(({ label, color }) => (
-                  <div key={label} style={{ display:'flex', alignItems:'center', gap:4 }}>
-                    <div style={{ width:8, height:8, borderRadius:2, background:color }} />
-                    <span style={{ fontSize:12, color:'#000' }}>{label}</span>
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              {glimpses.map((s) => (
+                <div key={s.stream_id} style={mediaCard}>
+                  <video
+                    src={s.video_url}
+                    controls
+                    playsInline
+                    style={{ width:'100%', aspectRatio:'9/16', maxHeight:220, objectFit:'cover', background:'#000', borderRadius:10, display:'block' }}
+                  />
+                  <div style={{ padding:'8px 2px 0' }}>
+                    <div style={{ fontWeight:800, color:'#3d2008', fontSize:'0.82rem' }}>{s.event_title || s.title || 'Event glimpse'}</div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           )}
-        </div>
+        </section>
 
+        {/* ── Photos ── */}
+        <section id="photos">
+          <h2 style={{ ...sectionHeading, marginBottom: 12, fontSize:'1.05rem' }}>📷 Photos</h2>
+          {loadingAlbums ? (
+            <div style={sectionEmpty}>Loading albums…</div>
+          ) : albums.length === 0 ? (
+            <div style={sectionEmpty}>No photo albums published yet.</div>
+          ) : (
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:10 }}>
+              {albums.map((a) => (
+                <a
+                  key={a.album_id}
+                  href={a.has_event ? getPhotoAlbumUrl({ title: a.event_title, date: a.event_date }) : `/photos/album/${a.album_id}${orgQueryParam()}`}
+                  style={albumCard}
+                >
+                  <div style={albumCover}>
+                    {a.cover_photo_url ? (
+                      <img src={a.cover_photo_url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                    ) : '📷'}
+                  </div>
+                  <div style={{ padding:'8px 10px' }}>
+                    <div style={{ fontWeight:800, color:'#3d2008', fontSize:'0.78rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                      {a.name || a.event_title}
+                    </div>
+                    <div style={{ color:'#92400e', fontSize:'0.68rem', marginTop:2 }}>{a.photo_count || 0} photos</div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+        </section>
+      </aside>
 
+      </div>
       </div>
 
       {/* ── Global styles ── */}
       <style>{`
-        @keyframes haloGlow {
-          0%,100% { box-shadow: 0 0 0 2px rgba(212,175,55,0.2), 0 4px 12px rgba(180,120,0,0.12), inset 0 1px 0 rgba(255,255,255,0.9); }
-          50%      { box-shadow: 0 0 0 3px rgba(212,175,55,0.35), 0 6px 20px rgba(180,120,0,0.2), 0 0 30px rgba(255,200,0,0.15), inset 0 1px 0 rgba(255,255,255,0.9); }
+        .pub-cal-layout { display:grid; grid-template-columns: minmax(0,1fr) 360px; gap:32px; align-items:start; }
+        .pub-cal-events-col { display:flex; flex-direction:column; gap:32px; min-width:0; }
+        .pub-cal-sidebar { display:flex; flex-direction:column; gap:28px; min-width:0; }
+        @media (max-width: 900px) {
+          .pub-cal-layout { grid-template-columns: 1fr; }
         }
         @keyframes fadeInUp {
           from { opacity:0; transform:translateY(16px); }
@@ -957,21 +1032,6 @@ function PublicCalendar() {
         }
         .pub-cal-main { animation: fadeInUp 0.5s ease; }
         .temple-header h1 { font-family: 'Playfair Display', Georgia, serif !important; letter-spacing:0.06em; }
-        .event-pill:hover { transform:translateY(-1px); box-shadow:0 3px 8px rgba(180,120,0,0.18); transition:all 0.15s; }
-        /* ── Today's calendar cell — diagonal shine sweep, same effect as the admin toolbar's "+ Add Event" ── */
-        @keyframes pubTodayShine { 0%{left:-60%} 30%{left:130%} 100%{left:130%} }
-        .pub-today-shine { position: relative; }
-        .pub-today-shine::after {
-          content: '';
-          position: absolute;
-          top: 0; left: -60%;
-          width: 35%; height: 100%;
-          background: linear-gradient(115deg, transparent, rgba(255,235,180,0.65), transparent);
-          transform: skewX(-20deg);
-          animation: pubTodayShine 3.6s ease-in-out infinite;
-          pointer-events: none;
-          z-index: 2;
-        }
       `}</style>
       {/* ── Footer ── */}
       <div style={{ borderTop:'1px solid #e8d5a3', padding:'18px 20px', textAlign:'center', color:'#000', fontSize:'0.88rem', marginTop:8 }}>
@@ -989,6 +1049,7 @@ function PublicCalendar() {
           (calendar, RSVP, photos, sign-ups) instead of only here — see the
           comment on PublicOrgLayout in App.jsx. */}
     </div>
+    </>
   );
 }
 

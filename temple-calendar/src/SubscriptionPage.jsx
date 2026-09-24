@@ -22,32 +22,32 @@ const HALO_BG = { backgroundColor: 'var(--cf-bg-base)' };
 const PLANS = [
   {
     key: 'free',
-    name: 'Free',
+    name: 'Organization Free',
     price: '$0',
     limits: { events_per_month: 30, flyers_per_month: 0, rsvp_responses: 50, chatbot_messages: 0, users: 1, storage_gb: 1 },
-    features: ['Calendar', 'Instagram + Facebook broadcast', '30 events/month \u2014 create & broadcast'],
+    features: ['Public organization page & calendar', 'Instagram + Facebook broadcast', 'WhatsApp broadcast (requires a WhatsApp Business number)', 'Event creation \u2014 30 events/month', 'Basic announcements'],
   },
   {
     key: 'starter',
-    name: 'Starter',
+    name: 'Organization Plus',
     price: '$49',
     limits: { events_per_month: 50, flyers_per_month: 20, rsvp_responses: 500, chatbot_messages: 500, users: 3, storage_gb: 5 },
-    features: ['Everything in Free', 'Flyer Editor (30 AI images/mo)', '50 events/month'],
+    features: ['Everything in Organization Free', 'AI Flyer Studio \u2014 30 AI image generations/month', 'Flyer templates', 'Scheduled announcements', '50 events/month'],
   },
   {
     key: 'pro',
-    name: 'Pro',
-    price: '$99',
+    name: 'Organization Pro',
+    price: '$79',
     popular: true,
     limits: { events_per_month: -1, flyers_per_month: -1, rsvp_responses: -1, chatbot_messages: 2000, users: 10, storage_gb: 20 },
-    features: ['Everything in Starter', 'Unlimited events', 'Advanced analytics', 'AI Chatbot (2000 msg/mo)', 'Priority support'],
+    features: ['Everything in Organization Plus', 'Unlimited events', 'AI-powered analytics', 'AI-powered search and summary \u2014 upload files, get summaries & action items', 'Searchable media gallery', 'AI Chatbot (2000 msg/mo)', 'More team & admin tools', 'Priority support', '75 AI image generations/month'],
   },
   {
     key: 'enterprise',
-    name: 'Enterprise',
+    name: 'Organization Enterprise',
     price: '$149',
     limits: { events_per_month: -1, flyers_per_month: -1, rsvp_responses: -1, chatbot_messages: -1, users: -1, storage_gb: 100 },
-    features: ['Everything in Pro', 'WhatsApp broadcast (requires a WhatsApp Business number)', 'Unlimited everything', 'Custom domain', 'AI document search \u2014 upload files, get summaries & action items', 'Public chatbot for devotees', 'Live photo sharing (public)', 'Public messages (multi-channel)', 'Dedicated support'],
+    features: ['Everything in Organization Pro', 'WhatsApp broadcast (requires a WhatsApp Business number)', 'Unlimited everything', 'Custom domain', 'AI-powered search and summary \u2014 upload files, get summaries & action items', 'Public chatbot for devotees', 'Live photo sharing (public)', 'Public messages (multi-channel)', 'Dedicated support'],
   },
 ];
 
@@ -440,8 +440,13 @@ export default function SubscriptionPage() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-1">Available Plans</h2>
               <p className="text-sm text-gray-500 mb-6">All plans include a 7-day free trial.</p>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {PLANS.map((plan) => {
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Enterprise is no longer a self-serve option (pricing update,
+                    Sept 2026) -- hidden here unless an org is already on it
+                    (a custom/negotiated deal), so an existing Enterprise
+                    subscriber still sees their own plan represented and can
+                    downgrade, but nobody else sees $149 as something to pick. */}
+                {PLANS.filter((plan) => plan.key !== 'enterprise' || plan.key === currentPlanKey).map((plan) => {
                   const isCurrent = plan.key === currentPlanKey;
                   return (
                     <div

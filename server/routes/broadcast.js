@@ -658,13 +658,16 @@ router.post('/', authenticateToken, requireRole('owner', 'admin'), broadcastSend
   const orgName = org ? org.name : 'Unknown';
   console.log(`[BROADCAST] ${orgName} | ${platform} | "${event?.title || 'unknown'}"`);
 
-  // WhatsApp is Enterprise-only (needs the org's own WhatsApp Business
-  // number) -- Free/Starter/Pro stay on Instagram/Facebook/Email. Only
-  // gate when we actually resolved an org; an unresolved org already falls
-  // back to shared .env credentials below, unchanged from before.
+  // WhatsApp broadcast is available on every plan now (pricing update,
+  // Sept 2026 -- it used to be Enterprise-only). This check still exists
+  // because a platform admin can flip whatsapp_broadcast off for one org
+  // via feature_overrides (support kill-switch) without changing its plan
+  // -- see applyFeatureOverrides() in organizations.js. Only gate when we
+  // actually resolved an org; an unresolved org already falls back to
+  // shared .env credentials below, unchanged from before.
   if (platform === 'whatsapp' && org && !canUseFeature(org, 'whatsapp_broadcast')) {
     return res.status(403).json({
-      error: 'WhatsApp broadcast is available on the Enterprise plan — upgrade to unlock it.',
+      error: 'WhatsApp broadcast isn\'t enabled for your organization — contact support.',
     });
   }
 

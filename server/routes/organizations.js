@@ -17,6 +17,8 @@ const {
 } = require('../organizations');
 const { authenticateToken, requireNonGuest } = require('./auth');
 const { sendServerError } = require('../utils/errors');
+const { geocodeAddress } = require('../utils/geo');
+const { CUISINE_KEYS } = require('../utils/cuisineTags');
 
 const FACEBOOK_GRAPH_VERSION = 'v20.0';
 
@@ -146,7 +148,11 @@ router.get('/me', async (req, res) => {
       logo_url: org.logo_url,
       banner_url: org.banner_url || null,
       category: org.category || null,
+      cuisine_tags: org.cuisine_tags || [],
       address: org.address || '',
+      zip_code: org.zip_code || '',
+      latitude: typeof org.latitude === 'number' ? org.latitude : null,
+      longitude: typeof org.longitude === 'number' ? org.longitude : null,
       phone: org.phone || '',
       manager_phone: org.manager_phone || '',
       primary_color: org.primary_color,
@@ -192,8 +198,8 @@ router.put('/settings', authenticateToken, requireNonGuest, async (req, res) => 
     }
     
     const {
-      name, logo_url, banner_url, address, phone, manager_phone, primary_color, secondary_color,
-      category, onboarding_completed, admin_code, broadcast_email,
+      name, logo_url, banner_url, address, zip_code, phone, manager_phone, primary_color, secondary_color,
+      category, cuisine_tags, onboarding_completed, admin_code, broadcast_email,
       // Per-organization Facebook/Instagram connection (Organization
       // Settings → Social Media Connections, below).
       facebook_page_token, facebook_page_id, facebook_page_name, instagram_account_id, instagram_username,
@@ -210,10 +216,21 @@ router.put('/settings', authenticateToken, requireNonGuest, async (req, res) => 
     if (logo_url) updates.logo_url = logo_url;
     if (banner_url) updates.banner_url = banner_url;
     if (address !== undefined) updates.address = address;
+    if (zip_code !== undefined) updates.zip_code = zip_code;
     if (phone !== undefined) updates.phone = phone;
     if (manager_phone !== undefined) updates.manager_phone = manager_phone;
     if (primary_color) updates.primary_color = primary_color;
     if (secondary_color) updates.secondary_color = secondary_color;
+    // Self-tagged cuisine, for the Explore page's food-preference filter
+    // (see utils/cuisineTags.js) -- only meaningful for restaurant orgs,
+    // but harmless to accept from any org; filtered against the fixed
+    // taxonomy same as identity-auth.js does for interests, so a client
+    // can't store an arbitrary string here.
+    if (cuisine_tags !== undefined) {
+      updates.cuisine_tags = Array.isArray(cuisine_tags)
+        ? [...new Set(cuisine_tags.filter((c) => CUISINE_KEYS.includes(c)))]
+        : [];
+    }
     if (onboarding_completed !== undefined) updates.onboarding_completed = onboarding_completed;
     if (broadcast_email !== undefined) {
       const trimmed = (broadcast_email || '').toString().trim();
@@ -227,7 +244,7 @@ router.put('/settings', authenticateToken, requireNonGuest, async (req, res) => 
     // the social_accounts merge below actually need existing state, so the
     // common "just save my name/colors" request skips this extra read.
     let existingOrg = null;
-    const needsExistingOrg = category !== undefined
+    const needsExistingOrg = category !== undefined || address !== undefined || zip_code !== undefined
       || facebook_page_token !== undefined || facebook_page_id !== undefined || facebook_page_name !== undefined
       || instagram_account_id !== undefined || instagram_username !== undefined
       || disconnect_facebook || disconnect_instagram || disconnect_whatsapp;
@@ -297,6 +314,36 @@ router.put('/settings', authenticateToken, requireNonGuest, async (req, res) => 
       }
 
       updates.social_accounts = social;
+    }
+
+    // ZIP code (or, failing that, the full address) changed -- re-geocode so
+    // "orgs near me" (routes/discover.js) has fresh coordinates. ZIP is
+    // preferred: it's simpler to geocode reliably and shares less precise
+    // location than a full street address, which is all a 15-mile-radius
+    // feature actually needs. Best-effort either way -- a failed/unset-key
+    // geocode just means this org stays (or becomes) invisible to the
+    // nearby feature, it never blocks saving the address/ZIP itself.
+    const zipChanged = updates.zip_code !== undefined && updates.zip_code
+      && updates.zip_code !== (existingOrg && existingOrg.zip_code);
+    const addressChanged = updates.address !== undefined && updates.address
+      && updates.address !== (existingOrg && existingOrg.address);
+
+    if (zipChanged) {
+      const geo = await geocodeAddress(updates.zip_code);
+      if (geo) {
+        updates.latitude = geo.latitude;
+        updates.longitude = geo.longitude;
+      }
+    } else if (addressChanged && !(existingOrg && existingOrg.zip_code)) {
+      // Only fall back to the full address if this org has no ZIP on file
+      // at all -- once a ZIP exists, it stays the source of truth for
+      // coordinates so editing the display address doesn't silently move
+      // the org's location.
+      const geo = await geocodeAddress(updates.address);
+      if (geo) {
+        updates.latitude = geo.latitude;
+        updates.longitude = geo.longitude;
+      }
     }
 
     const updated = await updateOrganization(org_id, updates);

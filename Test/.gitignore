@@ -1,0 +1,8 @@
+**/node_modules/
+**/dist/
+**/dist-frontend/
+**/.env
+**/.env.*
+!**/.env.example
+reports/
+*.log

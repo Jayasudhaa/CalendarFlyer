@@ -1,0 +1,193 @@
+[
+  {
+    "id": "dec-01-kartika-krishna",
+    "date": "2026-12-01",
+    "title": "Kartika Maasa Krishna Paksham",
+    "time": "All Day",
+    "type": "panchang",
+    "tithi": "Ashtami 10:40 AM",
+    "nakshatra": "Purvaphalguni 8:20 PM"
+  },
+  {
+    "id": "dec-05-venkateswara-abhishekam",
+    "date": "2026-12-05",
+    "title": "Sri Venkateswara Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwadasi 12:24 PM",
+    "nakshatra": "Swathi 12:59 AM Sun"
+  },
+  {
+    "id": "dec-06-siva",
+    "date": "2026-12-06",
+    "title": "Sri Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Trayodasi 1:54 PM",
+    "nakshatra": "Visakha 3:19 AM Mon"
+  },
+  {
+    "id": "dec-07-kartika-somavara",
+    "date": "2026-12-07",
+    "title": "Kartika Somavara Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturdasi 3:44 PM",
+    "nakshatra": "Anuradha 5:46 AM Tue"
+  },
+  {
+    "id": "dec-08-amavasya",
+    "date": "2026-12-08",
+    "title": "Amavasya",
+    "time": "5:52 PM",
+    "type": "panchang",
+    "tithi": "Amavasya 5:52 PM",
+    "nakshatra": "Jyeshta 8:19 AM Wed",
+    "moonPhase": "new"
+  },
+  {
+    "id": "dec-09-mrigasira-sukla",
+    "date": "2026-12-09",
+    "title": "Mrigasira Maasa Sukla Paksham starts",
+    "time": "All Day",
+    "type": "panchang",
+    "tithi": "Prathama 8:15 PM",
+    "nakshatra": "Jyeshta 8:19 AM Wed"
+  },
+  {
+    "id": "dec-10-saibaba",
+    "date": "2026-12-10",
+    "title": "Sri Shirdi Sai Baba / Raghavendra Swamy Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwitiya 10:51 PM",
+    "nakshatra": "Mula 11:26 AM"
+  },
+  {
+    "id": "dec-12-kalyanam",
+    "date": "2026-12-12",
+    "title": "Sri Venkateswara Kalyanam",
+    "time": "11:00 AM",
+    "type": "kalyanam",
+    "tithi": "Chaturthi 4:18 AM Sun",
+    "nakshatra": "Uttarashadha 5:30 PM"
+  },
+  {
+    "id": "dec-13-ganapathi",
+    "date": "2026-12-13",
+    "title": "Sri Vijaya Ganapathi / Murugan Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Panchami 6:48 AM Mon",
+    "nakshatra": "Sravana 8:42 PM"
+  },
+  {
+    "id": "dec-16-dhanurmasam",
+    "date": "2026-12-16",
+    "title": "Dhanurmasam Begins",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Saptami 10:21 AM",
+    "nakshatra": "Purvabhadra 3:04 AM Thu"
+  },
+  {
+    "id": "dec-18-andal",
+    "date": "2026-12-18",
+    "title": "Sri Andal Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Navami 10:47 AM",
+    "nakshatra": "Revathi 3:20 AM Sat"
+  },
+  {
+    "id": "dec-19-mahalakshmi",
+    "date": "2026-12-19",
+    "title": "Sri Mahalakshmi Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dasami 9:40 AM",
+    "nakshatra": "Aswini 2:24 AM Sun"
+  },
+  {
+    "id": "dec-20-vaikunta-ekadasi",
+    "date": "2026-12-20",
+    "title": "Vaikunta Ekadasi",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Ekadasi 7:44 AM, Dwadasi afterwards",
+    "nakshatra": "Bharani 12:37 AM Mon"
+  },
+  {
+    "id": "dec-20-venkateswara-abhishekam",
+    "date": "2026-12-20",
+    "title": "Sri Venkateswara Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Ekadasi 7:44 AM, Dwadasi afterwards",
+    "nakshatra": "Bharani 12:37 AM Mon"
+  },
+  {
+    "id": "dec-21-saibaba",
+    "date": "2026-12-21",
+    "title": "Sri Shirdi Sai Baba / Raghavendra Swamy Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Trayodasi 1:54 AM Tue",
+    "nakshatra": "Krittika 12:06 PM"
+  },
+  {
+    "id": "dec-23-purnima",
+    "date": "2026-12-23",
+    "title": "Purnima",
+    "time": "6:33 PM",
+    "type": "panchang",
+    "tithi": "Purnima 6:33 PM",
+    "nakshatra": "Mrigasira 4:26 PM",
+    "moonPhase": "full"
+  },
+  {
+    "id": "dec-23-satyanarayana",
+    "date": "2026-12-23",
+    "title": "Sri Satyanarayana Swamy Pooja & Vratham",
+    "time": "10:00 AM",
+    "type": "pooja",
+    "tithi": "Purnima 6:33 PM",
+    "nakshatra": "Mrigasira 4:26 PM"
+  },
+  {
+    "id": "dec-24-mrigasira-krishna",
+    "date": "2026-12-24",
+    "title": "Mrigasira Maasa Krishna Paksham starts",
+    "time": "All Day",
+    "type": "panchang",
+    "tithi": "Prathama 2:44 PM",
+    "nakshatra": "Arudra 1:14 PM"
+  },
+  {
+    "id": "dec-25-christmas",
+    "date": "2026-12-25",
+    "title": "Christmas",
+    "time": "All Day",
+    "type": "holiday",
+    "tithi": "Dwitiya 11:03 AM",
+    "nakshatra": "Punarvasu 10:26 AM"
+  },
+  {
+    "id": "dec-26-hanuman",
+    "date": "2026-12-26",
+    "title": "Sri Hanuman Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Tritiya 7:41 AM, Chaturthi afterwards",
+    "nakshatra": "Pushyami 7:47 AM, Aslesha afterwards"
+  },
+  {
+    "id": "dec-27-sudarsana",
+    "date": "2026-12-27",
+    "title": "Sri Sudarsana/Narasimha Homam & Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Panchami 2:28 AM Mon",
+    "nakshatra": "Magha 4:02 AM Mon"
+  }
+]

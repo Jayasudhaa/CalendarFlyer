@@ -84,8 +84,17 @@ const PROMPT_INJECTION_TERMS = [
 
 const POSTER_FIELD_MAX_LEN = 200;
 
+// Org types with their own distinct flyer prompt config (see
+// server/config/aiImageDefaults.js / KNOWN_CATEGORIES in
+// utils/aiSettingsStore.js). Every other org type -- the regional/language
+// associations, mela/fair organizer, plain nonprofit/community/other --
+// shares the generic 'community celebration' style, since those don't need
+// a bespoke visual treatment the way a temple, dance studio, restaurant, or
+// yoga studio does.
+const DISTINCT_PROMPT_CATEGORIES = ['temple', 'dance_school', 'music_school', 'yoga_school', 'restaurant', 'grocery'];
+
 function resolveCategory(settings, requestedCategory) {
-  const key = requestedCategory === 'temple' ? 'temple' : 'community';
+  const key = DISTINCT_PROMPT_CATEGORIES.includes(requestedCategory) ? requestedCategory : 'community';
   const config = settings.categories[key] || settings.categories.community;
   return { key, config };
 }

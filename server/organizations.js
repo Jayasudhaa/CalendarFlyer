@@ -22,10 +22,14 @@ const PLAN_FEATURES = {
     calendar: true,
     flyer_editor: false,
     broadcast: true,
-    whatsapp_broadcast: false,
+    // Moved down from Enterprise-only (pricing update, Sept 2026) -- every
+    // plan gets WhatsApp broadcast now, so it's no longer a paywalled
+    // differentiator. See canUseFeature()'s callers (routes/broadcast.js).
+    whatsapp_broadcast: true,
     rsvp: false,
     chatbot: false,
     temple_library: false,
+    ai_document_search: false,
     analytics: false,
     custom_domain: false,
     api_access: false
@@ -34,10 +38,11 @@ const PLAN_FEATURES = {
     calendar: true,
     flyer_editor: true,
     broadcast: true,
-    whatsapp_broadcast: false,
+    whatsapp_broadcast: true,
     rsvp: true,
     chatbot: true,
     temple_library: true,
+    ai_document_search: false,
     analytics: false,
     custom_domain: false,
     api_access: false
@@ -46,10 +51,17 @@ const PLAN_FEATURES = {
     calendar: true,
     flyer_editor: true,
     broadcast: true,
-    whatsapp_broadcast: false,
+    whatsapp_broadcast: true,
     rsvp: true,
     chatbot: true,
     temple_library: true,
+    // AI document search moved down from Enterprise-only to Pro+ (pricing
+    // update, Sept 2026) -- see routes/documents.js's /search gate.
+    ai_document_search: true,
+    // `analytics` here means the real, LLM-generated insights summary (see
+    // routes/analyticsInsights.js), not just the plain RSVP charts every
+    // plan can already see -- this flag is what canUseFeature(org,
+    // 'analytics') gates for that endpoint.
     analytics: true,
     custom_domain: false,
     api_access: false
@@ -62,6 +74,7 @@ const PLAN_FEATURES = {
     rsvp: true,
     chatbot: true,
     temple_library: true,
+    ai_document_search: true,
     analytics: true,
     custom_domain: true,
     api_access: true,
@@ -94,7 +107,10 @@ const PLAN_LIMITS = {
     chatbot_messages_per_month: 500,
     users: 3,
     storage_gb: 5,
-    ai_images_per_month: 150
+    // Was 150 -- brought down to match the "Organization Plus" plan's
+    // advertised 30 AI image generations/month (pricing page update,
+    // Sept 2026) so the marketing copy and real enforcement agree.
+    ai_images_per_month: 30
   },
   pro: {
     events_per_month: -1,  // unlimited
@@ -103,7 +119,11 @@ const PLAN_LIMITS = {
     chatbot_messages_per_month: 2000,
     users: 10,
     storage_gb: 20,
-    ai_images_per_month: -1
+    // Was unlimited (-1) -- capped at 75/mo to match the "Organization Pro"
+    // plan's advertised 75 AI image generations/month (pricing page update,
+    // Sept 2026). Unlimited image generation is real per-image cost with no
+    // ceiling; Enterprise keeps -1 below for orgs paying for that headroom.
+    ai_images_per_month: 75
   },
   enterprise: {
     events_per_month: -1,

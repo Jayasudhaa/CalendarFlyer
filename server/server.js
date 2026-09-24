@@ -167,9 +167,14 @@ app.use('/api/admin', require('./routes/adminAuth'));
 
 // ── ROUTES ───────────────────────────────────────────────
 app.use('/api/organizations', require('./routes/organizations'));
+app.use('/api/organizations/instagram', require('./routes/instagramEvents'));
+app.use('/api/organizations/analytics', require('./routes/analyticsInsights'));
 app.use('/api/billing', require('./routes/billing'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/events', require('./routes/events'));
+app.use('/api/radar', require('./routes/radar'));
+app.use('/api/discover', require('./routes/discover'));
+app.use('/api/identity', require('./routes/identity'));
 app.use('/api', require('./routes/generate-image'));
 app.use('/api', require('./routes/rsvp'));
 app.use('/api', require('./routes/pixabay'));
@@ -223,9 +228,22 @@ app.get('/api/health', (req, res) => {
 if (process.env.NODE_ENV === 'production') {
   const buildPath = path.join(__dirname, 'dist-frontend');
   app.use(express.static(buildPath));
-  app.get('*', (req, res) =>
-    res.sendFile(path.join(buildPath, 'index.html'))
-  );
+  app.get('*', (req, res) => {
+    // An organization's own site (real subdomain or custom domain --
+    // req.orgFromHost, set by tenantMiddleware above) should never show
+    // the generic PremiumLanding marketing homepage at its bare root --
+    // that page is the bare/marketing-domain pitch ("For people" /
+    // "For organizations" / pricing), not this org's calendar. Every
+    // hostname serves the same SPA bundle here, so without this the org
+    // subdomain's own "/" fell through to client-side routing, which has
+    // no hostname awareness of its own and always matches "/" to
+    // PremiumLanding. Bare '/calendar' already resolves this same org via
+    // the same Host header (see ModeSelection.jsx's comment on this).
+    if (req.orgFromHost && req.path === '/') {
+      return res.redirect('/calendar');
+    }
+    res.sendFile(path.join(buildPath, 'index.html'));
+  });
 }
 
 // ── GLOBAL ERROR HANDLER ─────────────────────────────────

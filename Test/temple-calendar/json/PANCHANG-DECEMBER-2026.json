@@ -1,0 +1,221 @@
+[
+  {
+    "id": "panchang-dec-01",
+    "date": "2026-12-01",
+    "type": "panchang",
+    "tithi": "Dasami 11:01 AM",
+    "nakshatra": "Hasta 2:58 AM Wed"
+  },
+  {
+    "id": "panchang-dec-02",
+    "date": "2026-12-02",
+    "type": "panchang",
+    "tithi": "Ekadasi 12:28 PM",
+    "nakshatra": "Chitta 5:00 AM Thu"
+  },
+  {
+    "id": "panchang-dec-03",
+    "date": "2026-12-03",
+    "type": "panchang",
+    "tithi": "Dwadasi 1:45 PM",
+    "nakshatra": "Swathi 6:54 AM Fri"
+  },
+  {
+    "id": "panchang-dec-04",
+    "date": "2026-12-04",
+    "type": "panchang",
+    "tithi": "Trayodasi 2:52 PM",
+    "nakshatra": "Visakha 8:40 AM Sat"
+  },
+  {
+    "id": "panchang-dec-05",
+    "date": "2026-12-05",
+    "type": "panchang",
+    "tithi": "Chaturdasi 3:48 PM",
+    "nakshatra": "Anuradha 10:14 AM Sun"
+  },
+  {
+    "id": "panchang-dec-06",
+    "date": "2026-12-06",
+    "type": "panchang",
+    "tithi": "Trayodasi 1:54 PM",
+    "nakshatra": "Visakha 3:19 AM Mon"
+  },
+  {
+    "id": "panchang-dec-07",
+    "date": "2026-12-07",
+    "type": "panchang",
+    "tithi": "Chaturdasi 4:33 PM",
+    "nakshatra": "Jyeshta 11:37 AM Mon"
+  },
+  {
+    "id": "panchang-dec-08",
+    "date": "2026-12-08",
+    "type": "panchang",
+    "tithi": "Amavasya 5:52 PM",
+    "nakshatra": "Jyeshta 8:19 AM Wed",
+    "moonPhase": "new"
+  },
+  {
+    "id": "panchang-dec-09",
+    "date": "2026-12-09",
+    "type": "panchang",
+    "tithi": "Prathama 5:54 PM",
+    "nakshatra": "Purvashadha 4:47 AM Wed"
+  },
+  {
+    "id": "panchang-dec-10",
+    "date": "2026-12-10",
+    "type": "panchang",
+    "tithi": "Dwitiya 5:43 PM",
+    "nakshatra": "Uttarashadha 7:17 AM Thu"
+  },
+  {
+    "id": "panchang-dec-11",
+    "date": "2026-12-11",
+    "type": "panchang",
+    "tithi": "Tritiya 5:21 PM",
+    "nakshatra": "Sravana 9:30 AM Fri"
+  },
+  {
+    "id": "panchang-dec-12",
+    "date": "2026-12-12",
+    "type": "panchang",
+    "tithi": "Chaturthi 4:18 AM Sun",
+    "nakshatra": "Uttarashadha 5:30 PM"
+  },
+  {
+    "id": "panchang-dec-13",
+    "date": "2026-12-13",
+    "type": "panchang",
+    "tithi": "Panchami 6:48 AM Mon",
+    "nakshatra": "Sravana 8:42 PM"
+  },
+  {
+    "id": "panchang-dec-14",
+    "date": "2026-12-14",
+    "type": "panchang",
+    "tithi": "Shashti 4:28 PM",
+    "nakshatra": "Dhanishta 11:29 PM Tue"
+  },
+  {
+    "id": "panchang-dec-15",
+    "date": "2026-12-15",
+    "type": "panchang",
+    "tithi": "Saptami 3:41 PM",
+    "nakshatra": "Satabhisha 1:56 AM Wed"
+  },
+  {
+    "id": "panchang-dec-16",
+    "date": "2026-12-16",
+    "type": "panchang",
+    "tithi": "Saptami 10:21 AM",
+    "nakshatra": "Purvabhadra 3:04 AM Thu"
+  },
+  {
+    "id": "panchang-dec-17",
+    "date": "2026-12-17",
+    "type": "panchang",
+    "tithi": "Ashtami 2:33 PM",
+    "nakshatra": "Uttarabhadra 3:56 AM Fri"
+  },
+  {
+    "id": "panchang-dec-18",
+    "date": "2026-12-18",
+    "type": "panchang",
+    "tithi": "Navami 10:47 AM",
+    "nakshatra": "Revathi 3:20 AM Sat"
+  },
+  {
+    "id": "panchang-dec-19",
+    "date": "2026-12-19",
+    "type": "panchang",
+    "tithi": "Dasami 9:40 AM",
+    "nakshatra": "Aswini 2:24 AM Sun"
+  },
+  {
+    "id": "panchang-dec-20",
+    "date": "2026-12-20",
+    "type": "panchang",
+    "tithi": "Ekadasi 7:44 AM, Dwadasi 12:24 PM",
+    "nakshatra": "Swathi 12:59 AM Sun, Bharani 12:37 AM Mon"
+  },
+  {
+    "id": "panchang-dec-21",
+    "date": "2026-12-21",
+    "type": "panchang",
+    "tithi": "Trayodasi 1:54 AM Tue",
+    "nakshatra": "Krittika 10:06 PM"
+  },
+  {
+    "id": "panchang-dec-22",
+    "date": "2026-12-22",
+    "type": "panchang",
+    "tithi": "Chaturdasi 3:57 AM Wed",
+    "nakshatra": "Rohini 6:59 PM"
+  },
+  {
+    "id": "panchang-dec-23",
+    "date": "2026-12-23",
+    "type": "panchang",
+    "tithi": "Purnima 6:33 PM",
+    "nakshatra": "Mrigasira 4:26 PM",
+    "moonPhase": "full"
+  },
+  {
+    "id": "panchang-dec-24",
+    "date": "2026-12-24",
+    "type": "panchang",
+    "tithi": "Prathama 8:15 PM",
+    "nakshatra": "Arudra 2:29 PM"
+  },
+  {
+    "id": "panchang-dec-25",
+    "date": "2026-12-25",
+    "type": "panchang",
+    "tithi": "Dwitiya 10:02 PM",
+    "nakshatra": "Punarvasu 1:11 PM"
+  },
+  {
+    "id": "panchang-dec-26",
+    "date": "2026-12-26",
+    "type": "panchang",
+    "tithi": "Tritiya 7:41 AM, Chaturthi afterwards",
+    "nakshatra": "Pushyami 7:47 AM, Aslesha afterwards"
+  },
+  {
+    "id": "panchang-dec-27",
+    "date": "2026-12-27",
+    "type": "panchang",
+    "tithi": "Panchami 2:28 AM Mon",
+    "nakshatra": "Magha 4:02 AM Mon"
+  },
+  {
+    "id": "panchang-dec-28",
+    "date": "2026-12-28",
+    "type": "panchang",
+    "tithi": "Shashti 4:27 AM Tue",
+    "nakshatra": "Purvaphalguni 5:50 AM Tue"
+  },
+  {
+    "id": "panchang-dec-29",
+    "date": "2026-12-29",
+    "type": "panchang",
+    "tithi": "Saptami 6:28 AM Wed",
+    "nakshatra": "Uttaraphalguni 7:58 AM Wed"
+  },
+  {
+    "id": "panchang-dec-30",
+    "date": "2026-12-30",
+    "type": "panchang",
+    "tithi": "Ashtami 8:28 AM Thu",
+    "nakshatra": "Hasta 10:21 AM Thu"
+  },
+  {
+    "id": "panchang-dec-31",
+    "date": "2026-12-31",
+    "type": "panchang",
+    "tithi": "Navami 10:26 AM Fri",
+    "nakshatra": "Chitta 12:56 PM Fri"
+  }
+]

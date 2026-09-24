@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { useEvents } from './hooks/useEvents';
 import { getTemplateEvents, CATEGORY_TEMPLATE_LABELS, CATEGORY_TEMPLATE_PREVIEW } from './utils/eventTemplates';
+import { ORG_CATEGORY_GROUPS, ORG_CATEGORY_INFO } from './utils/organizationCategories';
 import { ArrowLeft, Building2, Globe, Palette, CreditCard, Phone, MapPin, Save, Upload, Share2, Bot, HelpCircle } from 'lucide-react';
 
 const SETTINGS_TABS = [
@@ -82,6 +83,7 @@ export default function PremiumSettings() {
     subdomain: '',
     category: '',
     address: '',
+    zip_code: '',
     phone: '',
     primary_color: '#f97316',
     secondary_color: '#fff7ed',
@@ -216,6 +218,7 @@ export default function PremiumSettings() {
         subdomain: organization.subdomain || '',
         category: organization.category || '',
         address: organization.address || '',
+        zip_code: organization.zip_code || '',
         phone: organization.phone || '',
         primary_color: organization.primary_color || '#f97316',
         secondary_color: organization.secondary_color || '#fff7ed',
@@ -566,6 +569,22 @@ export default function PremiumSettings() {
 
             <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <MapPin className="w-4 h-4 inline mr-1 text-gray-700" />ZIP Code
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={10}
+                value={formData.zip_code}
+                onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
+                placeholder="80104"
+              />
+              <p className="mt-1 text-xs text-gray-400">Used to recommend your organization to nearby visitors on the Explore page -- doesn't need to match your full address exactly.</p>
+            </div>
+
+            <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   <Phone className="w-4 h-4 inline mr-1 text-gray-700" />Contact Phone
               </label>
               <input
@@ -622,10 +641,13 @@ export default function PremiumSettings() {
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black bg-white disabled:bg-gray-50 disabled:text-gray-500"
               >
                 <option value="">Not set</option>
-                <option value="temple">Temple</option>
-                <option value="nonprofit">Nonprofit</option>
-                <option value="community">Community Org</option>
-                <option value="other">Other</option>
+                {ORG_CATEGORY_GROUPS.map((group) => (
+                  <optgroup key={group.title} label={group.title}>
+                    {group.keys.map((key) => (
+                      <option key={key} value={key}>{ORG_CATEGORY_INFO[key].label}</option>
+                    ))}
+                  </optgroup>
+                ))}
               </select>
               <p className="mt-1 text-xs text-gray-400">
                 {Boolean(organization?.category) && !categoryUnlocked

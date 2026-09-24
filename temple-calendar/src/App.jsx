@@ -15,10 +15,8 @@ import RSVPPage from './pages/RSVPPage';
 import RSVPAdmin from './pages/RSVPAdmin';
 import PhotoSharePage from './pages/PhotoSharePage';
 import PublicNav from './components/PublicNav';
-import PublicLive from './pages/PublicLive';
-import PublicPhotosPage from './pages/PublicPhotosPage';
 import PublicAlbumPage from './pages/PublicAlbumPage';
-import PublicAnnouncementsPage from './pages/PublicAnnouncementsPage';
+import PublicRadarPage from './pages/PublicRadarPage';
 import PhotoModerationPage from './pages/PhotoModerationPage';
 import SignupPage from './pages/SignupPage';
 import SignupsAdminPage from './pages/SignupsAdminPage';
@@ -69,6 +67,19 @@ function EyeIcon({ open }) {
     </svg>
   );
 }
+// Calendar, Announcements, Glimpses and Photos are now one merged page
+// (PublicCalendar.jsx, sections #events/#announcements/#glimpses/#photos)
+// instead of four separate routes. These three old routes stay alive as
+// redirects rather than disappearing outright -- orgs may already have
+// flyers, QR codes or WhatsApp messages pointing at /announcements, /live
+// or /photos, and breaking those silently would be a much worse surprise
+// than a redirect. /calendar and /public keep working exactly as before,
+// no redirect needed, since that's the merged page's own address.
+function RedirectToSection({ hash }) {
+  const location = useLocation();
+  return <Navigate to={{ pathname: '/calendar', search: location.search, hash }} replace />;
+}
+
 function AdminCalendar() {
   const { isAuthenticated, logout, user, organization, canManage } = useAuth();
   const { events, getEventsByMonth, addEvent, updateEvent, deleteEvent, importEvents, clearAll } = useEvents();
@@ -314,14 +325,31 @@ function AdminCalendar() {
 // /pricing, etc.) or the admin dashboard: this bot is themed and scoped to
 // one organization's own visitors, not prospective SaaS customers or the
 // org's own staff (who already have AdminAssistant in the dashboard).
+// Hidden on /calendar, /public, and /explore -- those pages have their own
+// content-dense layouts (and Explore already has its own "Recommended near
+// you" flow), so the floating bot competes for the same bottom-right corner
+// instead of helping. Still shown on the other visitor routes under this
+// layout (RSVP, photo share, sign-up, announcements) where a visitor lands
+// via a direct shared link with no other assistant available.
+const HIDE_CHAT_WIDGET_ON = ['/calendar', '/public', '/explore'];
+// PublicRadarPage (/explore) builds its own top bar (logo, Explore/Events/
+// Organizations/+Create, account menu) to match its redesigned layout --
+// stacking the generic single-tab PublicNav on top of that would just be
+// two navigation bars. Every other visitor route under this layout still
+// gets the shared PublicNav as before.
+const HIDE_PUBLIC_NAV_ON = ['/explore'];
+
 function PublicOrgLayout() {
   const { config: templeConfig } = useTempleConfig();
   const { events } = useEvents();
+  const location = useLocation();
+  const hideChatWidget = HIDE_CHAT_WIDGET_ON.includes(location.pathname);
+  const hidePublicNav = HIDE_PUBLIC_NAV_ON.includes(location.pathname);
   return (
     <>
-      <PublicNav />
+      {!hidePublicNav && <PublicNav />}
       <Outlet />
-      <WebChatWidget events={events} organization={templeConfig} />
+      {!hideChatWidget && <WebChatWidget events={events} organization={templeConfig} />}
     </>
   );
 }
@@ -380,10 +408,11 @@ function App() {
           <Route element={<PublicOrgLayout />}>
             <Route path="/calendar" element={<PublicCalendar />} />
             <Route path="/public" element={<PublicCalendar />} />
-            <Route path="/live" element={<PublicLive />} />
-            <Route path="/photos" element={<PublicPhotosPage />} />
+            <Route path="/live" element={<RedirectToSection hash="glimpses" />} />
+            <Route path="/photos" element={<RedirectToSection hash="photos" />} />
             <Route path="/photos/album/:albumId" element={<PublicAlbumPage />} />
-            <Route path="/announcements" element={<PublicAnnouncementsPage />} />
+            <Route path="/explore" element={<PublicRadarPage />} />
+            <Route path="/announcements" element={<RedirectToSection hash="announcements" />} />
             <Route path="/rsvp/:eventId" element={<RSVPPage />} />
             <Route path="/photos/:eventId" element={<PhotoSharePage />} />
             <Route path="/signups/:eventId" element={<SignupPage />} />

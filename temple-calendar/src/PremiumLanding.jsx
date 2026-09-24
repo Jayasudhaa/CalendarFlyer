@@ -6,12 +6,58 @@
  * monochrome marketing site.
  */
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GlassCard from './GlassCard';
 import PremiumButton from './PremiumButton';
 import MarketingNav from './components/MarketingNav';
 import MarketingFooter from './components/MarketingFooter';
 import { useAuth } from './contexts/AuthContext';
+
+// Organization categories this app actually stores (see CATEGORY_LABELS /
+// CATEGORY_META in pages/PublicRadarPage.jsx and the signup taxonomy in
+// OnboardingWizard.jsx) -- not the illustrative "Spiritual / Arts & Culture /
+// Music & Dance" pill set from the original mockup, which doesn't
+// correspond to any field the backend actually stores.
+// Real, actually-assignable category keys (see OnboardingWizard.jsx /
+// utils/organizationCategories.js) -- cultural_association/community_center
+// below used to be illustrative placeholders no real org could ever have,
+// so these pills silently matched nothing. A representative handful here;
+// "More" links to /explore, which has the full category list.
+const TEASER_CATEGORY_FILTERS = [
+  { key: 'temple', label: 'Temples' },
+  { key: 'dance_school', label: 'Dance' },
+  { key: 'restaurant', label: 'Restaurants' },
+  { key: 'community', label: 'Community' },
+];
+function teaserCategoryLabel(cat) {
+  const known = TEASER_CATEGORY_FILTERS.find((f) => f.key === cat);
+  if (known) return known.label;
+  if (!cat) return 'Organization';
+  return cat.split('_').map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
+}
+function teaserIsToday(dateStr) {
+  if (!dateStr) return false;
+  const t = new Date();
+  const iso = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+  return dateStr === iso;
+}
+function teaserIsThisWeekend(dateStr) {
+  if (!dateStr) return false;
+  const d = new Date(dateStr + 'T00:00:00');
+  if (Number.isNaN(d.getTime())) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((d - today) / 86400000);
+  if (diffDays < 0 || diffDays > 6) return false;
+  const day = d.getDay();
+  return day === 0 || day === 6;
+}
+function teaserFormatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  if (Number.isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
 
 function FeatureIcon({ children }) {
   return (
@@ -112,6 +158,28 @@ function DemoCard({ item, index }) {
 
 export default function PremiumLanding() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Lets MarketingNav's "For Organizations" link work as a same-page anchor
+  // (/#for-organizations) whether you're already on the homepage or arriving
+  // fresh from another page -- plain browser hash-scroll doesn't reliably
+  // fire on client-side route changes, so we do it ourselves on mount/hash
+  // change, after layout has a moment to settle.
+  useEffect(() => {
+    if (!location.hash) return;
+    const id = location.hash.slice(1);
+    // Retried a few times: right after a cross-page navigation, AuthContext /
+    // TempleConfig are still resolving and can trigger a re-render that
+    // collapses and regrows page height, which clamps scrollY back to 0
+    // between our attempts. A few spaced retries ride that out; the last
+    // one or two are harmless no-ops once layout has settled.
+    const delays = [100, 400, 900, 1500];
+    const timers = delays.map((ms) => setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, ms));
+    return () => timers.forEach(clearTimeout);
+  }, [location.hash]);
   const { startGuestSandbox } = useAuth();
   const [sandboxLoading, setSandboxLoading] = useState(false);
   const [sandboxError, setSandboxError] = useState('');
@@ -132,12 +200,198 @@ export default function PremiumLanding() {
     }
   };
 
+
+  // "Happening near you" teaser -- pulls from the same public,
+  // unauthenticated GET /api/radar feed /explore uses (server/routes/radar.js),
+  // so nothing here is fabricated. Search and the pills below filter what's
+  // already loaded; "See all on Explore" hands off to the full page for
+  // everything this teaser doesn't cover (Community Passport, nearby-orgs
+  // list, saved events, etc).
+  const [teaserEvents, setTeaserEvents] = useState([]);
+  const [teaserLoading, setTeaserLoading] = useState(true);
+  const [teaserError, setTeaserError] = useState('');
+  const [teaserQuery, setTeaserQuery] = useState('');
+  const [teaserFilter, setTeaserFilter] = useState(null); // 'today' | 'weekend' | a category key | null
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/radar?limit=40');
+        if (!res.ok) throw new Error('radar fetch failed');
+        const data = await res.json();
+        if (!cancelled) setTeaserEvents(Array.isArray(data.events) ? data.events : []);
+      } catch {
+        if (!cancelled) setTeaserError('Could not load nearby events right now.');
+      } finally {
+        if (!cancelled) setTeaserLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const teaserFiltered = teaserEvents.filter((ev) => {
+    if (teaserQuery.trim()) {
+      const q = teaserQuery.trim().toLowerCase();
+      const hay = `${ev.title || ''} ${ev.org?.name || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    if (teaserFilter === 'today') return teaserIsToday(ev.date);
+    if (teaserFilter === 'weekend') return teaserIsThisWeekend(ev.date);
+    if (teaserFilter) return ev.org?.category === teaserFilter;
+    return true;
+  }).slice(0, 4);
+
+  const handleTeaserSearch = (e) => {
+    e.preventDefault();
+    // Filtering already happens live as the fields above change -- this
+    // just keeps Enter/click on "Search" from reloading the page.
+  };
+
   return (
     <div className="min-h-screen bg-white text-black overflow-hidden">
       <MarketingNav />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden px-6 pt-32 pb-20 md:pt-40 lg:pt-48 lg:pb-28" style={{ background: '#f4f4f6' }}>
+      {/* Good things happen near you -- CalendarFly's other audience:
+          someone who just wants to find real events happening nearby, not
+          sign up to manage anything. Same monochrome design system as the
+          rest of this page (see file header) -- deliberately not styled
+          like /explore's warm/orange treatment, since that page is one
+          click away via "See all on Explore" rather than duplicated here.
+          The event row below is the live public GET /api/radar feed, the
+          same one /explore uses -- no fabricated attendee counts, stock
+          photos, or "trending" labels. */}
+      <section className="pt-32 md:pt-40 pb-32 px-6 bg-white text-black border-t border-gray-100">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <div className="inline-block text-xs font-semibold tracking-widest text-black/40 mb-6 uppercase">For people, not just organizations</div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-5 leading-tight">
+              Good things happen
+              <br />
+              <span className="italic" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>near you.</span>
+            </h2>
+            <p className="text-lg text-black/60 mb-8 leading-relaxed">
+              Every temple, cultural group, and nonprofit on CalendarFly in one place. No account needed to browse.
+            </p>
+            <form onSubmit={handleTeaserSearch} className="flex gap-2 max-w-lg mx-auto mb-5">
+              <input
+                type="text"
+                value={teaserQuery}
+                onChange={(e) => setTeaserQuery(e.target.value)}
+                placeholder="Search events or organizations..."
+                className="flex-1 px-5 py-3 rounded-full border border-gray-300 focus:outline-none focus:border-black text-sm"
+              />
+              <PremiumButton type="submit" variant="dark" size="md">Search</PremiumButton>
+            </form>
+            <div className="flex flex-wrap justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => setTeaserFilter(teaserFilter === 'today' ? null : 'today')}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition ${teaserFilter === 'today' ? 'bg-black text-white border-black' : 'border-gray-300 text-black/60 hover:border-black/60'}`}
+              >
+                Today
+              </button>
+              <button
+                type="button"
+                onClick={() => setTeaserFilter(teaserFilter === 'weekend' ? null : 'weekend')}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition ${teaserFilter === 'weekend' ? 'bg-black text-white border-black' : 'border-gray-300 text-black/60 hover:border-black/60'}`}
+              >
+                This weekend
+              </button>
+              {TEASER_CATEGORY_FILTERS.map((f) => (
+                <button
+                  key={f.key}
+                  type="button"
+                  onClick={() => setTeaserFilter(teaserFilter === f.key ? null : f.key)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition ${teaserFilter === f.key ? 'bg-black text-white border-black' : 'border-gray-300 text-black/60 hover:border-black/60'}`}
+                >
+                  {f.label}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => navigate('/explore')}
+                className="px-4 py-1.5 rounded-full text-xs font-semibold border border-gray-300 text-black/60 hover:border-black/60 transition"
+              >
+                More &rarr;
+              </button>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-5 gap-10 items-start">
+            <div className="lg:col-span-2 rounded-3xl overflow-hidden" style={{ aspectRatio: '4 / 5' }}>
+              <img
+                src="/marketing/contact-temple.jpg"
+                alt="A family at a temple by the water at dusk"
+                className="w-full h-full object-cover"
+                style={{ filter: 'grayscale(1)' }}
+              />
+            </div>
+
+            <div className="lg:col-span-3">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-xl font-bold">Happening near you</h3>
+                <button
+                  type="button"
+                  onClick={() => navigate('/explore')}
+                  className="text-sm font-semibold underline underline-offset-4 hover:no-underline flex-shrink-0"
+                >
+                  See all on Explore &rarr;
+                </button>
+              </div>
+
+              {teaserLoading ? (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {[0, 1, 2, 3].map((i) => (
+                    <div key={i} className="h-28 rounded-2xl bg-gray-100 animate-pulse" />
+                  ))}
+                </div>
+              ) : teaserError ? (
+                <p className="text-black/50 text-sm">
+                  {teaserError}{' '}
+                  <button type="button" onClick={() => navigate('/explore')} className="underline">Try Explore instead &rarr;</button>
+                </p>
+              ) : teaserFiltered.length === 0 ? (
+                <p className="text-black/50 text-sm">
+                  Nothing matches yet.{' '}
+                  <button type="button" onClick={() => navigate('/explore')} className="underline">See everything on Explore &rarr;</button>
+                </p>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {teaserFiltered.map((ev) => (
+                    <button
+                      key={ev.event_id}
+                      type="button"
+                      onClick={() => navigate('/explore')}
+                      className="text-left rounded-2xl border border-gray-200 hover:border-black/40 transition p-4 flex gap-3"
+                    >
+                      <div className="w-14 h-14 rounded-xl flex-shrink-0 bg-gray-100 overflow-hidden flex items-center justify-center">
+                        {ev.image_url ? (
+                          <img src={ev.image_url} alt="" className="w-full h-full object-cover" style={{ filter: 'grayscale(1)' }} />
+                        ) : (
+                          <span className="text-lg font-bold text-black/30">{(ev.org?.name || '?').charAt(0)}</span>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-bold truncate">{ev.title}</div>
+                        <div className="text-xs text-black/50 truncate">{ev.org?.name} &middot; {teaserCategoryLabel(ev.org?.category)}</div>
+                        <div className="text-xs text-black/40 mt-1">{teaserFormatDate(ev.date)}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Organizations hero -- moved here from the very top of the page.
+          This is CalendarFly's admin-facing pitch (the dashboard preview,
+          "Events simplified, Community amplified"), so it belongs under
+          #for-organizations, not as the default view for every visitor.
+          The "For people" section above is now the page's actual top. */}
+      <section id="for-organizations" className="relative overflow-hidden px-6 py-32 scroll-mt-24" style={{ background: '#f4f4f6' }}>
         {/* Layered grey/white facets + monochrome geometry — a textured,
             "premium" backdrop instead of a flat fill, still strictly
             black & white so it matches the rest of the brand. */}
@@ -242,7 +496,7 @@ export default function PremiumLanding() {
           so it reads as "the mess CalendarFly replaces" rather than more
           product marketing. Copy is set natively here rather than baked
           into an image, so it stays on-brand typographically. */}
-      <section className="py-32 px-6 border-t border-gray-200">
+      <section className="py-16 px-6 border-t border-gray-200">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <div className="rounded-3xl overflow-hidden border border-black/10 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.25)]">
             <img

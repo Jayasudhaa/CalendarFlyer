@@ -1,0 +1,808 @@
+[
+  {
+    "TableName": "calendarfly_staging_calendarfly_organizations",
+    "KeySchema": [
+      {
+        "AttributeName": "org_id",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "org_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "subdomain",
+        "AttributeType": "S"
+      }
+    ],
+    "GlobalSecondaryIndexes": [
+      {
+        "IndexName": "subdomain-index",
+        "KeySchema": [
+          {
+            "AttributeName": "subdomain",
+            "KeyType": "HASH"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_calendarfly_users",
+    "KeySchema": [
+      {
+        "AttributeName": "user_id",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "user_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "org_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "email",
+        "AttributeType": "S"
+      }
+    ],
+    "GlobalSecondaryIndexes": [
+      {
+        "IndexName": "org-index",
+        "KeySchema": [
+          {
+            "AttributeName": "org_id",
+            "KeyType": "HASH"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      },
+      {
+        "IndexName": "email-index",
+        "KeySchema": [
+          {
+            "AttributeName": "email",
+            "KeyType": "HASH"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_calendarfly_events",
+    "KeySchema": [
+      {
+        "AttributeName": "event_id",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "event_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "org_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "discoverability",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "date",
+        "AttributeType": "S"
+      }
+    ],
+    "GlobalSecondaryIndexes": [
+      {
+        "IndexName": "org-index",
+        "KeySchema": [
+          {
+            "AttributeName": "org_id",
+            "KeyType": "HASH"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      },
+      {
+        "IndexName": "radar-index",
+        "KeySchema": [
+          {
+            "AttributeName": "discoverability",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "date",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_calendarfly_reservations",
+    "KeySchema": [
+      {
+        "AttributeName": "reservation_key",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "reservation_key",
+        "AttributeType": "S"
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_calendarfly_broadcasts",
+    "KeySchema": [
+      {
+        "AttributeName": "broadcast_id",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "broadcast_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "org_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "created_at",
+        "AttributeType": "N"
+      },
+      {
+        "AttributeName": "status",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "scheduled_for",
+        "AttributeType": "N"
+      }
+    ],
+    "GlobalSecondaryIndexes": [
+      {
+        "IndexName": "org-index",
+        "KeySchema": [
+          {
+            "AttributeName": "org_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "created_at",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      },
+      {
+        "IndexName": "status-index",
+        "KeySchema": [
+          {
+            "AttributeName": "status",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "scheduled_for",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_calendarfly_community_members",
+    "KeySchema": [
+      {
+        "AttributeName": "member_id",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "member_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "org_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "phone",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "email",
+        "AttributeType": "S"
+      }
+    ],
+    "GlobalSecondaryIndexes": [
+      {
+        "IndexName": "org-phone-index",
+        "KeySchema": [
+          {
+            "AttributeName": "org_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "phone",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      },
+      {
+        "IndexName": "org-email-index",
+        "KeySchema": [
+          {
+            "AttributeName": "org_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "email",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      },
+      {
+        "IndexName": "email-index",
+        "KeySchema": [
+          {
+            "AttributeName": "email",
+            "KeyType": "HASH"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_calendarfly_identities",
+    "KeySchema": [
+      {
+        "AttributeName": "identity_id",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "identity_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "email",
+        "AttributeType": "S"
+      }
+    ],
+    "GlobalSecondaryIndexes": [
+      {
+        "IndexName": "email-index",
+        "KeySchema": [
+          {
+            "AttributeName": "email",
+            "KeyType": "HASH"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_calendarfly_otp_codes",
+    "KeySchema": [
+      {
+        "AttributeName": "otp_key",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "otp_key",
+        "AttributeType": "S"
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_calendarfly_event_photos",
+    "KeySchema": [
+      {
+        "AttributeName": "photo_id",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "photo_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "event_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "org_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "created_at",
+        "AttributeType": "N"
+      }
+    ],
+    "GlobalSecondaryIndexes": [
+      {
+        "IndexName": "event-index",
+        "KeySchema": [
+          {
+            "AttributeName": "event_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "created_at",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      },
+      {
+        "IndexName": "org-index",
+        "KeySchema": [
+          {
+            "AttributeName": "org_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "created_at",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_calendarfly_signup_sheets",
+    "KeySchema": [
+      {
+        "AttributeName": "sheet_id",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "sheet_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "event_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "org_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "created_at",
+        "AttributeType": "N"
+      }
+    ],
+    "GlobalSecondaryIndexes": [
+      {
+        "IndexName": "event-index",
+        "KeySchema": [
+          {
+            "AttributeName": "event_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "created_at",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      },
+      {
+        "IndexName": "org-index",
+        "KeySchema": [
+          {
+            "AttributeName": "org_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "created_at",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_calendarfly_signup_slots",
+    "KeySchema": [
+      {
+        "AttributeName": "slot_id",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "slot_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "sheet_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "sort_order",
+        "AttributeType": "N"
+      }
+    ],
+    "GlobalSecondaryIndexes": [
+      {
+        "IndexName": "sheet-index",
+        "KeySchema": [
+          {
+            "AttributeName": "sheet_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "sort_order",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_calendarfly_signup_entries",
+    "KeySchema": [
+      {
+        "AttributeName": "entry_id",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "entry_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "slot_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "sheet_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "member_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "org_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "created_at",
+        "AttributeType": "N"
+      }
+    ],
+    "GlobalSecondaryIndexes": [
+      {
+        "IndexName": "slot-index",
+        "KeySchema": [
+          {
+            "AttributeName": "slot_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "created_at",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      },
+      {
+        "IndexName": "sheet-index",
+        "KeySchema": [
+          {
+            "AttributeName": "sheet_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "created_at",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      },
+      {
+        "IndexName": "member-index",
+        "KeySchema": [
+          {
+            "AttributeName": "member_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "created_at",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      },
+      {
+        "IndexName": "org-index",
+        "KeySchema": [
+          {
+            "AttributeName": "org_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "created_at",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_calendarfly_documents",
+    "KeySchema": [
+      {
+        "AttributeName": "doc_id",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "doc_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "org_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "created_at",
+        "AttributeType": "N"
+      }
+    ],
+    "GlobalSecondaryIndexes": [
+      {
+        "IndexName": "org-index",
+        "KeySchema": [
+          {
+            "AttributeName": "org_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "created_at",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_calendarfly_livestreams",
+    "KeySchema": [
+      {
+        "AttributeName": "stream_id",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "stream_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "event_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "org_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "start_time",
+        "AttributeType": "N"
+      }
+    ],
+    "GlobalSecondaryIndexes": [
+      {
+        "IndexName": "event-index",
+        "KeySchema": [
+          {
+            "AttributeName": "event_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "start_time",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      },
+      {
+        "IndexName": "org-index",
+        "KeySchema": [
+          {
+            "AttributeName": "org_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "start_time",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_calendarfly_photo_albums",
+    "KeySchema": [
+      {
+        "AttributeName": "album_id",
+        "KeyType": "HASH"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "album_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "event_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "org_id",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "created_at",
+        "AttributeType": "N"
+      }
+    ],
+    "GlobalSecondaryIndexes": [
+      {
+        "IndexName": "event-index",
+        "KeySchema": [
+          {
+            "AttributeName": "event_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "created_at",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      },
+      {
+        "IndexName": "org-index",
+        "KeySchema": [
+          {
+            "AttributeName": "org_id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "created_at",
+            "KeyType": "RANGE"
+          }
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  },
+  {
+    "TableName": "calendarfly_staging_temple_rsvp",
+    "KeySchema": [
+      {
+        "AttributeName": "eventId",
+        "KeyType": "HASH"
+      },
+      {
+        "AttributeName": "rsvpId",
+        "KeyType": "RANGE"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "eventId",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "rsvpId",
+        "AttributeType": "S"
+      }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+  }
+]

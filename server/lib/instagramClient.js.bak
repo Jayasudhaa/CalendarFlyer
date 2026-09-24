@@ -1,0 +1,104 @@
+// lib/instagramClient.js
+//
+// Direct "Continue with Instagram" (Business Login for Instagram) — separate
+// login product from Facebook, kept in its own file/flow on purpose. Requires:
+// npm install axios
+
+const axios = require('axios');
+
+const {
+  INSTAGRAM_APP_ID,
+  INSTAGRAM_APP_SECRET,
+  INSTAGRAM_REDIRECT_URI,
+} = process.env;
+
+const SCOPES = [
+  'instagram_business_basic',
+  'instagram_business_content_publish',
+].join(',');
+
+function buildAuthorizeUrl(state) {
+  const params = new URLSearchParams({
+    client_id: INSTAGRAM_APP_ID,
+    redirect_uri: INSTAGRAM_REDIRECT_URI,
+    response_type: 'code',
+    scope: SCOPES,
+    state,
+  });
+  return `https://www.instagram.com/oauth/authorize?${params.toString()}`;
+}
+
+async function exchangeCodeForShortLivedToken(code) {
+  const form = new URLSearchParams({
+    client_id: INSTAGRAM_APP_ID,
+    client_secret: INSTAGRAM_APP_SECRET,
+    grant_type: 'authorization_code',
+    redirect_uri: INSTAGRAM_REDIRECT_URI,
+    code,
+  });
+
+  const { data } = await axios.post(
+    'https://api.instagram.com/oauth/access_token',
+    form,
+    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+  );
+  return data; // { access_token, user_id, permissions }
+}
+
+async function exchangeForLongLivedToken(shortLivedToken) {
+  const { data } = await axios.get('https://graph.instagram.com/access_token', {
+    params: {
+      grant_type: 'ig_exchange_token',
+      client_secret: INSTAGRAM_APP_SECRET,
+      access_token: shortLivedToken,
+    },
+  });
+  return data; // { access_token, token_type, expires_in }
+}
+
+async function refreshLongLivedToken(longLivedToken) {
+  const { data } = await axios.get('https://graph.instagram.com/refresh_access_token', {
+    params: {
+      grant_type: 'ig_refresh_token',
+      access_token: longLivedToken,
+    },
+  });
+  return data; // { access_token, token_type, expires_in }
+}
+
+async function getProfile(igUserId, accessToken) {
+  const { data } = await axios.get(`https://graph.instagram.com/v21.0/${igUserId}`, {
+    params: {
+      fields: 'id,username,account_type,name,profile_picture_url',
+      access_token: accessToken,
+    },
+  });
+  return data;
+}
+
+async function createMediaContainer(igUserId, accessToken, { imageUrl, caption, publishNow = true, scheduledPublishTime }) {
+  const params = { image_url: imageUrl, caption, access_token: accessToken };
+  if (!publishNow) {
+    params.published = false;
+    if (scheduledPublishTime) params.scheduled_publish_time = scheduledPublishTime;
+  }
+  const { data } = await axios.post(`https://graph.instagram.com/v21.0/${igUserId}/media`, null, { params });
+  return data; // { id: containerId }
+}
+
+async function publishMedia(igUserId, accessToken, containerId) {
+  const { data } = await axios.post(`https://graph.instagram.com/v21.0/${igUserId}/media_publish`, null, {
+    params: { creation_id: containerId, access_token: accessToken },
+  });
+  return data; // { id: mediaId }
+}
+
+module.exports = {
+  buildAuthorizeUrl,
+  exchangeCodeForShortLivedToken,
+  exchangeForLongLivedToken,
+  refreshLongLivedToken,
+  getProfile,
+  createMediaContainer,
+  publishMedia,
+};

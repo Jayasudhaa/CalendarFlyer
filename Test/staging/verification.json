@@ -1,0 +1,34 @@
+{
+  "url": "https://vv6hpskams.us-east-2.awsapprunner.com",
+  "checkedAt": "2026-09-22T04:58:10.330Z",
+  "results": [
+    {
+      "name": "staging identity",
+      "pass": true
+    },
+    {
+      "name": "anonymous access blocked",
+      "pass": true
+    },
+    {
+      "name": "secure login cookie",
+      "pass": true
+    },
+    {
+      "name": "frontend and staging banner",
+      "pass": true
+    },
+    {
+      "name": "external integrations blocked",
+      "pass": true
+    },
+    {
+      "name": "guest login and event create/read/update",
+      "pass": true
+    },
+    {
+      "name": "test event cleanup",
+      "pass": true
+    }
+  ]
+}

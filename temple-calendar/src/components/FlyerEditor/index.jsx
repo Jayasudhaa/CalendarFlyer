@@ -263,8 +263,15 @@ export default function FlyerEditor({ event, onClose }) {
   const resumeDraft = resumeDraftRef.current || null;
 
   // ── Org type — drives which AI image prompt library/guardrails apply ─────
+  // Only org types with their own distinct prompt config in
+  // server/config/aiImageDefaults.js get passed through as-is; everything
+  // else (regional/language associations, mela/fair organizer, nonprofit,
+  // plain community org, other) shares the generic 'community' style — see
+  // resolveCategory() in server/routes/generate-image.js, which applies the
+  // same fallback server-side regardless of what's sent here.
+  const DISTINCT_PROMPT_CATEGORIES = ['temple', 'dance_school', 'music_school', 'yoga_school', 'restaurant', 'grocery'];
   const { config: templeConfig } = useTempleConfig();
-  const promptCategory = templeConfig?.category === 'temple' ? 'temple' : 'community';
+  const promptCategory = DISTINCT_PROMPT_CATEGORIES.includes(templeConfig?.category) ? templeConfig.category : 'community';
 
   // ── Core state ───────────────────────────────────────────────────────────
   const [layout,       setLayout]      = useState(() => resumeDraft?.layout || 'portrait');

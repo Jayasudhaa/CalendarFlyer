@@ -168,16 +168,29 @@ export default function SocialConnectButtons() {
             <InstagramIcon />
             {connectingIg ? 'Opening Instagram…' : 'Continue with Instagram'}
           </button>
-        ) : (
+        ) : null}
+        {!ig?.connected && (
+          <p className="text-sm text-gray-500 mt-3">
+            Don't want to connect yet? You can still pull in specific events by pasting a public post link —{' '}
+            <a href="/signups-admin?tab=instagram" className="text-gray-700 hover:text-gray-900 font-semibold">try it here</a>.
+          </p>
+        )}
+        {ig?.connected && (
+
           <div className="flex items-center justify-between flex-wrap gap-3">
             <p className="text-base text-gray-500">Connected as: <span className="font-semibold text-gray-800">@{ig.username}</span></p>
-            <button
-              type="button"
-              onClick={() => { playClick(); disconnect('instagram'); }}
-              className="text-sm text-red-600 hover:text-red-700 font-semibold"
-            >
-              Disconnect Instagram
-            </button>
+            <div className="flex items-center gap-4">
+              <a href="/signups-admin?tab=instagram" className="text-sm text-gray-700 hover:text-gray-900 font-semibold">
+                Review Instagram events →
+              </a>
+              <button
+                type="button"
+                onClick={() => { playClick(); disconnect('instagram'); }}
+                className="text-sm text-red-600 hover:text-red-700 font-semibold"
+              >
+                Disconnect Instagram
+              </button>
+            </div>
           </div>
         )}
       </div>

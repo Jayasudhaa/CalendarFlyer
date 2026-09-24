@@ -24,10 +24,20 @@ function adminAuthHeaders(adminCode) {
 }
 
 
-const CATEGORY_ORDER = ['temple', 'community'];
+// The 5 org types with their own distinct AI-image prompt config (see
+// KNOWN_CATEGORIES in server/utils/aiSettingsStore.js). Every other org
+// type -- regional/language associations, mela/fair organizer, nonprofit,
+// plain community org, other -- shares the 'community' config below, so
+// there's nothing separate to edit for them here.
+const CATEGORY_ORDER = ['temple', 'community', 'dance_school', 'music_school', 'yoga_school', 'restaurant', 'grocery'];
 const CATEGORY_TITLES = {
   temple: '🕉️ Temple org type',
-  community: '🏘️ Nonprofit / Community / Other org types',
+  community: '🏘️ Nonprofit / Community / Regional Associations / Other org types',
+  dance_school: '💃 Dance School org type',
+  music_school: '🎵 Music School org type',
+  yoga_school: '🧘 Yoga School org type',
+  restaurant: '🍽️ Restaurant org type',
+  grocery: '🛒 Grocery Store org type',
 };
 
 function toLines(arr) {

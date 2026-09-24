@@ -71,10 +71,10 @@ export default function FeaturesPage() {
 
       <section className="pt-40 md:pt-48 pb-20 px-6">
         <div className="max-w-5xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Everything you need to run
-            <br />
-            your organization's calendar
+            <br className="hidden md:block" />
+            {' '}your organization's calendar
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Calendar, bulk imports, RSVPs, flyers, broadcast and a chatbot — built specifically for small orgs, nonprofits, and community organizations, not adapted from a generic events tool.

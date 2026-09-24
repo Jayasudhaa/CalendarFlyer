@@ -20,6 +20,7 @@ const dynamodb = DynamoDBDocumentClient.from(client);
 const { getSettings, saveSettings, KNOWN_CATEGORIES } = require('../utils/aiSettingsStore');
 const { getOrganization, updateOrganization, PLAN_FEATURES } = require('../organizations');
 const { sendServerError } = require('../utils/errors');
+const { testEventSource } = require('../utils/eventSourceParser');
 
 let openai = null;
 function getOpenAI() {
@@ -536,5 +537,27 @@ router.post('/library-image', superAdminGuard, async (req, res) => {
     return sendServerError(res, err, 'Image generation failed');
   }
 });
+
+
+// Events strategy, "Test Source" step (see ROADMAP.md) -- checks whether
+// a pasted event-page URL actually has JSON-LD Event markup or an ICS
+// link before an org/source is ever activated for automatic collection.
+// No storage yet -- this is purely the detection step, run by hand
+// against real org sites to find out whether the approach works at all
+// before building the scheduler/dedup/review-queue machinery around it.
+router.post('/event-sources/test', superAdminGuard, async (req, res) => {
+  const { url } = req.body || {};
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ error: 'A url is required.' });
+  }
+  try {
+    const result = await testEventSource(url);
+    res.json(result);
+  } catch (err) {
+    console.error('[ADMIN] event-sources/test failed:', err.message);
+    return sendServerError(res, err, 'Could not test that source.');
+  }
+});
+
 
 module.exports = router;

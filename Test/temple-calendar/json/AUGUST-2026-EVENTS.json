@@ -1,0 +1,175 @@
+[
+  {
+    "id": "aug-02",
+    "date": "2026-08-02",
+    "title": "Sri Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturthi 10:48 AM",
+    "nakshatra": "Purvabhadra 9:08 AM"
+  },
+  {
+    "id": "aug-06",
+    "date": "2026-08-06",
+    "title": "Adi Krittika",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Ashtami 6:24 AM, Navami afterwards",
+    "nakshatra": "Bharani 7:43 AM"
+  },
+  {
+    "id": "aug-08",
+    "date": "2026-08-08",
+    "title": "Sri Venkateswara Kalyanam",
+    "time": "11:00 AM",
+    "type": "kalyanam",
+    "tithi": "Ekadasi 10:38 PM",
+    "nakshatra": "Mrigasira 2:15 AM Sun"
+  },
+  {
+    "id": "aug-09",
+    "date": "2026-08-09",
+    "title": "Sri Vijaya Ganapathi / Murugan Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwadasi 7:34 PM",
+    "nakshatra": "Arudra 11:50 PM"
+  },
+  {
+    "id": "20260812-moon",
+    "date": "2026-08-12",
+    "title": "Amavasya",
+    "time": "Amavasya",
+    "type": "panchang",
+    "tithi": "Amavasya 10:37 AM",
+    "nakshatra": "Aslesha 2:14 PM",
+    "moonPhase": "new"
+  },
+  {
+    "id": "aug-14-andal",
+    "date": "2026-08-14",
+    "title": "Sri Andal Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwitiya 6:15 AM, Tritiya afterwards",
+    "nakshatra": "Purvaphalguni 3:10 PM"
+  },
+  {
+    "id": "aug-14-andal-jayanti",
+    "date": "2026-08-14",
+    "title": "Sri Andal Jayanti",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Dwitiya 6:15 AM, Tritiya afterwards",
+    "nakshatra": "Purvaphalguni 3:10 PM"
+  },
+  {
+    "id": "aug-15",
+    "date": "2026-08-15",
+    "title": "Sri Mahalakshmi Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturthi 4:23 AM Sun",
+    "nakshatra": "Uttaraphalguni 2:45 PM"
+  },
+  {
+    "id": "aug-16-sai-baba",
+    "date": "2026-08-16",
+    "title": "Sri Shirdi Sai Baba Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Panchami 4:32 AM Mon",
+    "nakshatra": "Hasta 3:21 PM"
+  },
+  {
+    "id": "aug-16-garuda-panchami",
+    "date": "2026-08-16",
+    "title": "Garuda Panchami / Naga Panchami",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Panchami 4:32 AM Mon",
+    "nakshatra": "Hasta 3:21 PM"
+  },
+  {
+    "id": "aug-21",
+    "date": "2026-08-21",
+    "title": "Sri Varalakshmi Vratam",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Navami 11:08 AM",
+    "nakshatra": "Jyeshta 2:09 AM Sat"
+  },
+  {
+    "id": "aug-23",
+    "date": "2026-08-23",
+    "title": "Sri Hanuman Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dasami 1:30 PM",
+    "nakshatra": "Mula 5:12 AM Sun"
+  },
+  {
+    "id": "aug-23-sudarsana",
+    "date": "2026-08-23",
+    "title": "Sri Sudarsana/Narasimha Homam & Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Ekadasi 3:47 PM",
+    "nakshatra": "Purvashadha 7:56 AM Mon"
+  },
+  {
+    "id": "aug-26",
+    "date": "2026-08-26",
+    "title": "Rigveda Upakarma",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Chaturdasi 8:41 PM",
+    "nakshatra": "Sravana 12:19 PM"
+  },
+  {
+    "id": "aug-27-avani-avittam",
+    "date": "2026-08-27",
+    "title": "Yajurveda Upakarma / Avani Avittam / Rakhi Purnima / Lunar Eclipse",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Purnima 9:21 PM",
+    "nakshatra": "Dhanishta 1:47 PM"
+  },
+  {
+    "id": "aug-27-satyanarayana",
+    "date": "2026-08-27",
+    "title": "Sri Satyanarayana Swamy Pooja & Vratham",
+    "time": "10:00 AM",
+    "type": "pooja",
+    "tithi": "Purnima 9:21 PM",
+    "nakshatra": "Dhanishta 1:47 PM"
+  },
+  {
+    "id": "20260827-moon",
+    "date": "2026-08-27",
+    "title": "Purnima",
+    "time": "Purnima",
+    "type": "panchang",
+    "tithi": "Purnima 9:21 PM",
+    "nakshatra": "Uttarabhadra 12:57 AM",
+    "moonPhase": "full"
+  },
+  {
+    "id": "aug-29",
+    "date": "2026-08-29",
+    "title": "Sri Raghavendra Swamy Aradhana",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Dwitiya 9:09 PM",
+    "nakshatra": "Purvabhadra 3:13 PM"
+  },
+  {
+    "id": "aug-29-raghavendra-abhishekam",
+    "date": "2026-08-29",
+    "title": "Sri Raghavendra Swamy Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwitiya 9:09 PM",
+    "nakshatra": "Purvabhadra 3:13 PM"
+  }
+]

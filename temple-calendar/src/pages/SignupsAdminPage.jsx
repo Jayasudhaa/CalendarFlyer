@@ -88,6 +88,18 @@ export default function SignupsAdminPage() {
   const [searchResult, setSearchResult] = useState(null); // { answer, sources }
   const [searchError, setSearchError] = useState('');
 
+  // ── "Connect" -> Instagram Events (server/routes/instagramEvents.js) ──
+  const [igCandidates, setIgCandidates] = useState([]);
+  const [igLoading, setIgLoading] = useState(false);
+  const [igError, setIgError] = useState('');
+  const [igActionError, setIgActionError] = useState('');
+  const [igPasteUrl, setIgPasteUrl] = useState('');
+  const [igPasting, setIgPasting] = useState(false);
+  const [igSyncing, setIgSyncing] = useState(false);
+  const [igSyncBanner, setIgSyncBanner] = useState('');
+  const [igEdits, setIgEdits] = useState({}); // candidate_id -> { title, date, time, location }
+  const [igBusyId, setIgBusyId] = useState(null);
+
   const defaultType = useMemo(() => getDefaultSignupType(organization?.category), [organization]);
 
   const loadSheets = useCallback(async () => {
@@ -335,6 +347,9 @@ Spots are open — sign up here: ${getSignupUrl(event)}`;
       const g = params.get('google');
       if (g) setGoogleBanner(g);
       window.history.replaceState({}, '', '/signups-admin');
+    } else if (params.get('tab') === 'instagram') {
+      setTab('instagram');
+      window.history.replaceState({}, '', '/signups-admin');
     }
   }, []);
 
@@ -462,6 +477,112 @@ Spots are open — sign up here: ${getSignupUrl(event)}`;
     }
   };
 
+  // ── Instagram Events handlers ────────────────────────────────────────
+  const loadIgCandidates = useCallback(async () => {
+    setIgLoading(true);
+    try {
+      const res = await fetch('/api/organizations/instagram/candidates', { headers: { ...authHeaders() } });
+      const data = await parseJsonSafe(res);
+      if (!res.ok || !data) throw new Error((data && data.error) || SETUP_HINT);
+      setIgCandidates(data.candidates || []);
+      setIgError('');
+    } catch (err) {
+      setIgError(err.message);
+    } finally {
+      setIgLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (tab !== 'instagram') return;
+    loadIgCandidates();
+  }, [tab, loadIgCandidates]);
+
+  const syncInstagram = async () => {
+    setIgSyncing(true);
+    setIgActionError('');
+    setIgSyncBanner('');
+    try {
+      const res = await fetch('/api/organizations/instagram/sync', { method: 'POST', headers: { ...authHeaders() } });
+      const data = await parseJsonSafe(res);
+      if (!res.ok || !data) throw new Error((data && data.error) || SETUP_HINT);
+      setIgSyncBanner(`Checked ${data.checked} recent post${data.checked === 1 ? '' : 's'} — ${data.added} new candidate${data.added === 1 ? '' : 's'} added.`);
+      await loadIgCandidates();
+    } catch (err) {
+      setIgActionError(err.message);
+    } finally {
+      setIgSyncing(false);
+    }
+  };
+
+  const pasteInstagramLink = async () => {
+    if (!igPasteUrl.trim()) return;
+    setIgPasting(true);
+    setIgActionError('');
+    try {
+      const res = await fetch('/api/organizations/instagram/from-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ url: igPasteUrl.trim() }),
+      });
+      const data = await parseJsonSafe(res);
+      if (!res.ok || !data) throw new Error((data && data.error) || SETUP_HINT);
+      setIgPasteUrl('');
+      await loadIgCandidates();
+      playSuccess();
+    } catch (err) {
+      setIgActionError(err.message);
+    } finally {
+      setIgPasting(false);
+    }
+  };
+
+  const editFor = (c) => igEdits[c.candidate_id] || {
+    title: (c.parsed && c.parsed.title) || '',
+    date: (c.parsed && c.parsed.date) || '',
+    time: (c.parsed && c.parsed.time) || '',
+    location: (c.parsed && c.parsed.location) || '',
+  };
+  const setEditField = (c, field, value) => {
+    setIgEdits((prev) => ({ ...prev, [c.candidate_id]: { ...editFor(c), [field]: value } }));
+  };
+
+  const approveCandidate = async (c) => {
+    setIgBusyId(c.candidate_id);
+    setIgActionError('');
+    try {
+      const edits = editFor(c);
+      const res = await fetch(`/api/organizations/instagram/candidates/${c.candidate_id}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify(edits),
+      });
+      const data = await parseJsonSafe(res);
+      if (!res.ok || !data) throw new Error((data && data.error) || SETUP_HINT);
+      playSuccess();
+      setIgCandidates((prev) => prev.filter((x) => x.candidate_id !== c.candidate_id));
+    } catch (err) {
+      setIgActionError(err.message);
+    } finally {
+      setIgBusyId(null);
+    }
+  };
+
+  const rejectCandidate = async (c) => {
+    setIgBusyId(c.candidate_id);
+    setIgActionError('');
+    try {
+      const res = await fetch(`/api/organizations/instagram/candidates/${c.candidate_id}/reject`, { method: 'POST', headers: { ...authHeaders() } });
+      const data = await parseJsonSafe(res);
+      if (!res.ok || !data) throw new Error((data && data.error) || SETUP_HINT);
+      setIgCandidates((prev) => prev.filter((x) => x.candidate_id !== c.candidate_id));
+    } catch (err) {
+      setIgActionError(err.message);
+    } finally {
+      setIgBusyId(null);
+    }
+  };
+
   const tabBtn = (key, label) => (
     <button onClick={() => setTab(key)} style={{
       padding: '9px 16px', borderRadius: 8, border: '1px solid var(--cf-border)',
@@ -493,6 +614,11 @@ Spots are open — sign up here: ${getSignupUrl(event)}`;
               {error}
             </div>
           )}
+
+          <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
+            {tabBtn('documents', 'Documents')}
+            {tabBtn('instagram', 'Instagram Events')}
+          </div>
 
           {tab === 'sheets' && (
             <>
@@ -844,6 +970,112 @@ Spots are open — sign up here: ${getSignupUrl(event)}`;
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {tab === 'instagram' && (
+            <div>
+              <div style={{ background: 'var(--cf-bg-surface)', border: '1px solid var(--cf-border)', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+                <div style={{ fontWeight: 800, color: 'var(--cf-text-primary)', marginBottom: 4 }}>Pull events from Instagram</div>
+                <div style={{ color: 'var(--cf-text-muted)', fontSize: '0.82rem', marginBottom: 12 }}>
+                  Paste a link to any public Instagram post announcing an event -- no connection needed. Or, if you've connected Instagram
+                  under Settings &gt; Social Media, sync your account's own recent posts instead. Either way, nothing is published
+                  automatically -- review and approve each one below first.
+                </div>
+
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+                  <input
+                    value={igPasteUrl}
+                    onChange={(e) => setIgPasteUrl(e.target.value)}
+                    placeholder="https://www.instagram.com/p/..."
+                    style={{ ...inputStyle, flex: '1 1 260px' }}
+                  />
+                  <button onClick={pasteInstagramLink} disabled={igPasting || !igPasteUrl.trim()} style={{ ...smallBtnStyle, background: 'var(--cf-text-primary)', color: '#fff', opacity: (igPasting || !igPasteUrl.trim()) ? 0.6 : 1 }}>
+                    {igPasting ? 'Reading…' : 'Add from link'}
+                  </button>
+                  <button onClick={syncInstagram} disabled={igSyncing} style={{ ...smallBtnStyle, opacity: igSyncing ? 0.6 : 1 }}>
+                    {igSyncing ? 'Syncing…' : 'Sync connected account'}
+                  </button>
+                </div>
+
+                {igSyncBanner && (
+                  <div style={{ padding: '8px 12px', background: 'rgba(22,163,74,0.1)', border: '1px solid rgba(22,163,74,0.3)', borderRadius: 8, color: '#16a34a', fontSize: '0.8rem' }}>
+                    {igSyncBanner}
+                  </div>
+                )}
+                {igActionError && (
+                  <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, color: '#dc2626', fontSize: '0.8rem' }}>
+                    {igActionError}
+                  </div>
+                )}
+              </div>
+
+              {igError && (
+                <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, color: '#dc2626', fontSize: '0.85rem' }}>
+                  {igError}
+                </div>
+              )}
+
+              {igLoading ? (
+                <div style={{ color: 'var(--cf-text-muted)', fontSize: '0.85rem' }}>Loading…</div>
+              ) : igCandidates.length === 0 ? (
+                <div style={{ color: 'var(--cf-text-muted)', fontSize: '0.85rem' }}>Nothing waiting for review right now.</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {igCandidates.map((c) => {
+                    const edit = editFor(c);
+                    const confidence = c.parsed && c.parsed.confidence;
+                    const isEvent = c.parsed ? c.parsed.is_event : null;
+                    return (
+                      <div key={c.candidate_id} style={{ background: 'var(--cf-bg-surface)', border: '1px solid var(--cf-border)', borderRadius: 12, padding: 16, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                        {c.media_url && (
+                          <img src={c.media_url} alt="" style={{ width: 96, height: 96, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                        )}
+                        <div style={{ flex: '1 1 260px', minWidth: 0 }}>
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap' }}>
+                            {isEvent === false && (
+                              <span style={{ fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: 999, background: 'rgba(217,119,6,0.12)', color: '#b45309' }}>
+                                Doesn't look like an event -- check before approving
+                              </span>
+                            )}
+                            {confidence && (
+                              <span style={{ fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: 999, background: 'var(--cf-bg-base)', border: '1px solid var(--cf-border)', color: 'var(--cf-text-muted)', textTransform: 'uppercase' }}>
+                                {confidence} confidence
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--cf-text-muted)', marginBottom: 10, maxHeight: 60, overflow: 'hidden' }}>
+                            {c.caption}
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 10 }}>
+                            <input value={edit.title} onChange={(e) => setEditField(c, 'title', e.target.value)} placeholder="Title" style={inputStyle} />
+                            <input type="date" value={edit.date} onChange={(e) => setEditField(c, 'date', e.target.value)} style={inputStyle} />
+                            <input value={edit.time} onChange={(e) => setEditField(c, 'time', e.target.value)} placeholder="Time (optional)" style={inputStyle} />
+                            <input value={edit.location} onChange={(e) => setEditField(c, 'location', e.target.value)} placeholder="Location (optional)" style={inputStyle} />
+                          </div>
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            <button
+                              onClick={() => approveCandidate(c)}
+                              disabled={igBusyId === c.candidate_id || !edit.title.trim() || !edit.date.trim()}
+                              style={{ ...smallBtnStyle, background: '#16a34a', color: '#fff', borderColor: '#16a34a', opacity: (igBusyId === c.candidate_id || !edit.title.trim() || !edit.date.trim()) ? 0.6 : 1 }}
+                            >
+                              {igBusyId === c.candidate_id ? 'Working…' : 'Approve & create event'}
+                            </button>
+                            <button onClick={() => rejectCandidate(c)} disabled={igBusyId === c.candidate_id} style={{ ...smallBtnStyle, opacity: igBusyId === c.candidate_id ? 0.6 : 1 }}>
+                              Dismiss
+                            </button>
+                            {c.source_url && (
+                              <a href={c.source_url} target="_blank" rel="noreferrer" style={{ ...smallBtnStyle, textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+                                View post ↗
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 

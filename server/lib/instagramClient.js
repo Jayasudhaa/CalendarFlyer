@@ -82,6 +82,23 @@ async function getProfile(igUserId, accessToken) {
   return data;
 }
 
+// Recent media on the connected account -- the "read" half of this login
+// product (createMediaContainer/publishMedia below are the "write" half,
+// used by the flyer broadcast flow). instagram_business_basic (already
+// requested at connect time -- see buildAuthorizeUrl's SCOPES above)
+// covers this field set; no new permission needed for routes/
+// instagramEvents.js to read a connected org's own recent posts.
+async function getRecentMedia(accessToken, limit = 25) {
+  const { data } = await axios.get('https://graph.instagram.com/v21.0/me/media', {
+    params: {
+      fields: 'id,caption,media_type,media_url,permalink,timestamp',
+      limit,
+      access_token: accessToken,
+    },
+  });
+  return data.data || []; // [{ id, caption, media_type, media_url, permalink, timestamp }, ...]
+}
+
 async function createMediaContainer(igUserId, accessToken, { imageUrl, caption, publishNow = true, scheduledPublishTime }) {
   const params = { image_url: imageUrl, caption, access_token: accessToken };
   if (!publishNow) {
@@ -105,6 +122,7 @@ module.exports = {
   exchangeForLongLivedToken,
   refreshLongLivedToken,
   getProfile,
+  getRecentMedia,
   createMediaContainer,
   publishMedia,
 };

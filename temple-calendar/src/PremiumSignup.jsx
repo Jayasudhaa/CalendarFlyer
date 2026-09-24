@@ -17,11 +17,14 @@ import BrandMark from './components/BrandMark';
 // each plan includes. (This used to drift on its own with different prices
 // and a different top-tier name than the homepage/pricing page — fixed by
 // matching all three to the same numbers.)
+// Enterprise dropped from self-serve signup (pricing update, Sept 2026) --
+// a custom/negotiated deal goes through Contact Sales instead, then gets
+// set up on the 'enterprise' plan directly (see organizations.js), never
+// picked here.
 const PLANS = {
-  free:       { name: 'Free',       price: '$0',   features: ['Calendar', 'Instagram + Facebook broadcast', '30 events/month'] },
-  starter:    { name: 'Starter',    price: '$49',  features: ['Everything in Free', 'AI Flyer Studio (30 AI images/mo)', '50 events/month'] },
-  pro:        { name: 'Pro',        price: '$99',  features: ['Everything in Starter', 'Unlimited events', 'Advanced analytics'], popular: true },
-  enterprise: { name: 'Enterprise', price: '$149', features: ['Everything in Pro', 'WhatsApp broadcast', 'Custom domain', 'API access'] },
+  free:    { name: 'Organization Free', price: '$0',  features: ['Public organization page & calendar', 'Instagram + Facebook broadcast', 'WhatsApp broadcast', 'Event creation \u2014 30 events/month'] },
+  starter: { name: 'Organization Plus', price: '$49', features: ['Everything in Organization Free', 'AI Flyer Studio \u2014 30 AI image generations/month', '50 events/month'] },
+  pro:     { name: 'Organization Pro',  price: '$79', features: ['Everything in Organization Plus', 'Unlimited events', 'AI-powered analytics', 'AI-powered search and summary'], popular: true },
 };
 
 // Reusable password input with eye toggle
@@ -74,7 +77,7 @@ export default function PremiumSignup() {
   const navigate = useNavigate();
   const { signup, resendVerification } = useAuth();
   const [step, setStep] = useState(1);
-  const [selectedPlan, setSelectedPlan] = useState('pro');
+  const [selectedPlan, setSelectedPlan] = useState('free');
   const [formData, setFormData]       = useState({ name: '', subdomain: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -193,7 +196,7 @@ export default function PremiumSignup() {
         {/* Step 1 — Plan selection */}
         {!signupResult && step === 1 && (
           <div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
               {Object.entries(PLANS).map(([key, plan]) => (
                 <GlassCard
                   key={key}

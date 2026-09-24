@@ -1,0 +1,130 @@
+[
+  {
+    "id": "jun-07",
+    "date": "2026-06-07",
+    "title": "Sri Siva Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Saptami 2:59 PM",
+    "nakshatra": "Satabhisha 8:33 PM"
+  },
+  {
+    "id": "jun-12-andal",
+    "date": "2026-06-12",
+    "title": "Sri Andal Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Dwadasi 7:03 AM, Trayodasi afterwards",
+    "nakshatra": "Bharani 3:31 PM"
+  },
+  {
+    "id": "jun-13",
+    "date": "2026-06-13",
+    "title": "Sri Mahalakshmi Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Chaturdasi 11:50 PM",
+    "nakshatra": "Krittika 12:36 PM"
+  },
+  {
+    "id": "jun-14",
+    "date": "2026-06-14",
+    "title": "Sri Vijaya Ganapathi / Murugan Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Amavasya 7:57 PM",
+    "nakshatra": "Rohini 9:44 AM"
+  },
+  {
+    "id": "20260614-moon",
+    "date": "2026-06-14",
+    "title": "Amavasya",
+    "time": "Amavasya",
+    "type": "panchang",
+    "tithi": "Amavasya 7:57 PM",
+    "nakshatra": "Arudra 5:34 PM",
+    "moonPhase": "new"
+  },
+  {
+    "id": "jun-17",
+    "date": "2026-06-17",
+    "title": "Annual Brahmotsavam Ankurarpanam",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Chaturthi 6:34 AM, Panchami afterwards",
+    "nakshatra": "Aslesha 9:30 PM"
+  },
+  {
+    "id": "jun-18",
+    "date": "2026-06-18",
+    "title": "Annual Brahmotsavam Begins",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Shashti 3:18 AM Sat",
+    "nakshatra": "Magha 8:56 PM"
+  },
+  {
+    "id": "jun-19",
+    "date": "2026-06-19",
+    "title": "Sri Venkateswara Kalyanam",
+    "time": "11:00 AM",
+    "type": "kalyanam",
+    "tithi": "Saptami 2:51 AM Sun",
+    "nakshatra": "Purvaphalguni 9:00 PM"
+  },
+  {
+    "id": "jun-20-chakra-snanam",
+    "date": "2026-06-20",
+    "title": "Chakra Snanam / Annual Brahmotsavam Ends",
+    "time": "All Day",
+    "type": "festival",
+    "tithi": "Shashti 2:15 PM",
+    "nakshatra": "Dhanishta 7:27 PM"
+  },
+  {
+    "id": "jun-20-venkateswara",
+    "date": "2026-06-20",
+    "title": "Sri Venkateswara Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Shashti 2:15 PM",
+    "nakshatra": "Dhanishta 7:27 PM"
+  },
+  {
+    "id": "jun-21",
+    "date": "2026-06-21",
+    "title": "Sri Shirdi Sai Baba / Raghavendra Swamy Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Ashtami 3:11 AM Mon",
+    "nakshatra": "Uttaraphalguni 9:42 PM"
+  },
+  {
+    "id": "jun-27",
+    "date": "2026-06-27",
+    "title": "Sri Hanuman Abhishekam",
+    "time": "10:00 AM",
+    "type": "abhishekam",
+    "tithi": "Trayodasi 12:14 PM",
+    "nakshatra": "Anuradha 9:40 AM"
+  },
+  {
+    "id": "jun-28",
+    "date": "2026-06-28",
+    "title": "Sri Satyanarayana Swamy Pooja & Vratham",
+    "time": "10:00 AM",
+    "type": "pooja",
+    "tithi": "Chaturdasi 2:36 PM",
+    "nakshatra": "Jyeshta 12:27 PM"
+  },
+  {
+    "id": "20260629-moon",
+    "date": "2026-06-29",
+    "title": "Purnima",
+    "time": "Purnima",
+    "type": "panchang",
+    "tithi": "Purnima 4:55 PM",
+    "nakshatra": "Uttarashadha 6:43 AM",
+    "moonPhase": "full"
+  }
+]

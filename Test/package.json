@@ -1,0 +1,15 @@
+{
+    "name":  "calendarfly-test-system",
+    "private":  true,
+    "scripts":  {
+                    "test":  "node scripts/run-tests.cjs",
+                    "test:local":  "node scripts/smoke.mjs local",
+                    "test:staging":  "node scripts/smoke.mjs staging",
+                    "test:live":  "node scripts/smoke.mjs live",
+                    "local:up":  "docker compose up --build -d --wait",
+                    "local:down":  "docker compose down",
+                    "local:logs":  "docker compose logs --tail=100",
+                    "test:local:flow":  "node scripts/local-flow.mjs",
+                    "test:isolation":  "node --test scripts/isolation.test.cjs"
+                }
+}

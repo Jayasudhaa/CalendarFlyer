@@ -1,0 +1,1150 @@
+{
+  "createdAt": "2026-09-22T21:06:32.141Z",
+  "prefix": "calendarfly_staging_",
+  "files": [
+    {
+      "path": "server\\.dockerignore",
+      "sha256": "e4cb540a338be83f0fc72483d25dab1fa690f336acc8a1d1db8d0435031e0c9d"
+    },
+    {
+      "path": "server\\backfill-livestream-start-time.js",
+      "sha256": "af74c4abc75fa5b7886f0f6bdc8e18a0827bd43900f5b9f6dec77ad7cf85fc8b"
+    },
+    {
+      "path": "server\\broadcasts.js",
+      "sha256": "fb4d4388dea466e777d7672ecb5d2825931fcdbc95460ff7b6c19c904046e94a"
+    },
+    {
+      "path": "server\\community-auth.js",
+      "sha256": "b47b21df502fd84da5fe44af20f20836a50c65ca2a42f54000910243896b94f8"
+    },
+    {
+      "path": "server\\config\\aiImageDefaults.js",
+      "sha256": "712d9e8d646ff76177fc0685c0115891fae3394c5668aebf8dfb3b4060778102"
+    },
+    {
+      "path": "server\\Dockerfile",
+      "sha256": "22cb2cf10230d173556aa3bd315aa6664fd21a722bcdcae665001d8f4ca0b4a2"
+    },
+    {
+      "path": "server\\dynamodb-schema.js",
+      "sha256": "9ea96a3482d126339cf14a1acc691b6ade539c1bd3960c66a67e20dea17b6e90"
+    },
+    {
+      "path": "server\\events.js",
+      "sha256": "6e8a792b9a5853dc80cf4010cea69ea45fb017bcfd1635ddf9a1940f62fa4439"
+    },
+    {
+      "path": "server\\identity-auth.js",
+      "sha256": "e78363a2714a8939414916cc8100933e477a7b3071210b46ecac41d1a0f108a4"
+    },
+    {
+      "path": "server\\lib\\facebookClient.js",
+      "sha256": "4caaa73e15b42b996c3afdbb70eba3018f00b101594796fd74114b8c22627cd9"
+    },
+    {
+      "path": "server\\lib\\instagramClient.js",
+      "sha256": "4d70b20008b6d091ceda957518db1f63943f9a79b7536e6d33c1d093ac83dfaa"
+    },
+    {
+      "path": "server\\livestreams.js",
+      "sha256": "01bd0086fe14cfe42bc7f0fbe58a858848b18329b6374616672e7940e527f895"
+    },
+    {
+      "path": "server\\middleware\\roles.js",
+      "sha256": "2d9b71130491b386adcf879f63c07a10e84ea6ee9955ce84916076bb0786be51"
+    },
+    {
+      "path": "server\\middleware\\tenant.js",
+      "sha256": "55e3078b619e047cc064d5a7f4994206ac16111146c4d402051bf64457ae6c07"
+    },
+    {
+      "path": "server\\migrate-add-community-email-index.js",
+      "sha256": "715860809eda260f3879c5a81964ea94fd0dfdc7fbbed22277b7b61165e0d409"
+    },
+    {
+      "path": "server\\migrate-add-identity.js",
+      "sha256": "9d7839801873067e457e003827c4942145526d3340e71e223e19db732a14b6d7"
+    },
+    {
+      "path": "server\\migrate-add-radar-index.js",
+      "sha256": "678d956096d09649e9675088111f89d20bb8a6e8541614607b81c4ede1c21064"
+    },
+    {
+      "path": "server\\migrate-geocode-orgs.js",
+      "sha256": "9d0756508bed54c1267ccf01f7a54068bb7e34aca197c6154831ca40b7cdd1fd"
+    },
+    {
+      "path": "server\\organizations.js",
+      "sha256": "a9641254482498f3e247c0a962842451e052eaaa1db5b9cd7834701c5a4bcd61"
+    },
+    {
+      "path": "server\\package-lock.json",
+      "sha256": "0e4bb665913a4dcb92cd16274a07a5b1ed7cc1d9338fe315fa85828c4d97cbb5"
+    },
+    {
+      "path": "server\\package.json",
+      "sha256": "1f5f496775cb1238c562bb94ef16c235b1299ff0aed2c56c13329546d8704942"
+    },
+    {
+      "path": "server\\photoAlbums.js",
+      "sha256": "5574056caf7b32fe23943630122b70e65723e64c4df746763a2662854215a13f"
+    },
+    {
+      "path": "server\\photos.js",
+      "sha256": "53d61d2d91061cf80a98fdb803c8e9520a62cdbc73bca51e52278b6772cca691"
+    },
+    {
+      "path": "server\\public\\connect-social.html",
+      "sha256": "5c7f78a0ed7af183ab2e75c23e5a971b794b2ee6ddb712f4a201b183cd0aaf3c"
+    },
+    {
+      "path": "server\\README.md",
+      "sha256": "47cb04eb503ef0c2cad6b514b5861ac71426e7d7a6036c679ca5f828643822fb"
+    },
+    {
+      "path": "server\\routes\\admin.js",
+      "sha256": "eda18c731c6d99d775dabd2cdd2b89c31718aa0159a0cbab46e0dd3add7db491"
+    },
+    {
+      "path": "server\\routes\\adminAuth.js",
+      "sha256": "ccab5a342007aaf1f18750d9acb6efc1fe1359bb94da23bcbd00a338ca180295"
+    },
+    {
+      "path": "server\\routes\\announcements.js",
+      "sha256": "99f6e92d95ce4aa10f66adc1be078c8d6dde1d16c463362b08d489f2d9fb610f"
+    },
+    {
+      "path": "server\\routes\\announcements.test.js",
+      "sha256": "95c6d224c5b9565d3cec0466be4dcb634f1014f5571ffa6ca43b9e5a3f6cb293"
+    },
+    {
+      "path": "server\\routes\\auth.js",
+      "sha256": "68ef0640209b3e1e3532a13a2a79efd84708644701dcd2e72ccb63542048ad72"
+    },
+    {
+      "path": "server\\routes\\billing.js",
+      "sha256": "c28013baee70a0d7fde66d53c2b9fe34e0ff1aa33e7e11f32cfe605adc159a01"
+    },
+    {
+      "path": "server\\routes\\broadcast.js",
+      "sha256": "fbf3855eb551e3b23466d5a0f925ad3b492bba74d60d358a92527cbf42e83a5d"
+    },
+    {
+      "path": "server\\routes\\broadcast.test.js",
+      "sha256": "977480ad2f6ec5315e31c11afafd21b65d9fd83dc91825f61ec3c4b41486965e"
+    },
+    {
+      "path": "server\\routes\\chat.js",
+      "sha256": "6b9f8a3e368a5f50d5a346f208e46dcd51e72064d8a5a92c13815743d5567838"
+    },
+    {
+      "path": "server\\routes\\community.js",
+      "sha256": "bfb28f0aef794e9e0177e8dd499c4cd0af9a9a313918a5a780a56ca0c5d16081"
+    },
+    {
+      "path": "server\\routes\\contact.js",
+      "sha256": "d7c1f6fb4247f70e8b8b478b94c55b2d007f01cdbb116e43ecf65f3d42317fb4"
+    },
+    {
+      "path": "server\\routes\\discover.js",
+      "sha256": "1d3e48964231c6008ba710b4472c737370f72f244ca84abaaae3a4209a802a43"
+    },
+    {
+      "path": "server\\routes\\discovery.test.js",
+      "sha256": "530e56b84bf5fc2b1ecd7f351a962ed2b1a28fd64773c0638ee1bb428e530663"
+    },
+    {
+      "path": "server\\routes\\documents.js",
+      "sha256": "4fd2850b50383ea7893c0a87b1de4dc6a6ce73356c926bcd8b4d1f43cc29dba6"
+    },
+    {
+      "path": "server\\routes\\events.js",
+      "sha256": "623620f2a624f7670b5359c3611ac793711220209006611cc8bdc0f39c6be052"
+    },
+    {
+      "path": "server\\routes\\eventSync.js",
+      "sha256": "c8b83ab9331e2bdcad7b310be3f4170bc73c38cdcf8174549d5676013fdf93d0"
+    },
+    {
+      "path": "server\\routes\\facebookAuth.js",
+      "sha256": "c47f4d5ff25d03acbb74ac97eaa16f3695a057c843a1a94e49217e61941077d3"
+    },
+    {
+      "path": "server\\routes\\flyerRoutes.js",
+      "sha256": "4d9246ad5a71f1024084c4230b8393536e33e85cf5a0e2697b3cb85c2fdafed0"
+    },
+    {
+      "path": "server\\routes\\generate-image.js",
+      "sha256": "2f79be51adc18ef655dccaf053ade352eb2bee9033da4e2b8f0976cd908b159c"
+    },
+    {
+      "path": "server\\routes\\identity.js",
+      "sha256": "2f8ad2f3a992c33ddbe832a0bd0a2346b459d5504cc465ae3754e907df92f1d2"
+    },
+    {
+      "path": "server\\routes\\image-feedback.js",
+      "sha256": "f8036eab660663863417f8690ce8255f1afb47d34986cff2a338afefd464f7aa"
+    },
+    {
+      "path": "server\\routes\\image-proxy.js",
+      "sha256": "a105bc352337a5da52dda57129d9db2a7cea2f0465d7de5f4068eaa89506111d"
+    },
+    {
+      "path": "server\\routes\\imageLibrary.js",
+      "sha256": "25cc480e7732bac1b3ca841c2fe80c7f4eebf03ec9f3c67eb2662b1ecfe13286"
+    },
+    {
+      "path": "server\\routes\\instagramAuth.js",
+      "sha256": "f275696d450dba42c3f9236a3a634b4f242382a9b10961e2b1e516b6bf2c9e0e"
+    },
+    {
+      "path": "server\\routes\\livestreams.js",
+      "sha256": "e2aeb13eeec976d7f629b0ec6f36b790f4872aebfb97e7df68bf1cdf47c6222a"
+    },
+    {
+      "path": "server\\routes\\organizations.js",
+      "sha256": "c9e4abfbf0c6b722516f00fbd27f1e7cd29b4c82ab6b70396686a912330e92ee"
+    },
+    {
+      "path": "server\\routes\\photoAlbums.js",
+      "sha256": "7576a486b7f9dc2639bb5f585ad63697b2e4d1e1479c1cf7402b9b42574b0a1d"
+    },
+    {
+      "path": "server\\routes\\photos.js",
+      "sha256": "93b697f8e86e84fcec944a44ebd64de84f499338217f97cbda957407e2fa002f"
+    },
+    {
+      "path": "server\\routes\\pixabay-search.js",
+      "sha256": "f4fffdf3a22ec89070f0b0831e687460895a0fdb2b08cd0f778477d40868438a"
+    },
+    {
+      "path": "server\\routes\\pixabay.js",
+      "sha256": "bc1296e949e021b9f55e0bc373342aa1c770841821015d818b53eb284fb10ef9"
+    },
+    {
+      "path": "server\\routes\\publicMedia.js",
+      "sha256": "93ed8af1a5db845ecf198578470e31ad6a9e01565b49c0692ec6aeb7e9d8d9c7"
+    },
+    {
+      "path": "server\\routes\\radar.js",
+      "sha256": "f9aab41162f6e46cf7947aca48d770987726245d23f61d41489a0fa75c97d831"
+    },
+    {
+      "path": "server\\routes\\remove-bg.js",
+      "sha256": "a5a17be2636bec355f717ace7b23bc31d53340c2d4522eb4b74a24a73ab325a2"
+    },
+    {
+      "path": "server\\routes\\rsvp.js",
+      "sha256": "2304f4f80e861f9ce2b9c98bd809db97e00254f54fd5d01c7f249edbac34f5ef"
+    },
+    {
+      "path": "server\\routes\\signups.earlyAccess.test.js",
+      "sha256": "4a7a1ff5935f627529adc0f39b94ff84a24699d5d25fc7768f2dc66939c3c23f"
+    },
+    {
+      "path": "server\\routes\\signups.js",
+      "sha256": "86f8bcc587b805591c98506499774b380d4e2f6749ee5113bc76bca3aa856c1d"
+    },
+    {
+      "path": "server\\routes\\social-connect.js",
+      "sha256": "c3c41d3f15e39a58fb7f3b89f8c6e9314a8fbea29d7a08ef8ba6188e4ffef8d4"
+    },
+    {
+      "path": "server\\routes\\translate.js",
+      "sha256": "028e5e214a430c25857272d44f1fa4e1098ef91adad1171e1c9242ec3eed7df0"
+    },
+    {
+      "path": "server\\scheduler.js",
+      "sha256": "99b96ba4f2da826808fd75e7f757ed2e915b56f94e55f71f7cf578f5f6b6bfb4"
+    },
+    {
+      "path": "server\\scripts\\reset-password.js",
+      "sha256": "e27c7a1d48a267a68775a8f3dae48ca6ed8577e85f975adef158fedd962edc57"
+    },
+    {
+      "path": "server\\server.js",
+      "sha256": "6f167f17481123a4cfc1b2a6987f16b4f61b8a085cd71ddfe9dbd8ba9af1dbbe"
+    },
+    {
+      "path": "server\\set-org-location.js",
+      "sha256": "e0e8e90605e0807f8d3295b74559ebca1a4bd113410e0860ab3b56508ae2da59"
+    },
+    {
+      "path": "server\\signups.js",
+      "sha256": "6bea32a29e7f3841e17dc16c2368e3747d9f9cfa06d611db2ef60e32c83e4cf1"
+    },
+    {
+      "path": "server\\test\\jwt.js",
+      "sha256": "a5b63055f1c5cda90c21684f356aee91e062d4ed814afaccf717e3a9aabfc06a"
+    },
+    {
+      "path": "server\\test\\routes\\facebookAuth.js",
+      "sha256": "6fbff5ddf81eca3a1f17ab0abba4775c59a3e7a8660533772ad72ac93fdd77bc"
+    },
+    {
+      "path": "server\\test\\routes\\instagramAuth.js",
+      "sha256": "f435250e1f57274d5fc8ebd1429f69ac0e428fab2d46fa000a4d10101263242c"
+    },
+    {
+      "path": "server\\utils\\adminCredentials.js",
+      "sha256": "bbde921dad73119efc6a5f2dd1079be243eeaf4497c6adcc68b2183430d1f674"
+    },
+    {
+      "path": "server\\utils\\aiSettingsStore.js",
+      "sha256": "2d737e58b19ad716d7b57fbf8fd89047e4e40da61237895210f8b52a046d623e"
+    },
+    {
+      "path": "server\\utils\\communityJwtSecret.js",
+      "sha256": "da55ef141ae2eb3e389fe252914ea1135e76dcbdc0d285b58edb07a60b30c4d8"
+    },
+    {
+      "path": "server\\utils\\errors.js",
+      "sha256": "ecbb07ca0641899a989535585aea76b44c6767e8441f3fb472e8f043d29dcdf5"
+    },
+    {
+      "path": "server\\utils\\geo.js",
+      "sha256": "08d1914aba87ae32070eca3159deeda96351f6e38eff3b0408f7f4e3ef2123be"
+    },
+    {
+      "path": "server\\utils\\jwtSecret.js",
+      "sha256": "1635fd838db7249ef9389e5aec5db81af154f22940918a3eaa2afce4ce9520e0"
+    },
+    {
+      "path": "server\\utils\\mailer.js",
+      "sha256": "7a9b53f2d1eee2c5e008afdba20b38c940ccb02b0cbb622c3d5e158d14c2f35f"
+    },
+    {
+      "path": "server\\utils\\package.json",
+      "sha256": "3cf191f6bcd85949256258bbde2925ef218ac5413ce05080ff9d6edb9af7ee3a"
+    },
+    {
+      "path": "server\\utils\\resetToken.js",
+      "sha256": "47e276b88da4c6883fb67ce565bc0199a38771310fec49e1aaa511c0ef6b07b2"
+    },
+    {
+      "path": "server\\utils\\resetToken.test.js",
+      "sha256": "b1ff21426fb66f2ab4d883a76d2cdeb9c6be776b2d842a1b1196641c230cf5bc"
+    },
+    {
+      "path": "server\\utils\\sessionSecret.js",
+      "sha256": "f5f72a350e2fd3f272f6c4884c2d05b318f22b8e8e4e4250248935650daade6c"
+    },
+    {
+      "path": "server\\utils\\socialConfig.js",
+      "sha256": "ac4bf7d6c82eba153f13c74d53a30c3699584bf67aa4313d55a54be101c6683a"
+    },
+    {
+      "path": "server\\utils\\stripeClient.js",
+      "sha256": "c5952147ab9966814f7f8c7308677a400244a14ff15834db54ff6ff475461c9a"
+    },
+    {
+      "path": "server\\vitest.config.js",
+      "sha256": "1fa0b0c793266722776a71e68582cfa5ff4beb2ef3dd9bbf690d9f292934c91a"
+    },
+    {
+      "path": "temple-calendar\\ALL-2026-EVENTS-COMPLETE.json",
+      "sha256": "dc510b77611a5f6ccbd1f8a457ef615b3307aff01fe15817d03bcdee03372d87"
+    },
+    {
+      "path": "temple-calendar\\complete-2026-events.json",
+      "sha256": "c729438f7a7b485fca83fce80c0f7fc6f0cf59536c95f426bd2fe85036d3db7e"
+    },
+    {
+      "path": "temple-calendar\\data-import.js",
+      "sha256": "9603018310a3feb299f15b7079acec57c620c9984974fb5b2d7f1306f65298f9"
+    },
+    {
+      "path": "temple-calendar\\import.html",
+      "sha256": "17206d0ccdac18d6fa5bd5ffc3ca5413ae6ff6045ed9a8e4a48a381df42f0e01"
+    },
+    {
+      "path": "temple-calendar\\index.html",
+      "sha256": "29eabb8699c365f1a22bd312f22197be1f11023419b44e80140d79357f14d096"
+    },
+    {
+      "path": "temple-calendar\\json\\APRIL-2026-EVENTS.json",
+      "sha256": "34fde2ca25bd49f2a268a47bb8a8b08713e9819236b1f20d6a67d89065bb0293"
+    },
+    {
+      "path": "temple-calendar\\json\\AUGUST-2026-EVENTS.json",
+      "sha256": "481024aa4f598ba356037872562cac3f86199625f8a24d838ff8cc49046dcfe4"
+    },
+    {
+      "path": "temple-calendar\\json\\DECEMBER-2026-EVENTS.json",
+      "sha256": "436e49e75d83819acbafdd15436cd791a601519e196539bab1f50664baf290d0"
+    },
+    {
+      "path": "temple-calendar\\json\\FEBRUARY-2026-EVENTS.json",
+      "sha256": "1b5d6be9082cad70d7c474eca69a572d9eaacdd6adfc65ed67f4b5287f76ceab"
+    },
+    {
+      "path": "temple-calendar\\json\\JANUARY-2026-EVENTS.json",
+      "sha256": "acf096d2dd0766ad7c5eff83b57c8a8560177b276fbbe543289ca95211aa88fd"
+    },
+    {
+      "path": "temple-calendar\\json\\JULY-2026-EVENTS.json",
+      "sha256": "a9a96d439542ac1b6c007da1b1ffd51b440ad55249206c9b711d3f98893b368e"
+    },
+    {
+      "path": "temple-calendar\\json\\JUNE-2026-EVENTS.json",
+      "sha256": "b8a220e6fa5bc9a0a968937a18cf93dbf914eee7502107a37763a707c031e35a"
+    },
+    {
+      "path": "temple-calendar\\json\\MARCH-2026-EVENTS.json",
+      "sha256": "db0c4eeac8ce6c4265fa8c8eb9461362f19859915dd94f50b86c9d0e87f15b14"
+    },
+    {
+      "path": "temple-calendar\\json\\MAY-2026-EVENTS.json",
+      "sha256": "2a30e5c3058de8c82b38787b1be62e14b5cad6f4d81733fd0c151f93ad11233a"
+    },
+    {
+      "path": "temple-calendar\\json\\NOVEMBER-2026-EVENTS.json",
+      "sha256": "a49299a0548b025697eea72c4264f7040cb9b10c826c5807623daa411f385efe"
+    },
+    {
+      "path": "temple-calendar\\json\\OCTOBER-2026-EVENTS.json",
+      "sha256": "cda7ef33e4c9fe20d7df9e428d2b0d220f7bb4bb573101459685cebb80324386"
+    },
+    {
+      "path": "temple-calendar\\json\\PANCHANG-APRIL-2026.json",
+      "sha256": "e6d518abaa4cd61df683a53a62d9f4d25fc08de0cce1ac9ee5dbf26f6cff4f7e"
+    },
+    {
+      "path": "temple-calendar\\json\\PANCHANG-AUGUST-2026.json",
+      "sha256": "2a047ff94f902819d1d3a8f5152f143ece40e2a5258489960724e86fd24256b9"
+    },
+    {
+      "path": "temple-calendar\\json\\PANCHANG-DECEMBER-2026.json",
+      "sha256": "e0bcdc2e6b143f7f2c28465eea682f8e21814f50fe317acb4a04e8e8c3e5678b"
+    },
+    {
+      "path": "temple-calendar\\json\\PANCHANG-FEBRUARY-2026-IMPORT.json",
+      "sha256": "fc11e1f4776ac9e47ddc9bbf5e03ca2aa4d7506148647df131e2e8339f8d3c9b"
+    },
+    {
+      "path": "temple-calendar\\json\\PANCHANG-JANUARY-2026-CLEAN.json",
+      "sha256": "5885c3b70eb2a62efff71d800e4e1b7d0856ec32fe09b8cd9b43ba2a1ae5d31c"
+    },
+    {
+      "path": "temple-calendar\\json\\PANCHANG-JULY-2026.json",
+      "sha256": "79f5b468daf658fdba3068fa0bf75ae181dbfe036ac0ac1a7a6c963f3364e325"
+    },
+    {
+      "path": "temple-calendar\\json\\PANCHANG-JUNE-2026.json",
+      "sha256": "bc16a1a817f129916ac10f3a1f80cf1107cef36895b3f3c5c03c0232b4902b46"
+    },
+    {
+      "path": "temple-calendar\\json\\PANCHANG-MARCH-2026.json",
+      "sha256": "909e2b9a26229482065ba260b5c36c1fbfddc8a2dc71fedf057ace719799924f"
+    },
+    {
+      "path": "temple-calendar\\json\\PANCHANG-MAY-2026.json",
+      "sha256": "4a042a678b210dd36918a87d8ed321d60658dda38407454dfc35f6030c3db0b6"
+    },
+    {
+      "path": "temple-calendar\\json\\PANCHANG-NOVEMBER-2026.json",
+      "sha256": "109a636786ad355f35f16392a6038fd2258f90ea46189e8e2f1876e5b99d4c53"
+    },
+    {
+      "path": "temple-calendar\\json\\PANCHANG-OCTOBER-2026.json",
+      "sha256": "2226a2cb6e604e7790bbc0a6f92edc4c8e842e83dc6d20d3ff83b281307d476e"
+    },
+    {
+      "path": "temple-calendar\\json\\PANCHANG-SEPTEMBER-2026.json",
+      "sha256": "1ed5ed7bda03f05bfabd0216e8b5adda81a4ec744058cdcbad65844ad58671d3"
+    },
+    {
+      "path": "temple-calendar\\json\\SEPTEMBER-2026-EVENTS.json",
+      "sha256": "f677688cff1f4f3e976d5bc235a92586d8b9251b1b1b481c23afe4f6b9ddb146"
+    },
+    {
+      "path": "temple-calendar\\package-lock.json",
+      "sha256": "59f5b1e54057908519b7c4e02e295cbd7fbc5f8b044098963841b8b42b631e04"
+    },
+    {
+      "path": "temple-calendar\\package.json",
+      "sha256": "27a3d053e43d9fe15b799ad54bc91da941d15828959be135d6c296069ced5f1b"
+    },
+    {
+      "path": "temple-calendar\\postcss.config.js",
+      "sha256": "190c877db466995bf1482f4a16abd06e04a89ede3119341e2a86ff96e1737b27"
+    },
+    {
+      "path": "temple-calendar\\public\\calendarfly-hero.jpg",
+      "sha256": "f3d2694e84316f267f288a7bde907f5607a981d9d30b3b1ef90ab6035c57e1eb"
+    },
+    {
+      "path": "temple-calendar\\public\\calendarfly-icon.png",
+      "sha256": "038002a3c3a8fd4d731e2a4507c26345e2f61341c088273a05f265db02514819"
+    },
+    {
+      "path": "temple-calendar\\public\\icons\\icon-128x128.png",
+      "sha256": "c764d0e5acdc7ee33dea884b489e2181e06b51f356e5387beadd1a3dd19d01e1"
+    },
+    {
+      "path": "temple-calendar\\public\\icons\\icon-144x144.png",
+      "sha256": "69bf818ca045174bfb8b77af5cb579387e362f90f2363f930c885d2413197158"
+    },
+    {
+      "path": "temple-calendar\\public\\icons\\icon-152x152.png",
+      "sha256": "7da80140cb8002f56a7937b74e2d29a77ba9e0ffe8a57f3491eb003e8905e5b0"
+    },
+    {
+      "path": "temple-calendar\\public\\icons\\icon-192x192.png",
+      "sha256": "7122062dc6e928a1268146ca420d82f16b1e540e0abb884e0efcf4982158d003"
+    },
+    {
+      "path": "temple-calendar\\public\\icons\\icon-384x384.png",
+      "sha256": "6344ad588b9e00eab51f12338e434cb5d7991e94fb4be328ae1b201c60a5dbd2"
+    },
+    {
+      "path": "temple-calendar\\public\\icons\\icon-512x512.png",
+      "sha256": "9978c2ef07d74805369a3946df2771b1d3eb0cd6da35a66947ab009e985e28ac"
+    },
+    {
+      "path": "temple-calendar\\public\\icons\\icon-72x72.png",
+      "sha256": "0363794f426329940543b3aa1a96ab1cd6e243f65134f302067a1e977287f3b4"
+    },
+    {
+      "path": "temple-calendar\\public\\icons\\icon-96x96.png",
+      "sha256": "c6157436c8effd49b048faac462868a071018f792059a084dc766c1b685d8e71"
+    },
+    {
+      "path": "temple-calendar\\public\\manifest.json",
+      "sha256": "b8dc47424db6a6c88710d843256a14a435a4beb7dffe75b60c8ae618620847ab"
+    },
+    {
+      "path": "temple-calendar\\public\\marketing\\about-mission.jpg",
+      "sha256": "c653c2b827daa18bfdb9bda9c6b9599d7abcee0040fab78d4055947edfba453a"
+    },
+    {
+      "path": "temple-calendar\\public\\marketing\\about-origin.jpg",
+      "sha256": "9cc50f44e1b7f5cefeca874f5a8e4ab83a8ab33eecd842f3bfb8f3f7db151d18"
+    },
+    {
+      "path": "temple-calendar\\public\\marketing\\before-calendarfly.jpg",
+      "sha256": "efe7f688582cbcc3018eff9c0ba60146ad0ec06e1857b0b28e0f9cea40da5f40"
+    },
+    {
+      "path": "temple-calendar\\public\\marketing\\blog-get-to-your-people.jpg",
+      "sha256": "8067d29d9a08aca1798786e4d54fc2c242c68277f702f0d4bce0a359d39f1b65"
+    },
+    {
+      "path": "temple-calendar\\public\\marketing\\blog-one-message-every-channel.jpg",
+      "sha256": "561ffa3532a5a473a6f0a82b8725a6063a042f3c2068bc1e00af9c2b52578258"
+    },
+    {
+      "path": "temple-calendar\\public\\marketing\\blog-run-like-a-studio.jpg",
+      "sha256": "9220c21d9da60fa496a7db8b1b484fd12b81c4fb59f4080e0a32d784d209e382"
+    },
+    {
+      "path": "temple-calendar\\public\\marketing\\calendarfly-social-share.png",
+      "sha256": "2711dd4d48f6d3f8f4dccd2e7625c5d986f63237975e0cc3311846109520ea56"
+    },
+    {
+      "path": "temple-calendar\\public\\marketing\\contact-temple.jpg",
+      "sha256": "6c5e0ca8d8c77ca838487a36f091bba9259187cd9969c1b77240885b14b2520f"
+    },
+    {
+      "path": "temple-calendar\\public\\marketing\\contact-workspace.jpg",
+      "sha256": "f64b3dfc30e8a59825cba9214363364b9013382036d9108c53806a059569ef95"
+    },
+    {
+      "path": "temple-calendar\\public\\marketing\\demo-broadcast.jpg",
+      "sha256": "4a2bf0eb54df3d7f86855b92aa459165b30ed8736410a15f9f2c00bd4bcbbdca"
+    },
+    {
+      "path": "temple-calendar\\public\\marketing\\demo-calendar.jpg",
+      "sha256": "d836293d6d24298624c151fdf62e56a6e28886d266881a70c8b38ba4dd62d406"
+    },
+    {
+      "path": "temple-calendar\\public\\marketing\\demo-chatbot-analytics.jpg",
+      "sha256": "3046b008218657b1e97c4683bdc053951ec6a09b7e4901ffd1154b13f40b6697"
+    },
+    {
+      "path": "temple-calendar\\public\\marketing\\demo-flyer-studio.jpg",
+      "sha256": "3e55452f09dfc056ed4dabe666bf1c016aeb53159d1c89bc288b2aa873cb063c"
+    },
+    {
+      "path": "temple-calendar\\public\\marketing\\how-it-works-bridge.jpg",
+      "sha256": "57e56f24c0429259a580fae6414c42b3d445a0dab4b90c3e42ec4642fb177c97"
+    },
+    {
+      "path": "temple-calendar\\public\\sounds\\click.mp3",
+      "sha256": "98bc214339a7568268a8024aa33bb9d6008359295e365f44fe35d6922851d543"
+    },
+    {
+      "path": "temple-calendar\\public\\sounds\\complete.mp3",
+      "sha256": "d8344c35b9b17d8f87e3965409376a88d8e49fd9a8e742beede034cdc3b83fae"
+    },
+    {
+      "path": "temple-calendar\\public\\sounds\\LICENSE-AUDIO.txt",
+      "sha256": "e0ba86134c566659a19dc73993e594c88a282b99f8f300d83de98acec1c99f1f"
+    },
+    {
+      "path": "temple-calendar\\public\\sounds\\send.mp3",
+      "sha256": "7290789905405d0d6d0caa7cb36edec18e9736934e107e3d03dbdfd9003ef71e"
+    },
+    {
+      "path": "temple-calendar\\public\\sounds\\success.mp3",
+      "sha256": "67d8b59d7f5466179e79fe4aa93486444cd7db44f98b844e26d3e53643459196"
+    },
+    {
+      "path": "temple-calendar\\public\\videos\\product-demo.mp4",
+      "sha256": "d5f48cb15f2e2fb23b8b26a55ea26fca0fd9b9bc92ab7c27df5fc4db52665c52"
+    },
+    {
+      "path": "temple-calendar\\README.md",
+      "sha256": "720442cdf0c70220ae8b7ffc765f7d0dae88c183575fb0becb0f2b7f4da536cf"
+    },
+    {
+      "path": "temple-calendar\\src\\AboutPage.jsx",
+      "sha256": "b34c41057a4cf1c83389692569a475fbecb3309088feb981938f0933654142d4"
+    },
+    {
+      "path": "temple-calendar\\src\\AdminDashboard.jsx",
+      "sha256": "63d5f7ee40e292bf064413cebf6713490e58599f8e86e43d7a4028bf9b777adb"
+    },
+    {
+      "path": "temple-calendar\\src\\App.jsx",
+      "sha256": "0483363bb84a57aa0c2485106df930d4c46bbcd8b4bcb37a5f5bc3bc1ac63f7b"
+    },
+    {
+      "path": "temple-calendar\\src\\AuthContext.jsx",
+      "sha256": "559ad68799b11511a77ac05966ed5ca34f3b13bc9d659277c224f13a23dfb6c1"
+    },
+    {
+      "path": "temple-calendar\\src\\BlogPage.jsx",
+      "sha256": "0c094a25cafc07665b059f0003154a51a789be21815c2ce39b3880d172dfd058"
+    },
+    {
+      "path": "temple-calendar\\src\\BlogPostPage.jsx",
+      "sha256": "52151d533367f969cb067ef2ef7b534af23f68b9246e3d773710173623efd624"
+    },
+    {
+      "path": "temple-calendar\\src\\CareersPage.jsx",
+      "sha256": "e46eddd598173602f580d70eef26cb8f33dc80d004164fe2c35cb9e0802fe972"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\AddEventModal.jsx",
+      "sha256": "0c3e8fd2e5045b12ac150e393b9be85c4009806f723bb71ff71cbdc794eafe9a"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\AdminAssistant.jsx",
+      "sha256": "d2e924f6130f1fb8812e6ee90b32ecbe843645ac53cd599f39a0669bd9154382"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\AdminToolbar.jsx",
+      "sha256": "dc088f974c0054ba0f602d5b25fd2fe3a36dc3a13057bafa5434c77992c56be4"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\AISettingsPanel.jsx",
+      "sha256": "909729cb824b832464e1b7aff540f45a5ae4e02be38fc79cc594b5e7615426bc"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\BlogPostVisual.jsx",
+      "sha256": "f23a9a5665e06389f97e82eb7090dcd7a2aae8e0fc9428722135c9076f6d8d22"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\BrandMark.jsx",
+      "sha256": "40eadb9cf735811027db54ae36c668c8e9cfe86e0132396aabbd7efd36bbd610"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\BroadcastHistory.jsx",
+      "sha256": "cb4d298cafd83273293b555947705afe80d010d38a16f90671a7a83fb94a99b4"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\CalendarDashboardHeader.jsx",
+      "sha256": "9c0aa5cab21d2dbbfe4083e27534c6eaa7e7b134826cffead30dcec6117feda3"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\CalendarGrid.jsx",
+      "sha256": "277b5ac1e916815ddcc1ff5313541a3713f98e2bb90dcfe53ae1c40caab78eb2"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\CalendarNavigation.jsx",
+      "sha256": "dc4c4a166a0c3ec600b8f0a3c4f843f8d4aa03bbd6c41e96147c7121633fc657"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\CalendarTimePicker.jsx",
+      "sha256": "43d69e59fffd0fde00e8aafef9547ee2747029abea9bdf0cd2769d06e09b1f97"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\EditEventModal.jsx",
+      "sha256": "f0f2f4474148d18d86a88acc8af32bbf17d50b0b69eedd4ebb76e7f999916a99"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\canvasBuilder.applyTemplate.test.js",
+      "sha256": "18c9481f9ec270901bda3ab2cc4b3eb28c3c7ae8d731611e22544d67214fd580"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\canvasBuilder.js",
+      "sha256": "d9b7af01ccd51d2d14d6de48a1300c0c13d08813554621e69c2d25a153522d44"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\canvasBuilder.placeArtwork.test.js",
+      "sha256": "a9274a75f96281bbd8a113849b9e171fd9392f514f30a5c6a579cfebf0d2d924"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\canvasBuilder.placeLogo.test.js",
+      "sha256": "a20302dc90222fda0db08557c7f20e8a6bbea376356afdeb60bc168e4849d834"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\communityPromptLibrary.js",
+      "sha256": "420720f73a4c0c649763ebca41ff7e8fee9b15f2587b50a4e874aaed75510923"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\constants.js",
+      "sha256": "7015f5acb42d7280faa68500a6f05e71435455d31e26aaf80ed7be834c3e9bbb"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\designRules.js",
+      "sha256": "61d730e2fae90f8cca25316efeba04a28cd3fb28d3105872f1c7c91c87e09158"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\festivalIntelligence.js",
+      "sha256": "3068edaa7da83da1c5db6c4acbf4be619f2a7ab18d019a7558239dd4d6316507"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\flyerTemplates.js",
+      "sha256": "8a9d93f1e523da33ba5bd64b81673acdc475315307f5fd5524187b2572c9082d"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\flyerTemplates.test.js",
+      "sha256": "10acbdf0aa7827179c301637b8e8604f6b25402af80739eac112861aef7a3cbc"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\index.jsx",
+      "sha256": "c8aabbd3a37aa6a6ebc31792a239caa2aadf8529986a08e49a9a39b6604346ee"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\modals\\BroadcastModal.jsx",
+      "sha256": "af59ed965652308bb64acf864790a0722cb827c259a3c0beb6e70261f701d3d6"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\modals\\HistoryPanel.jsx",
+      "sha256": "7ca14566329afb6589fbc4890ed1dbe0bf813fd8b42142b302247251892f40c9"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\modals\\PromptHelpModal.jsx",
+      "sha256": "0428e4a1454e4638bd5f3f604cf9b39fa88634a9ac824c1e7712e358af48c506"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\panels\\AIVisualPanel.jsx",
+      "sha256": "d431ef610f7dc3cdf9125cba1c60cc0ec9fdeb9c7f64737b0b4b3817682634ee"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\panels\\BrandEditFields.jsx",
+      "sha256": "ab55e0341431d6283ebb4b9ea6dcd314913a1eb082d84934ddaafb9679a1e1fc"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\panels\\BrandEditPanel.jsx",
+      "sha256": "160bfff04f12aed36c47ddd30ffad18870c1468cbb5fe34b75caea6351f3028a"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\panels\\DesignPanel.jsx",
+      "sha256": "511a096d4be8f91e50e4cc3b69a4282cb84ba8d6028d569c5207a10c7d2663fb"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\panels\\EventTextPanel.jsx",
+      "sha256": "11b30c8db6e00414769223c3088a71d193ffac2a720e2f54445579adbf105bf8"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\panels\\FlyerTemplatesPanel.jsx",
+      "sha256": "89e8a72fb35229f959cbba98f35573d2e1323eed1843e827c32f89daa2a84c1c"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\panels\\MediaPanel.jsx",
+      "sha256": "bed35990ffce20527a6f67231ef9f9586b5b35130d7daf692ae6e7f91c9a6c2d"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\panels\\PosterSpecWizard.jsx",
+      "sha256": "58a33028328bcbd062fa4606caf256f7da52723f89015e01f5ec15b2e54afaab"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\panels\\PromptDock.jsx",
+      "sha256": "51aa3bfd5fbee5df7585acb9a75fd460659bff765f45f4eff98ae3643ae843d4"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\panels\\ReferencePhotosPanel.jsx",
+      "sha256": "3f97e1fe35995075ed27fa7ffbb4338135348c210abb6934fe8469c6e5425e1a"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\panels\\runwayUI.js",
+      "sha256": "e5479ebd4880dc8aa9c1b48facfa78d1cf2999525c4a5e3011d2621a80cb1d83"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\posterSpec.js",
+      "sha256": "aa3ab7210bcebaace69a877c4e8a0057fd636540514e3950d28f78bf48321430"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\promptLibrary.js",
+      "sha256": "13bd99628d015d38bbaa469f3ac664c3862491a085313d8d4e027306cc1dc8aa"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\regionsLanguages.js",
+      "sha256": "65851ccd306e13b3f9c0ef4526cbc20c0111889f4a9b3590c1c580622921f010"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\storyPatterns.js",
+      "sha256": "1dead3ee10b64a51cf3fc1d7f4b951d5efb78bfb03d4e4e923ca55b7513a7f76"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\useFabric.js",
+      "sha256": "ed089c3a40e660b987041b83c48f0a19785ab77f5198959fe926749ebf7c3dc2"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\FlyerEditor\\useImageLibrary.js",
+      "sha256": "7efcc541622fbcf6c6cd96adc1adc8be939412211678d887bdbad659c34fb095"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\GoogleLoginButton.jsx",
+      "sha256": "b56c171008d4b9b1eacedb744d5764d30539076e8a2dacc6e1304a43f95adf89"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\Header.jsx",
+      "sha256": "1e151897fa2dd56bbb41240569eff2e368e77fc8c630132d1b39734d56d2189d"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\HelpPage.jsx",
+      "sha256": "0ec8883606ac37f70068ef323db6741bc6764c641411e0031f0e2f2dbadf7403"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\LegalPageLayout.jsx",
+      "sha256": "b5f542b34831b4a97b2b9a8b1994b47148071eac4e673305c15ef64c285a3381"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\MarketingFooter.jsx",
+      "sha256": "06de000e9fb45ebb2117b3b5ca19111df1619386a480291996e82cdccc1785b4"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\MarketingNav.jsx",
+      "sha256": "4d5445dcd8b0ae26cde9f86d6f8d0c1551811ca101091291f62ec948fafbb03f"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\NewsFeed.jsx",
+      "sha256": "06ff5511566ba6530d7550afcfdfcd1635dddbaafa1f99be81fe07f2e9c89cd0"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\PublicNav.jsx",
+      "sha256": "686e6db31972efb6cc304354d652119103a64c8cda87d8daa019470035bcd19d"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\PublicPageBackdrop.jsx",
+      "sha256": "250de5b203b8eedd02aed0031837b0a652ffa672af2f5bf1147728bc67f0c671"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\PWAInstallPrompt.jsx",
+      "sha256": "95026df0861012a3d7398126319dea12b243104c3bcf2f35a85be80de756b11a"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\RSVPAnalyticsPage.jsx",
+      "sha256": "57bef32f3c726135bd64cb0461970928de4acb52851102cc7ba9751bb6122ccf"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\RSVPShare.jsx",
+      "sha256": "31992a45ed7e2292a0f4c00011fdd44962c92b3e09e2414cf4e23bb2e03e8175"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\ScheduleReminders.jsx",
+      "sha256": "14ecaca14d7e31efc24c54f5ce1c419527833fbe09693d357b2756fac0ecaa31"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\ScheduleReminders.test.jsx",
+      "sha256": "a5f5adbdb7ce5beb5388a5fbba6dc26c18b7a52f21515309213854d7b58bda70"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\SimpleEventCard.jsx",
+      "sha256": "2a81fa44627596b9caa561788d8a4acb922187935dcd3bf7175e679638821900"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\SocialConnectButtons.jsx",
+      "sha256": "d3f01d32ecd6e4e902ea9e4ee74d8d715a8402eda1a035ba4477f86154d3cc8a"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\SocialConnectWizardsOld.jsx",
+      "sha256": "dcd2c873435b21f2eef696fecf8a0e378b67f5f0f394328ab188a822bfe220fb"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\StockLibraryGenerator.jsx",
+      "sha256": "f4e276fc743d6f3b2ab9ec28d890e8c2246bc63539383b7ae7c0b7978010df15"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\UsersAccessPanel.jsx",
+      "sha256": "ade926220b512ba1bfcb6b8fd14736003a7ed940eae46fff237c5012a0e79f56"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\WebChatWidget.jsx",
+      "sha256": "903b313ba21e17b1afbdbd836fdcb361997854b9ad63b42956c6cc6ca77a8bee"
+    },
+    {
+      "path": "temple-calendar\\src\\components\\WelcomeModal.jsx",
+      "sha256": "6ecaea832526c6002e52cddd526683336bbde07388cadd35844b6f8f84f24283"
+    },
+    {
+      "path": "temple-calendar\\src\\ContactPage.jsx",
+      "sha256": "bc8dd819db2421f5633db1b9d07972b6baf12697713b66645594d32db2285ba8"
+    },
+    {
+      "path": "temple-calendar\\src\\contexts\\AuthContext.jsx",
+      "sha256": "8fd8ff417fb95f51ff44fc7080ff740a9a0cf2021a272004cf8cf508dd7fd5e8"
+    },
+    {
+      "path": "temple-calendar\\src\\data\\blogPosts.js",
+      "sha256": "b364bee03dcc47b0792b9224a5a01622f71c5551db88c7d4b1003cb239726c1b"
+    },
+    {
+      "path": "temple-calendar\\src\\FeaturesPage.jsx",
+      "sha256": "96cb774f431c2a81b1bc47ae32e09bbe26791c148900921724217a43079295bf"
+    },
+    {
+      "path": "temple-calendar\\src\\ForgotPasswordPage.jsx",
+      "sha256": "2e9b90634911b2c6d553b6dc294ec5e3a7945dc19c84dc8c65b17a13664013cb"
+    },
+    {
+      "path": "temple-calendar\\src\\ForgotPasswordPage.test.jsx",
+      "sha256": "1ca4d688b3c4a4f5778b034ae4d197270a8f90f2210c9b6f17111886a8fba83f"
+    },
+    {
+      "path": "temple-calendar\\src\\GlassCard.jsx",
+      "sha256": "bdc2aae8b97c60f00aa0ae88982f1453df2fad22df19ccff9e15680ea6483bdc"
+    },
+    {
+      "path": "temple-calendar\\src\\hooks\\useEvents.js",
+      "sha256": "aff87f0c73e1cc575a5da1137ff1413897c2125add7b319f6342dcb7ad56831a"
+    },
+    {
+      "path": "temple-calendar\\src\\hooks\\useTempleConfig.js",
+      "sha256": "ff39bfb64c23134ff63578f8d77f347ba53f12078f7a0a966a3d5a48c90771ca"
+    },
+    {
+      "path": "temple-calendar\\src\\index.css",
+      "sha256": "ebd5239912941dafd5bf63fb170902d156bad154831e171a69a14ef3cd5536b9"
+    },
+    {
+      "path": "temple-calendar\\src\\main.jsx",
+      "sha256": "8560c0421cb2ab366ea1ee265bba56d6f2775700de7cade0ca7a4284efa3095d"
+    },
+    {
+      "path": "temple-calendar\\src\\ModeSelection.jsx",
+      "sha256": "b8cc12b8688c3c8ccb1bce94c9258ba52029a1726db95d74c54ff0c862dd2798"
+    },
+    {
+      "path": "temple-calendar\\src\\MyProfile.jsx",
+      "sha256": "d6e77fc03f257c83696bf6d2344d3be0d4bfa247dcdcdf152c1637e8a0b19f39"
+    },
+    {
+      "path": "temple-calendar\\src\\OnboardingWizard.jsx",
+      "sha256": "3ad1de39014301771f7876d67c5909209ab44021e1faf315e535228a4cf0501d"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\AdminHome.jsx",
+      "sha256": "cc603183cbace365a136dfffa9e0ab28cff8eb66e25c6c48b45c43131a8752d3"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\BroadcastPage.jsx",
+      "sha256": "74c91dc4f644f0a236394c3fdb127ec2df874c0e20dff5bb61bdef3852ae3c16"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\BroadcastPage.test.jsx",
+      "sha256": "c0b15e30b8d3f9d901dce09c3202967cfbc0fc1d9b46eb0942828676e1e57ea3"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\CreateLivestream.jsx",
+      "sha256": "803abe423645c96970fc8e57ac426f04ad700eb5d9763cf4749a73ec02eddc3e"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\CreatePhotoAlbum.jsx",
+      "sha256": "8ca8ce9ff9b4cf6395a2cf8fb2d18186d7ba175b00e6269670cc9ed6765da0d1"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\MediaOverview.jsx",
+      "sha256": "f137f8acfec6de8f917ba2b92627f09c391d399ba2854dacefb59435539da887"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\PhotoModerationPage.jsx",
+      "sha256": "a4fc5f778ab65eb2eb295b2404741671483ba52bfe21990b679e752fb6c965f9"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\PhotoSharePage.jsx",
+      "sha256": "8011fdb94a100caa49f830a06de8d0ba536fbfdd3c311ff717ad50128fafb049"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\PublicAlbumPage.jsx",
+      "sha256": "9420b92f78af661050854f20f7f589b942ae0e4d00e3ecfb8f0db1338bb2a5ed"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\PublicAnnouncementsPage.jsx",
+      "sha256": "61565743f28e71d9944b6aca5fff2fc5b14d8909e2cf48943ddae1665a00865b"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\PublicLive.jsx",
+      "sha256": "567e6f41423e4b5b97ced5b74ed5a830f8fb2ea3c7af56c6fe55eaad0b8a5e3b"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\PublicPhotosPage.jsx",
+      "sha256": "fa5184154cc89cf4ccb73c2fa9a1978028bf866723db6136ed67cadfb57e4fa4"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\PublicRadarPage.jsx",
+      "sha256": "61777bffbe5f9ccbea948d98cb46a17a899ae6d5e0118f080fd30e5d13b8fda9"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\RSVPAdmin.jsx",
+      "sha256": "4856c698f8e320fadfa50d1d95b3eb74c2feb0502d63d407c8395fc7b3633c3b"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\RSVPPage.jsx",
+      "sha256": "93a7934fc12c984f92aa6e8acf0f7fc4f5a72c43ec27f9538ccfcec9abc85207"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\SignupPage.jsx",
+      "sha256": "091b2d69439ad9cf0e9a1658489582cb0aef088f8396ef8e15ac1b2529c3874a"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\SignupsAdminPage.jsx",
+      "sha256": "5a3fc2c29b23040f106641fda1720a02bdc9c513264bc587da28be110e338bb5"
+    },
+    {
+      "path": "temple-calendar\\src\\pages\\TeamManagementPage.jsx",
+      "sha256": "b548053c3d9035e1925b46c2d8446debbbe8042e911769e46eef8970415d8722"
+    },
+    {
+      "path": "temple-calendar\\src\\PlatformDashboard.jsx",
+      "sha256": "1332c215d31f7ba9eddb131184fa6b81c4f28e78fda76c6c41fcca6f05cb93f2"
+    },
+    {
+      "path": "temple-calendar\\src\\PremiumButton.jsx",
+      "sha256": "df85f237dfc520a7074fc567828b18b3039923b36e84b41d7dc6f5539735c661"
+    },
+    {
+      "path": "temple-calendar\\src\\PremiumLanding.jsx",
+      "sha256": "7aaeb1fd37c57c08a38892f749c8b6683eba157b4fce3fd7cfa3f96ec82efac8"
+    },
+    {
+      "path": "temple-calendar\\src\\PremiumLogin.jsx",
+      "sha256": "a17425423fe3b5ff58b7d6cd68436e5dc68c08ee9b9fa4e2c67884504f05c2a4"
+    },
+    {
+      "path": "temple-calendar\\src\\PremiumSettings.jsx",
+      "sha256": "7cd9b0a8a8a60dfba69d3eec473230165b48284d93fe5b830a4dc38558ad0606"
+    },
+    {
+      "path": "temple-calendar\\src\\PremiumSignup.jsx",
+      "sha256": "0c7ee70a916b1e57337b2e827f72410854229232208452dae61dc8f0a5502f45"
+    },
+    {
+      "path": "temple-calendar\\src\\PricingMarketingPage.jsx",
+      "sha256": "b7051aca9df869843033b9502ad476677700f62724bd85818d8f548e3a5b6c6b"
+    },
+    {
+      "path": "temple-calendar\\src\\PrivacyPage.jsx",
+      "sha256": "ab7558b444a10341c35e28afc03485cfa5ff9038fb68d47648b4abdbfbee1b24"
+    },
+    {
+      "path": "temple-calendar\\src\\PublicCalendar.jsx",
+      "sha256": "20b40c19969cbd08e3364e0298ff62049e68999137accf9def180713dfc64da2"
+    },
+    {
+      "path": "temple-calendar\\src\\ResetPasswordPage.jsx",
+      "sha256": "ae0d85fabcf956fbb9f0b600f5b028e26c9db407e3365f3eed0a02e4381f4d27"
+    },
+    {
+      "path": "temple-calendar\\src\\ResetPasswordPage.test.jsx",
+      "sha256": "208451e42e67d614f407bbbc237a55dea93fde29c6760339d9734745d28a8cb5"
+    },
+    {
+      "path": "temple-calendar\\src\\SecurityPage.jsx",
+      "sha256": "cda36ea85862fb7a80f477adc7fd6c1f41132481029466f9b78aaad1c6858724"
+    },
+    {
+      "path": "temple-calendar\\src\\SocialMediaPageOld.jsx",
+      "sha256": "f83bc6fd8426e439990e8ca3e52c124986058334307c0faf3e986943bd750d4b"
+    },
+    {
+      "path": "temple-calendar\\src\\SubscriptionPage.jsx",
+      "sha256": "9eb25df4f1e90bb897fc08c6c23dcb9b1d8c76cd96dd37c91e5fef4aebb7fcde"
+    },
+    {
+      "path": "temple-calendar\\src\\SyncChatbotModal.jsx",
+      "sha256": "2716d2c33d6239da4d79386b749cc65d33477c5159df0e4643962278224046a1"
+    },
+    {
+      "path": "temple-calendar\\src\\TermsPage.jsx",
+      "sha256": "3007787b0e540d8e28c119d17c40bfbc7ae44830fdfc3345d2a6e9e7a8e90b58"
+    },
+    {
+      "path": "temple-calendar\\src\\test\\fetchMock.js",
+      "sha256": "8803e24d4c4e8304cb7a3bb30b723efad4b20c66f3c26bcfd2c726806bf856d3"
+    },
+    {
+      "path": "temple-calendar\\src\\test\\pages.smoke.test.jsx",
+      "sha256": "0410e6a87256e11ad875fcb1f10d8fdac58eccef29edbe844932a9a99bcf5411"
+    },
+    {
+      "path": "temple-calendar\\src\\test\\setup.js",
+      "sha256": "b24ebf520beba605d089dcd518494a502574708691ec686a8e0fb950ff39be02"
+    },
+    {
+      "path": "temple-calendar\\src\\test\\utils.jsx",
+      "sha256": "6199522ef85fae487877ec7ac984e5eca7076f7da9bc687057355a2a6264f003"
+    },
+    {
+      "path": "temple-calendar\\src\\utils\\eventTemplates.js",
+      "sha256": "a35fd1466b86d43aa91a3e5182bf9162b62dd9e48a48546e5bf5a1312b88be82"
+    },
+    {
+      "path": "temple-calendar\\src\\utils\\rsvpUrl.js",
+      "sha256": "5a2235a14b7897613601a48a57e46e059b0e3584547ca1ba74e5b6371554bf00"
+    },
+    {
+      "path": "temple-calendar\\src\\utils\\signupTemplates.js",
+      "sha256": "29a455f5c1c17ffac5cff75521ab0c0e658b0292711a250b9665eb3e7203dcdf"
+    },
+    {
+      "path": "temple-calendar\\src\\utils\\sound.js",
+      "sha256": "fa6434927c81978c7af93af76e5927b5d615ddc3ec828a2f5727cb3163eebf38"
+    },
+    {
+      "path": "temple-calendar\\src\\VerifyEmailPage.jsx",
+      "sha256": "8a2aef0fe7bfa4662a74a61d1fe51a76c0611f77eb5c215ea2632f00f4718b17"
+    },
+    {
+      "path": "temple-calendar\\src-files.txt",
+      "sha256": "19e58f5c41f56d4a2e00050dd0ee6b3e3a2d3bd7658c9c9d21ac9ebfb1607661"
+    },
+    {
+      "path": "temple-calendar\\tailwind.config.js",
+      "sha256": "2248bf828c19499e4a34a9d6696bc862cd53989239b7b4a61a76eef20bfacb79"
+    },
+    {
+      "path": "temple-calendar\\vite.config.js",
+      "sha256": "709111a60292e545cab9c1037c32d4163d5970741715fd4ec48df90eedf4216b"
+    },
+    {
+      "path": "temple-calendar\\vitest.config.js",
+      "sha256": "5e832a9d69a3084d1e339dbfd46bb78bc9ebe3f763eea1a6191179640bb51a66"
+    }
+  ],
+  "tables": [
+    "calendarfly_livestreams",
+    "calendarfly_broadcasts",
+    "calendarfly_community_members",
+    "calendarfly_otp_codes",
+    "calendarfly_organizations",
+    "calendarfly_users",
+    "calendarfly_events",
+    "calendarfly_reservations",
+    "calendarfly_identities",
+    "calendarfly_event_photos",
+    "calendarfly_signup_sheets",
+    "calendarfly_signup_slots",
+    "calendarfly_signup_entries",
+    "calendarfly_documents",
+    "calendarfly_photo_albums",
+    "temple-events",
+    "temple-panchang",
+    "temple_rsvp"
+  ]
+}

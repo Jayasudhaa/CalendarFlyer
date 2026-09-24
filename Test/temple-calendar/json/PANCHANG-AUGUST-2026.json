@@ -1,0 +1,221 @@
+[
+  {
+    "id": "panchang-aug-01",
+    "date": "2026-08-01",
+    "type": "panchang",
+    "tithi": "Chaturthi 1:35 AM Sun",
+    "nakshatra": "Uttarabhadra 12:28 PM Sun"
+  },
+  {
+    "id": "panchang-aug-02",
+    "date": "2026-08-02",
+    "type": "panchang",
+    "tithi": "Chaturthi 10:48 AM",
+    "nakshatra": "Purvabhadra 9:08 AM"
+  },
+  {
+    "id": "panchang-aug-03",
+    "date": "2026-08-03",
+    "type": "panchang",
+    "tithi": "Panchami 2:00 AM Mon",
+    "nakshatra": "Revathi 12:39 PM Mon"
+  },
+  {
+    "id": "panchang-aug-04",
+    "date": "2026-08-04",
+    "type": "panchang",
+    "tithi": "Shashti 2:45 AM Tue",
+    "nakshatra": "Aswini 12:33 PM Tue"
+  },
+  {
+    "id": "panchang-aug-05",
+    "date": "2026-08-05",
+    "type": "panchang",
+    "tithi": "Saptami 3:50 AM Wed",
+    "nakshatra": "Bharani 12:08 PM Wed"
+  },
+  {
+    "id": "panchang-aug-06",
+    "date": "2026-08-06",
+    "type": "panchang",
+    "tithi": "Ashtami 6:24 AM, Navami afterwards",
+    "nakshatra": "Bharani 7:43 AM"
+  },
+  {
+    "id": "panchang-aug-07",
+    "date": "2026-08-07",
+    "type": "panchang",
+    "tithi": "Dasami 6:53 AM Fri",
+    "nakshatra": "Krittika 11:27 AM Thu"
+  },
+  {
+    "id": "panchang-aug-08",
+    "date": "2026-08-08",
+    "type": "panchang",
+    "tithi": "Ekadasi 10:38 PM",
+    "nakshatra": "Mrigasira 2:15 AM Sun"
+  },
+  {
+    "id": "panchang-aug-09",
+    "date": "2026-08-09",
+    "type": "panchang",
+    "tithi": "Dwadasi 7:34 PM",
+    "nakshatra": "Arudra 11:50 PM"
+  },
+  {
+    "id": "panchang-aug-10",
+    "date": "2026-08-10",
+    "type": "panchang",
+    "tithi": "Trayodasi 9:16 AM",
+    "nakshatra": "Punarvasu 9:28 PM"
+  },
+  {
+    "id": "panchang-aug-11",
+    "date": "2026-08-11",
+    "type": "panchang",
+    "tithi": "Chaturdasi 9:59 AM",
+    "nakshatra": "Pushyami 7:23 PM"
+  },
+  {
+    "id": "panchang-aug-12",
+    "date": "2026-08-12",
+    "type": "panchang",
+    "tithi": "Amavasya 10:37 AM",
+    "nakshatra": "Aslesha 5:27 PM",
+    "moonPhase": "new"
+  },
+  {
+    "id": "panchang-aug-13",
+    "date": "2026-08-13",
+    "type": "panchang",
+    "tithi": "Prathama 11:08 AM",
+    "nakshatra": "Magha 3:52 PM"
+  },
+  {
+    "id": "panchang-aug-14",
+    "date": "2026-08-14",
+    "type": "panchang",
+    "tithi": "Dwitiya 6:15 AM, Tritiya afterwards",
+    "nakshatra": "Purvaphalguni 3:10 PM"
+  },
+  {
+    "id": "panchang-aug-15",
+    "date": "2026-08-15",
+    "type": "panchang",
+    "tithi": "Chaturthi 4:23 AM Sun",
+    "nakshatra": "Uttaraphalguni 2:45 PM"
+  },
+  {
+    "id": "panchang-aug-16",
+    "date": "2026-08-16",
+    "type": "panchang",
+    "tithi": "Panchami 4:32 AM Mon",
+    "nakshatra": "Hasta 3:21 PM"
+  },
+  {
+    "id": "panchang-aug-17",
+    "date": "2026-08-17",
+    "type": "panchang",
+    "tithi": "Shashti 5:19 AM Tue",
+    "nakshatra": "Chitta 4:53 PM Tue"
+  },
+  {
+    "id": "panchang-aug-18",
+    "date": "2026-08-18",
+    "type": "panchang",
+    "tithi": "Saptami 6:34 AM Wed",
+    "nakshatra": "Swathi 7:09 PM Wed"
+  },
+  {
+    "id": "panchang-aug-19",
+    "date": "2026-08-19",
+    "type": "panchang",
+    "tithi": "Ashtami 8:10 AM Thu",
+    "nakshatra": "Visakha 10:03 PM Thu"
+  },
+  {
+    "id": "panchang-aug-20",
+    "date": "2026-08-20",
+    "type": "panchang",
+    "tithi": "Navami 10:00 AM Fri",
+    "nakshatra": "Anuradha 1:29 AM Sat"
+  },
+  {
+    "id": "panchang-aug-21",
+    "date": "2026-08-21",
+    "type": "panchang",
+    "tithi": "Navami 11:08 AM",
+    "nakshatra": "Jyeshta 2:09 AM Sat"
+  },
+  {
+    "id": "panchang-aug-22",
+    "date": "2026-08-22",
+    "type": "panchang",
+    "tithi": "Dasami 12:26 PM",
+    "nakshatra": "Mula 5:58 AM Sun"
+  },
+  {
+    "id": "panchang-aug-23",
+    "date": "2026-08-23",
+    "type": "panchang",
+    "tithi": "Dasami 1:30 PM, Ekadasi 3:47 PM",
+    "nakshatra": "Mula 5:12 AM Sun, Purvashadha 7:56 AM Mon"
+  },
+  {
+    "id": "panchang-aug-24",
+    "date": "2026-08-24",
+    "type": "panchang",
+    "tithi": "Dwadasi 5:07 PM",
+    "nakshatra": "Uttarashadha 10:39 AM Tue"
+  },
+  {
+    "id": "panchang-aug-25",
+    "date": "2026-08-25",
+    "type": "panchang",
+    "tithi": "Trayodasi 6:24 PM",
+    "nakshatra": "Sravana 1:58 PM Wed"
+  },
+  {
+    "id": "panchang-aug-26",
+    "date": "2026-08-26",
+    "type": "panchang",
+    "tithi": "Chaturdasi 8:41 PM",
+    "nakshatra": "Sravana 12:19 PM"
+  },
+  {
+    "id": "panchang-aug-27",
+    "date": "2026-08-27",
+    "type": "panchang",
+    "tithi": "Purnima 9:21 PM",
+    "nakshatra": "Dhanishta 1:47 PM",
+    "moonPhase": "full"
+  },
+  {
+    "id": "panchang-aug-28",
+    "date": "2026-08-28",
+    "type": "panchang",
+    "tithi": "Prathama 10:25 PM",
+    "nakshatra": "Satabhisha 3:53 PM"
+  },
+  {
+    "id": "panchang-aug-29",
+    "date": "2026-08-29",
+    "type": "panchang",
+    "tithi": "Dwitiya 9:09 PM",
+    "nakshatra": "Purvabhadra 3:13 PM"
+  },
+  {
+    "id": "panchang-aug-30",
+    "date": "2026-08-30",
+    "type": "panchang",
+    "tithi": "Tritiya 11:13 PM",
+    "nakshatra": "Uttarabhadra 6:00 PM"
+  },
+  {
+    "id": "panchang-aug-31",
+    "date": "2026-08-31",
+    "type": "panchang",
+    "tithi": "Chaturthi 11:52 PM",
+    "nakshatra": "Revathi 6:11 PM"
+  }
+]

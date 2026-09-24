@@ -33,6 +33,63 @@ functional, but **real-time** (updates appear live, nobody has to refresh) and
 - **Messages** — one composer, four channels: WhatsApp, Facebook, Instagram,
   Email (see "Must-have #4" below for the constraints on each — SMS dropped, see note above)
 
+## Events strategy — real event collection (planned, not started)
+
+Google's own "events near me" isn't an API (it's a Search feature that crawls
+schema.org markup on organizers' own sites, not something third parties can
+query), Eventbrite's public search-by-location API is deprecated, and Meetup
+now gates its API behind a manual approval request with no set timeline. So
+there's no way to pull real, arbitrary community events from a third party
+the way Google Places lets us backfill *organizations* (shipped -- see
+utils/googlePlaces.js and "Organizations near you" on the Explore page).
+The agreed approach instead: each organization's own website is the event
+source, and CalendarFly does the parsing.
+
+**Setup (manual, one-time per org):** Admin -> Add Organization (name,
+website, city/ZIP, org type) -> Add Event Source (paste an events/calendar
+URL) -> Test Source. CalendarFly checks the page is reachable, detects
+whether events are actually there, and identifies which parser fits --
+ICS, JSON-LD (schema.org Event markup), RSS, or a configured HTML parser
+for sites with none of the above. A preview shows what it found (e.g.
+"Found 8 events -- Navaratri Celebration, Sep 28, 6:30pm, Dublin, CA")
+before the admin activates it. Nothing is entered by hand -- if the test
+finds 12 events, activating the source is what brings all 12 in.
+
+**Automatic, after activation:** every 24 hours, re-check the source page.
+Unchanged -> stop (cheap, no wasted parsing). Changed -> parse out title /
+date+time / venue / address-or-ZIP / registration URL / source URL,
+validate (future date, has a title, has a location, valid date/time), then
+dedupe against the DB by organization + title + date + venue. A genuinely
+new event goes to Pending Review; a match that changed (time moved, venue
+changed) goes to Review as an update; an unchanged match is ignored.
+
+**Admin review queue:** each pending event shows the parsed details, a link
+back to the source page, and Reject / Edit / Approve. Approving creates the
+canonical CalendarFly event, geocoded (address/ZIP -> lat/lng) the same way
+org addresses already are (utils/geo.js), making it immediately eligible
+for "Happening near you" alongside real orgs' own events -- no separate
+code path needed there, it's just another radar-visible event once
+approved.
+
+**Admin surface stays small:** a top-level "Event Data" area with four
+counts (Organizations / Event Sources / Review Queue / Source Errors), and
+an Organizations list (org, event count, source type, active/error status)
+as the drill-down. Source Errors matters -- a source that starts 404ing or
+changes its page structure needs to surface, not fail silently.
+
+**Exit path, once an org actually signs up:** scraping an org's site is a
+bootstrap for "Happening near you" before real orgs join, not a permanent
+shadow copy of their calendar. Once an organization claims its CalendarFly
+page (ownership verified), it's asked "how do you publish events?" --
+connect a calendar (Google Calendar/ICS feed), keep syncing from their
+website (the same scraper, now attached to the claimed org), or add events
+directly in CalendarFly.
+
+**Status: agreed on approach, not started.** A multi-day build (scheduler,
+four parser types, dedup logic, a review-queue UI, and the claim flow) --
+distinct from and in addition to the Google Places organization backfill,
+which only ever covered orgs, never events.
+
 ## Must-have
 
 1. **Donations & online giving** — one-time and recurring, campaign-specific funds,

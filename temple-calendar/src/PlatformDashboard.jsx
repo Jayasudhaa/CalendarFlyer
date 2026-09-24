@@ -16,16 +16,14 @@ import AISettingsPanel from './components/AISettingsPanel';
 import StockLibraryGenerator from './components/StockLibraryGenerator';
 import UsersAccessPanel from './components/UsersAccessPanel';
 import AdminToolbar from './components/AdminToolbar';
+import { ORG_CATEGORY_LABELS } from './utils/organizationCategories';
 
 // Same flat page background used across every other admin page (Broadcast,
 // Analytics, Sign-Ups, Settings) instead of this page having its own look.
 const HALO_BG = { backgroundColor: 'var(--cf-bg-base)' };
 
 const CATEGORY_LABELS = {
-  temple: 'Temple',
-  nonprofit: 'Nonprofit',
-  community: 'Community Org',
-  other: 'Other',
+  ...ORG_CATEGORY_LABELS,
   'not set': 'Not set',
 };
 
